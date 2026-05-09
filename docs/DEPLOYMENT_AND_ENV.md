@@ -34,7 +34,7 @@ After changing env vars, **redeploy** the frontend so the build picks them up.
 
 ## Backend (Render)
 
-The repo includes a **root** [`Dockerfile`](../Dockerfile) for services that use Render’s **Docker** runtime. The image publishes `backend/HexaTrack.Api` and listens on Render’s `PORT` (`docker-entrypoint.sh` sets `ASPNETCORE_URLS`). The runtime stage uses the **full** `aspnet:9.0-bookworm` image (not slim) and the API project sets **workstation GC** (`<ServerGarbageCollection>false</ServerGarbageCollection>` in [`HexaTrack.Api.csproj`](../backend/HexaTrack.Api/HexaTrack.Api.csproj)) to reduce native crashes (e.g. exit **139** / SIGSEGV) on small instances.
+The repo includes a **root** [`Dockerfile`](../Dockerfile) for services that use Render’s **Docker** runtime. The image publishes `backend/HexaTrack.Api` and listens on Render’s `PORT` (`docker-entrypoint.sh` sets `ASPNETCORE_URLS`). The runtime stage uses **`aspnet:9.0-bookworm-slim`** (valid MCR tag — there is no separate `aspnet:9.0-bookworm` image) plus **`apt-get install libicu72`** so globalization/ICU native libs exist at runtime. The API project sets **workstation GC** (`<ServerGarbageCollection>false</ServerGarbageCollection>` in [`HexaTrack.Api.csproj`](../backend/HexaTrack.Api/HexaTrack.Api.csproj)) to reduce pressure on small instances (e.g. exit **139**).
 
 If your service is set to **Native** instead of Docker, switch the service to use the Dockerfile at repo root, or change the Render **Dockerfile path** field to `Dockerfile` (default when the file lives at the repository root).
 
