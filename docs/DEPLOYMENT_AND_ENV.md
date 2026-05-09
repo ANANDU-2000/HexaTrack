@@ -34,6 +34,10 @@ After changing env vars, **redeploy** the frontend so the build picks them up.
 
 ## Backend (Render)
 
+The repo includes a **root** [`Dockerfile`](../Dockerfile) for services that use Render’s **Docker** runtime. The image publishes `backend/HexaTrack.Api` and listens on Render’s `PORT` (`docker-entrypoint.sh` sets `ASPNETCORE_URLS`).
+
+If your service is set to **Native** instead of Docker, switch the service to use the Dockerfile at repo root, or change the Render **Dockerfile path** field to `Dockerfile` (default when the file lives at the repository root).
+
 Set in **Render → Web Service → Environment**. Canonical list and placeholders: [`.env.backend`](../.env.backend) in the repo.
 
 ### PostgreSQL connection
