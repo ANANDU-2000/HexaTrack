@@ -1,0 +1,3 @@
+{
+  "notice": "Use ../../.cursor/mcp.json as the safe MCP template. Do not commit real secrets."
+}

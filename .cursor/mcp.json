@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "render": {
+      "command": "npx",
+      "args": ["-y", "@render-mcp/server"],
+      "env": {
+        "RENDER_API_KEY": "<your-render-api-key>",
+        "RENDER_SERVICE_ID": "srv-d7vc7jho3t8c73cpg22g"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "<your-github-pat>"
+      }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "DATABASE_URL": "postgresql://<user>:<password>@<host>/<database>"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "<absolute-path-to-HexaTrack>"]
+    }
+  }
+}
