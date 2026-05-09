@@ -15,9 +15,10 @@ It is not an accounting suite, ERP, crypto dashboard, or generic AI-generated da
 
 Start with:
 
-1. [docs/READ_FIRST.md](docs/READ_FIRST.md)
-2. [docs/BUILD_TO_FINISH_HEXATRACK.md](docs/BUILD_TO_FINISH_HEXATRACK.md)
-3. [docs/CURRENT_TASK.md](docs/CURRENT_TASK.md)
+1. [docs/START_HERE_MASTER.md](docs/START_HERE_MASTER.md) — **master hub** (deploy, MCP, Cursor, roadmap)
+2. [docs/READ_FIRST.md](docs/READ_FIRST.md)
+3. [docs/BUILD_TO_FINISH_HEXATRACK.md](docs/BUILD_TO_FINISH_HEXATRACK.md)
+4. [docs/CURRENT_TASK.md](docs/CURRENT_TASK.md)
 
 ## Current Priority
 

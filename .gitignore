@@ -23,4 +23,5 @@ obj/
 *.sln
 *.sw?
 .env
+.env.local
 .next

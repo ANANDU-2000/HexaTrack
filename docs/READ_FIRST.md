@@ -2,6 +2,8 @@
 
 This is the AI and developer entry point. It prevents documentation overload.
 
+**Onboarding / infra / Cursor hub:** [START_HERE_MASTER.md](START_HERE_MASTER.md)
+
 ## Always Read
 
 1. [BUILD_ORDER.md](BUILD_ORDER.md) — **canonical delivery sequence** for auth/admin and major verticals.
