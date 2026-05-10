@@ -96,15 +96,15 @@ export function PwaProvider() {
   return (
     <>
       {showSplash && (
-        <div className="pwa-splash fixed inset-0 z-[100] grid place-items-center bg-[#0B1015] px-6">
+        <div className="pwa-splash fixed inset-0 z-[100] grid place-items-center bg-background px-6">
           <div className="flex flex-col items-center">
-            <div className="grid h-24 w-24 place-items-center rounded-[2rem] bg-[#4F8CFF] shadow-[0_24px_70px_rgba(79,140,255,0.35)]">
-              <Image src="/icons/icon-192x192.png" alt="" width={80} height={80} className="h-20 w-20 rounded-[1.5rem]" priority />
+            <div className="grid h-24 w-24 place-items-center rounded-3xl bg-secondary shadow-[0_0_40px_rgba(173,198,255,0.3)] accent-glow">
+              <Image src="/icons/icon-192x192.png" alt="" width={80} height={80} className="h-20 w-20 rounded-2xl" priority />
             </div>
-            <div className="mt-5">
-              <BrandMark compact tone="dark" />
+            <div className="mt-8">
+              <BrandMark tone="dark" className="scale-110" />
             </div>
-            <p className="mt-3 text-sm font-semibold text-[#8B9BB4]">Smart expense & budget tracking</p>
+            <p className="mt-4 text-sm font-medium text-on-surface-variant/60 tracking-wider font-label-mono uppercase">INITIALIZING CORE</p>
           </div>
         </div>
       )}
