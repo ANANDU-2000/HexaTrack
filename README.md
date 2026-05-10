@@ -34,3 +34,16 @@ Workspace System is P0. Do not add random features before workspace scoping is c
 
 
 Do not commit real secrets, database passwords, JWT signing keys, API keys, provider secrets, or production tokens.
+
+---
+
+## 📬 DM for Enquiries
+I am available for freelance projects, architectural consultations, and full-stack development collaborations.
+
+- 🌐 Portfolio: [surag-portfolio.web.app](https://surag-portfolio.web.app)
+- 📧 Email: [officialsurag@gmail.com](mailto:officialsurag@gmail.com)
+- 📱 Phone: +91 7012714150
+- 💼 LinkedIn: [linkedin.com/in/suragsunil](https://linkedin.com/in/suragsunil)
+- 💻 GitHub: [github.com/suragms](https://github.com/suragms)
+- 📺 YouTube: [youtube.com/@suragdevstudio](https://youtube.com/@suragdevstudio)
+
