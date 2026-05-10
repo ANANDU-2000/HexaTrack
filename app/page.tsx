@@ -14,15 +14,22 @@ import { useAuthStore } from '@/store/auth-store';
 import { useFinanceStore } from '@/store/finance-store';
 import { useWorkspaceStore } from '@/store/workspace-store';
 
+import { LandingPage } from '@/components/marketing/landing-page';
+
 const GroupExpensesScreen = dynamic(() => import('@/components/screens/group-expenses-screen').then((module) => module.GroupExpensesScreen), { loading: () => <ScreenSkeleton /> });
 const HistoryScreen = dynamic(() => import('@/components/screens/history-screen').then((module) => module.HistoryScreen), { loading: () => <ScreenSkeleton /> });
 const RecurringScreen = dynamic(() => import('@/components/screens/recurring-screen').then((module) => module.RecurringScreen), { loading: () => <ScreenSkeleton /> });
 const ReportsScreen = dynamic(() => import('@/components/screens/reports-screen').then((module) => module.ReportsScreen), { loading: () => <ScreenSkeleton /> });
 const SettingsScreen = dynamic(() => import('@/components/screens/settings-screen').then((module) => module.SettingsScreen), { loading: () => <ScreenSkeleton /> });
 
+type UnauthView = 'marketing' | 'auth';
+
 export default function Home() {
   const [screen, setScreen] = useState<ScreenKey>('dashboard');
   const [isAdding, setIsAdding] = useState(false);
+  const [unauthView, setUnauthView] = useState<UnauthView>('marketing');
+  const [mounted, setMounted] = useState(false);
+  
   const hydrated = useAuthStore((state) => state.hydrated);
   const hydrate = useAuthStore((state) => state.hydrate);
   const user = useAuthStore((state) => state.user);
@@ -37,6 +44,7 @@ export default function Home() {
   const ensureActiveWorkspace = useWorkspaceStore((state) => state.ensureActiveWorkspace);
 
   useEffect(() => {
+    setMounted(true);
     hydrate();
     hydrateWorkspace();
   }, [hydrate, hydrateWorkspace]);
@@ -80,15 +88,20 @@ export default function Home() {
     }
   }, [screen]);
 
+  if (!mounted) {
+    return null; // Completely suppress SSR output during static stage to bypass client hydration collision!
+  }
+
   if (!hydrated) {
+
     return (
       <>
         <PwaProvider />
-        <main className="grid min-h-screen place-items-center bg-[#0B1015] px-4">
-          <div className="surface rounded-3xl p-6">
+        <main className="grid min-h-screen place-items-center bg-background px-4">
+          <div className="surface rounded-3xl p-6 flex flex-col items-center">
             <BrandMark tone="dark" />
-            <div className="mx-auto mt-5 h-10 w-10 animate-spin rounded-full border-2 border-[#4F8CFF] border-t-transparent" />
-            <p className="mt-3 text-center text-sm text-[#8B9BB4]">Preparing HexaTrack...</p>
+            <div className="mt-6 h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p className="mt-3 text-center text-sm text-on-surface-variant">Initializing Workspace...</p>
           </div>
         </main>
       </>
@@ -99,7 +112,14 @@ export default function Home() {
     return (
       <>
         <PwaProvider />
-        <AuthPanel />
+        {unauthView === 'marketing' ? (
+          <LandingPage 
+            onGetStarted={() => setUnauthView('auth')} 
+            onLogin={() => setUnauthView('auth')} 
+          />
+        ) : (
+          <AuthPanel />
+        )}
       </>
     );
   }
@@ -115,6 +135,7 @@ export default function Home() {
     </>
   );
 }
+
 
 function ScreenSkeleton() {
   return (

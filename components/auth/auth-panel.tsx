@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import { motion } from 'framer-motion';
 import { z } from 'zod';
 import { useAuthStore } from '@/store/auth-store';
 import { BrandMark } from '@/components/ui/brand';
@@ -10,11 +11,9 @@ const loginSchema = z.object({
 
 type FieldErrors = Partial<Record<'email' | 'password', string>>;
 
-const inputClassName =
-  'w-full min-h-[44px] rounded-2xl border border-white/[0.06] bg-[#0B1015] px-4 py-3 text-sm text-[#F5F7FA] outline-none transition placeholder:text-[#8B9BB4] focus:border-[#4F8CFF] focus:ring-2 focus:ring-[#4F8CFF]/20';
-
 export function AuthPanel() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
   const login = useAuthStore((state) => state.login);
   const loading = useAuthStore((state) => state.loading);
   const error = useAuthStore((state) => state.error);
@@ -37,68 +36,121 @@ export function AuthPanel() {
     try {
       await login(loginSchema.parse(raw));
     } catch {
-      // The auth store owns the user-facing error message.
+      // Error state driven by auth store
     }
   }
 
   return (
-    <main className="min-h-[100dvh] min-h-screen w-full bg-[#0B1015] px-4 pb-10 pt-[max(1.5rem,env(safe-area-inset-top))]">
-      <div className="mx-auto flex w-full max-w-[480px] flex-col gap-10 lg:mx-auto lg:max-w-5xl lg:flex-row lg:items-stretch lg:gap-12">
-        <section className="flex flex-1 flex-col justify-center lg:max-w-md">
-          <BrandMark tone="dark" />
-          <p className="mt-6 max-w-sm text-sm leading-relaxed text-[#8B9BB4]">
-            Calm control of your money. Encrypted sign-in, workspace-scoped data.
-          </p>
-        </section>
+    <div className="relative min-h-screen flex items-center justify-center bg-background text-on-surface overflow-hidden selection:bg-primary selection:text-on-primary p-6">
+      {/* Ambient Backlight Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[100px] pointer-events-none" />
 
-        <section className="flex flex-1 flex-col justify-center">
-          <div className="w-full max-w-[420px] rounded-3xl border border-white/[0.06] bg-[#121A22] p-6 lg:max-w-[480px] lg:self-end">
-            <h1 className="text-xl font-semibold text-[#F5F7FA]">Sign in</h1>
-            <p className="mt-1 text-sm text-[#8B9BB4]">Use your work email to access the right workspace.</p>
+      <motion.main 
+        initial={{ opacity: 0, scale: 0.98 }} 
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-[480px] z-10 relative"
+      >
+        <div className="glass-card rounded-3xl p-8 lg:p-10 flex flex-col gap-8 backdrop-blur-2xl shadow-2xl border border-white/10">
+          <header className="flex flex-col items-center gap-4">
+            <motion.div 
+              initial={{ y: -10 }} 
+              animate={{ y: 0 }} 
+              className="mb-2"
+            >
+              <BrandMark tone="dark" className="h-14 w-auto" />
+            </motion.div>
+            
+            <div className="text-center">
+              <h1 className="text-3xl font-bold tracking-tight text-on-surface font-headline-md">Welcome back</h1>
+              <p className="text-sm text-on-surface-variant mt-2 font-medium">Access your intelligent wealth dashboard</p>
+            </div>
+          </header>
 
-            <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Email</span>
-                <input
-                  autoComplete="email"
-                  className={inputClassName}
+          <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+            <div className="relative group">
+              <div className="input-glow flex items-center border-b border-outline-variant/50 focus-within:border-primary transition-all duration-300 py-3">
+                <span className="material-symbols-outlined text-on-surface-variant/70 mr-3">mail</span>
+                <input 
                   name="email"
-                  placeholder="you@company.com"
+                  autoComplete="email"
+                  className="bg-transparent border-none outline-none focus:ring-0 w-full font-label-mono text-sm text-on-surface placeholder:text-on-surface-variant/40 py-1" 
+                  placeholder="Email Address" 
                   type="email"
+                  disabled={loading}
                 />
-                {fieldErrors.email && <span className="mt-1 block text-xs text-[#FF5C75]">{fieldErrors.email}</span>}
-              </label>
+              </div>
+              {fieldErrors.email && <p className="text-xs text-danger mt-1.5 font-medium">{fieldErrors.email}</p>}
+            </div>
 
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Password</span>
-                <input
-                  autoComplete="current-password"
-                  className={inputClassName}
+            <div className="relative group">
+              <div className="input-glow flex items-center border-b border-outline-variant/50 focus-within:border-primary transition-all duration-300 py-3">
+                <span className="material-symbols-outlined text-on-surface-variant/70 mr-3">lock</span>
+                <input 
                   name="password"
-                  type="password"
+                  autoComplete="current-password"
+                  className="bg-transparent border-none outline-none focus:ring-0 w-full font-label-mono text-sm text-on-surface placeholder:text-on-surface-variant/40 py-1" 
+                  placeholder="Password" 
+                  type={showPassword ? "text" : "password"}
+                  disabled={loading}
                 />
-                {fieldErrors.password && (
-                  <span className="mt-1 block text-xs text-[#FF5C75]">{fieldErrors.password}</span>
-                )}
-              </label>
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-on-surface-variant/60 hover:text-on-surface transition-colors ml-2 flex items-center"
+                >
+                  <span className="material-symbols-outlined text-lg">
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
+              </div>
+              {fieldErrors.password && <p className="text-xs text-danger mt-1.5 font-medium">{fieldErrors.password}</p>}
+            </div>
 
-              {error && (
-                <p className="rounded-2xl border border-white/[0.06] bg-[#0B1015] px-3 py-2 text-sm text-[#FF5C75]">
-                  {error}
-                </p>
-              )}
+            <div className="flex justify-end">
+              <a href="#" className="text-xs font-medium text-primary hover:text-primary-fixed transition-colors">Forgot Password?</a>
+            </div>
 
-              <button
-                className="inline-flex w-full min-h-[44px] items-center justify-center rounded-[18px] bg-[#4F8CFF] py-3.5 text-base font-semibold text-white transition hover:opacity-95 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={loading}
-                type="submit"
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-error-container/20 border border-error/20 rounded-xl px-4 py-3 text-sm text-error font-medium"
               >
-                {loading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </form>
+                {error}
+              </motion.div>
+            )}
+
+            <button 
+              className="w-full py-4 bg-primary text-on-primary rounded-2xl font-bold text-base active:scale-[0.98] hover:opacity-90 transition-all shadow-[0_8px_24px_-8px_rgba(193,193,252,0.5)] mt-2 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2" 
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="animate-spin h-5 w-5 border-2 border-on-primary/40 border-t-on-primary rounded-full" />
+              ) : "Sign In"}
+            </button>
+          </form>
+        </div>
+
+        <div className="mt-8 flex justify-center gap-6 opacity-40 text-[11px] font-label-mono font-medium tracking-wider text-on-surface-variant uppercase">
+          <div className="flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[14px]">verified_user</span>
+            SECURE
           </div>
-        </section>
+          <div className="flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[14px]">encrypted</span>
+            AES-256
+          </div>
+        </div>
+      </motion.main>
+
+      {/* Backdrop texture from design */}
+      <div className="fixed bottom-0 left-0 w-full h-[40vh] pointer-events-none overflow-hidden z-0">
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent" />
       </div>
-    </main>
+    </div>
   );
 }
+

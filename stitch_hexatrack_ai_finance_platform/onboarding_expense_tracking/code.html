@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HexaTrack Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-tertiary": "#1000a9",
+                "inverse-primary": "#585a8d",
+                "on-secondary-container": "#00285c",
+                "on-tertiary-container": "#7679ff",
+                "on-tertiary-fixed": "#07006c",
+                "on-primary-fixed": "#141545",
+                "inverse-surface": "#e5e1e6",
+                "primary": "#c1c1fc",
+                "on-primary-container": "#8384ba",
+                "surface-bright": "#39393d",
+                "primary-fixed-dim": "#c1c1fc",
+                "surface-variant": "#353438",
+                "on-error": "#690005",
+                "primary-container": "#1a1b4b",
+                "surface": "#131316",
+                "tertiary-fixed": "#e1e0ff",
+                "secondary-fixed-dim": "#adc6ff",
+                "on-background": "#e5e1e6",
+                "on-tertiary-fixed-variant": "#2f2ebe",
+                "error": "#ffb4ab",
+                "surface-container-low": "#1c1b1f",
+                "on-secondary-fixed": "#001a41",
+                "surface-tint": "#c1c1fc",
+                "secondary-fixed": "#d8e2ff",
+                "inverse-on-surface": "#313034",
+                "outline": "#918f9a",
+                "surface-dim": "#131316",
+                "on-error-container": "#ffdad6",
+                "on-surface-variant": "#c8c5d0",
+                "secondary": "#adc6ff",
+                "on-primary": "#2a2b5b",
+                "primary-fixed": "#e1e0ff",
+                "background": "#131316",
+                "tertiary-container": "#09007c",
+                "on-secondary-fixed-variant": "#004493",
+                "surface-container-high": "#2a292d",
+                "outline-variant": "#46464f",
+                "on-primary-fixed-variant": "#404273",
+                "on-surface": "#e5e1e6",
+                "surface-container-highest": "#353438",
+                "on-secondary": "#002e69",
+                "secondary-container": "#4b8eff",
+                "surface-container": "#201f23",
+                "tertiary-fixed-dim": "#c0c1ff",
+                "surface-container-lowest": "#0e0e11",
+                "tertiary": "#c0c1ff",
+                "error-container": "#93000a"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "xs": "8px",
+                "margin-mobile": "16px",
+                "xl": "80px",
+                "sm": "16px",
+                "gutter": "24px",
+                "lg": "48px",
+                "md": "24px",
+                "base": "4px",
+                "margin-desktop": "40px"
+            },
+            "fontFamily": {
+                "headline-md": ["Hanken Grotesk"],
+                "display-lg": ["Hanken Grotesk"],
+                "label-mono": ["JetBrains Mono"],
+                "body-sm": ["Hanken Grotesk"],
+                "display-lg-mobile": ["Hanken Grotesk"],
+                "body-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "label-mono": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                "display-lg-mobile": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .gradient-glow {
+            background: radial-gradient(circle at 20% 20%, rgba(193, 193, 252, 0.15) 0%, transparent 50%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-lg min-h-screen flex flex-col items-center justify-center overflow-hidden">
+<!-- Top AppBar (Identity Anchor) -->
+<header class="bg-surface/40 dark:bg-surface/40 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full docked full-width top-0 sticky z-50">
+<div class="flex items-center gap-3">
+<span class="text-headline-md font-headline-md font-bold tracking-tight text-on-surface dark:text-on-surface">HexaTrack</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-secondary-container overflow-hidden">
+<img alt="User profile photo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNBd8sYEh9Ebxx_JifsvF9aisuGxOtK4HNh5aUPQx-DR9mL6I77fPDC7Fbp5egWpkmKeR9Vu-D5rM_3F6YZPZu4Q8bEzzooOmIl61AOeFV4AwrMAz56gDQUNBatbFHt8PBSQK-1-ta74OA5vpxfx-qhQlmCdDI-R-_JOiIvLf9zRyT53Ywyh5Z4CsBkT12Owtq1kiftMQyLRPiZSldJeV7R2Fs78oJdWxyx0NGDqsu-9H3OaZt5biCgwMKj1qKj02OsVS54cunDXU"/>
+</div>
+</div>
+</header>
+<main class="flex-1 w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-lg grid grid-cols-1 lg:grid-cols-12 gap-gutter items-center relative">
+<!-- Background Decorative Elements -->
+<div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -z-10"></div>
+<div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary/10 rounded-full blur-[100px] -z-10"></div>
+<!-- Left Column: Content & CTA -->
+<div class="lg:col-span-5 space-y-md z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+<span class="material-symbols-outlined text-[18px] text-primary">auto_awesome</span>
+<span class="font-label-mono text-label-mono text-primary uppercase tracking-widest">Intelligent Wealth</span>
+</div>
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg leading-tight">
+                Track Every Penny, <span class="text-secondary">Effortlessly</span>.
+            </h1>
+<p class="text-on-surface-variant font-body-lg max-w-md">
+                Experience the precision of modern engineering in your pocket. Our smart categorization engine automatically sorts every transaction, giving you crystal clear insights into your spending habits.
+            </p>
+<div class="pt-sm flex flex-col sm:flex-row items-center gap-md">
+<button class="w-full sm:w-auto px-xl py-4 bg-primary text-on-primary rounded-xl font-headline-md flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+                    Next
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<div class="flex gap-2">
+<div class="w-8 h-2 rounded-full bg-primary"></div>
+<div class="w-2 h-2 rounded-full bg-on-surface-variant/30"></div>
+<div class="w-2 h-2 rounded-full bg-on-surface-variant/30"></div>
+</div>
+</div>
+</div>
+<!-- Right Column: Visual Showcase (Bento Layout) -->
+<div class="lg:col-span-7 grid grid-cols-2 grid-rows-6 gap-sm h-[600px] md:h-[700px]">
+<!-- Hero Illustration Card -->
+<div class="col-span-2 row-span-3 glass-card rounded-xl relative overflow-hidden group">
+<img class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" data-alt="A sophisticated close-up of a high-end digital dashboard displaying financial growth charts in electric blue and deep indigo. The lighting is moody and cinematic, highlighting the glassmorphic textures and sharp 2px line-art iconography. The overall aesthetic is one of intelligent wealth and technological precision, featuring subtle glowing elements and a dark-mode palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv2PQtydut2PHc1PxcxNALh6Gy3KpSTRa-6yxMDNaETb6x4l2hSyMfBB8PLxVBxRw5soDIW6dSOimxLpAFFFTrdcD0F8Kj6cRg-AatBwbrVgeNRVLdaM5JCDJ7z-fbEVhbJS4VIM2zkvSpBWY_RyvVYuXsO-cSJNm1l-tSNRa9EBq3QIJBw_pTFbfTOWM1cEYtzkyDQfH45Kq451tGfGhIhT1ljdF99KUT2i-x-cLmROZlbaUyl5Jsp85lavLZ8qGjolNjsqRrJn0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+<div class="absolute bottom-md left-md">
+<span class="font-label-mono text-label-mono text-primary bg-primary-container px-2 py-1 rounded">LIVE ENGINE</span>
+<h3 class="text-headline-md font-headline-md mt-2">Real-time Analytics</h3>
+</div>
+</div>
+<!-- Transaction Card -->
+<div class="col-span-1 row-span-3 glass-card rounded-xl p-md flex flex-col justify-between gradient-glow">
+<div class="space-y-sm">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<h4 class="font-headline-md">Smart Categorization</h4>
+<p class="text-body-sm text-on-surface-variant">AI-driven tagging for over 50+ spending categories.</p>
+</div>
+<div class="mt-md space-y-xs opacity-50">
+<div class="flex justify-between items-center py-2 border-b border-white/5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">coffee</span>
+<span class="font-label-mono text-label-mono">Starbucks</span>
+</div>
+<span class="font-label-mono text-label-mono text-error">-$4.50</span>
+</div>
+<div class="flex justify-between items-center py-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">shopping_bag</span>
+<span class="font-label-mono text-label-mono">Apple Store</span>
+</div>
+<span class="font-label-mono text-label-mono text-error">-$1,299.00</span>
+</div>
+</div>
+</div>
+<!-- Balance Card -->
+<div class="col-span-1 row-span-3 glass-card rounded-xl p-md flex flex-col items-center justify-center text-center relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2">
+<span class="material-symbols-outlined text-secondary opacity-50">auto_graph</span>
+</div>
+<div class="text-label-mono font-label-mono text-on-surface-variant uppercase tracking-tighter mb-2">Portfolio Balance</div>
+<div class="text-headline-md font-headline-md text-primary">$42,084.50</div>
+<div class="mt-4 flex items-center gap-1 text-on-secondary-fixed-variant bg-secondary-fixed/10 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="text-label-mono font-label-mono">+12.4%</span>
+</div>
+<!-- Mini Chart Sparkline -->
+<div class="mt-lg w-full h-12 flex items-end gap-1 px-4">
+<div class="flex-1 bg-primary/20 h-4 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/40 h-8 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/30 h-6 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/60 h-10 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/40 h-7 rounded-t-sm"></div>
+<div class="flex-1 bg-secondary h-12 rounded-t-sm shadow-[0_0_15px_rgba(173,198,255,0.4)]"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Shell (As defined in Shared Components) -->
+<!-- Note: Following "Relevance Check" logic, we typically suppress the nav on onboarding, 
+         but the prompt mentions "Onboarding Screen 1: Expense Tracking" which is a top-level intro. 
+         However, for true onboarding focused flow, we minimize the shell. 
+         If forced to show, it would be here. We will prioritize the focused journey. -->
+<!-- Footer Branding -->
+<footer class="w-full py-md px-margin-mobile text-center border-t border-white/5 mt-auto">
+<p class="text-label-mono font-label-mono text-on-surface-variant opacity-30">SECURED BY HEXATRACK PROTOCOL • © 2024</p>
+</footer>
+</body></html>

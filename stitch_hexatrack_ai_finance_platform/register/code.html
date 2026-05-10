@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HexaTrack - Secure Registration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#1000a9",
+                        "inverse-primary": "#585a8d",
+                        "on-secondary-container": "#00285c",
+                        "on-tertiary-container": "#7679ff",
+                        "on-tertiary-fixed": "#07006c",
+                        "on-primary-fixed": "#141545",
+                        "inverse-surface": "#e5e1e6",
+                        "primary": "#c1c1fc",
+                        "on-primary-container": "#8384ba",
+                        "surface-bright": "#39393d",
+                        "primary-fixed-dim": "#c1c1fc",
+                        "surface-variant": "#353438",
+                        "on-error": "#690005",
+                        "primary-container": "#1a1b4b",
+                        "surface": "#131316",
+                        "tertiary-fixed": "#e1e0ff",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "on-background": "#e5e1e6",
+                        "on-tertiary-fixed-variant": "#2f2ebe",
+                        "error": "#ffb4ab",
+                        "surface-container-low": "#1c1b1f",
+                        "on-secondary-fixed": "#001a41",
+                        "surface-tint": "#c1c1fc",
+                        "secondary-fixed": "#d8e2ff",
+                        "inverse-on-surface": "#313034",
+                        "outline": "#918f9a",
+                        "surface-dim": "#131316",
+                        "on-error-container": "#ffdad6",
+                        "on-surface-variant": "#c8c5d0",
+                        "secondary": "#adc6ff",
+                        "on-primary": "#2a2b5b",
+                        "primary-fixed": "#e1e0ff",
+                        "background": "#131316",
+                        "tertiary-container": "#09007c",
+                        "on-secondary-fixed-variant": "#004493",
+                        "surface-container-high": "#2a292d",
+                        "outline-variant": "#46464f",
+                        "on-primary-fixed-variant": "#404273",
+                        "on-surface": "#e5e1e6",
+                        "surface-container-highest": "#353438",
+                        "on-secondary": "#002e69",
+                        "secondary-container": "#4b8eff",
+                        "surface-container": "#201f23",
+                        "tertiary-fixed-dim": "#c0c1ff",
+                        "surface-container-lowest": "#0e0e11",
+                        "tertiary": "#c0c1ff",
+                        "error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "margin-mobile": "16px",
+                        "xl": "80px",
+                        "sm": "16px",
+                        "gutter": "24px",
+                        "lg": "48px",
+                        "md": "24px",
+                        "base": "4px",
+                        "margin-desktop": "40px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "display-lg-mobile": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-mono": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(32, 31, 35, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-accent {
+            box-shadow: 0 0 40px -10px rgba(75, 142, 255, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen font-body-lg overflow-x-hidden">
+<!-- Header / Top Bar (Manual Auth Variant) -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface/40 backdrop-blur-xl border-b border-white/10 px-margin-mobile md:px-margin-desktop py-4 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="text-headline-md font-headline-md font-bold tracking-tight text-on-surface">HexaTrack</span>
+</div>
+<a class="text-body-sm font-body-sm text-secondary hover:opacity-80 transition-opacity" href="#">
+            Support
+        </a>
+</header>
+<main class="relative pt-32 pb-xl px-margin-mobile flex flex-col items-center justify-center min-h-screen">
+<!-- Background Decorative Elements -->
+<div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary-container/20 rounded-full blur-[120px] -z-10"></div>
+<div class="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-secondary-container/10 rounded-full blur-[100px] -z-10"></div>
+<div class="w-full max-w-xl">
+<!-- Header Section -->
+<div class="text-center mb-12">
+<h1 class="text-display-lg-mobile md:text-display-lg font-display-lg mb-4 text-on-surface">Start your journey</h1>
+<p class="text-body-lg text-on-surface-variant max-w-md mx-auto">Precision-engineered wealth tracking for the modern investor. Secure, intelligent, and private.</p>
+</div>
+<!-- Bento-style Multi-step Form Container -->
+<div class="glass-card rounded-[2rem] p-8 md:p-12 glow-accent">
+<form class="space-y-8">
+<!-- Step Indicator (Visual Only) -->
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold text-xs">1</div>
+<span class="text-sm font-medium text-on-surface">Personal</span>
+</div>
+<div class="h-[1px] flex-grow bg-white/10 mx-4"></div>
+<div class="flex items-center gap-2 opacity-40">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-white/10 flex items-center justify-center text-on-surface-variant font-bold text-xs">2</div>
+<span class="text-sm font-medium text-on-surface-variant">Security</span>
+</div>
+</div>
+<!-- Personal Information Block -->
+<section class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="block text-label-mono font-label-mono text-on-surface-variant px-1 uppercase tracking-wider" for="first_name">First Name</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-0 border-b border-white/10 focus:border-secondary focus:ring-0 text-on-surface py-4 px-1 transition-all duration-300 placeholder:text-surface-variant font-label-mono text-lg" id="first_name" name="first_name" placeholder="Alexander" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-label-mono font-label-mono text-on-surface-variant px-1 uppercase tracking-wider" for="last_name">Last Name</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-0 border-b border-white/10 focus:border-secondary focus:ring-0 text-on-surface py-4 px-1 transition-all duration-300 placeholder:text-surface-variant font-label-mono text-lg" id="last_name" name="last_name" placeholder="Hamilton" type="text"/>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-label-mono font-label-mono text-on-surface-variant px-1 uppercase tracking-wider" for="email">Email Address</label>
+<div class="relative flex items-center">
+<input class="w-full bg-surface-container-lowest border-0 border-b border-white/10 focus:border-secondary focus:ring-0 text-on-surface py-4 px-1 transition-all duration-300 placeholder:text-surface-variant font-label-mono text-lg" id="email" name="email" placeholder="alexander@hexatrack.com" type="email"/>
+<span class="material-symbols-outlined absolute right-2 text-on-surface-variant/50">alternate_email</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-label-mono font-label-mono text-on-surface-variant px-1 uppercase tracking-wider" for="password">Secure Password</label>
+<div class="relative flex items-center">
+<input class="w-full bg-surface-container-lowest border-0 border-b border-white/10 focus:border-secondary focus:ring-0 text-on-surface py-4 px-1 transition-all duration-300 placeholder:text-surface-variant font-label-mono text-lg" id="password" name="password" placeholder="••••••••••••" type="password"/>
+<span class="material-symbols-outlined absolute right-2 text-on-surface-variant/50">lock</span>
+</div>
+<div class="flex gap-1 mt-2">
+<div class="h-1 flex-1 rounded-full bg-secondary"></div>
+<div class="h-1 flex-1 rounded-full bg-secondary"></div>
+<div class="h-1 flex-1 rounded-full bg-surface-variant"></div>
+<div class="h-1 flex-1 rounded-full bg-surface-variant"></div>
+<span class="text-[10px] font-label-mono text-on-surface-variant uppercase ml-2">Strength: Medium</span>
+</div>
+</div>
+</section>
+<!-- Legal/Policy Block -->
+<div class="flex items-start gap-3 py-4">
+<div class="flex items-center h-5">
+<input class="h-5 w-5 rounded border-white/10 bg-surface-container-lowest text-secondary focus:ring-secondary focus:ring-offset-background" id="terms" name="terms" type="checkbox"/>
+</div>
+<div class="text-body-sm text-on-surface-variant">
+<label class="font-medium text-on-surface" for="terms">Accept terms and conditions</label>
+<p>I agree to the HexaTrack <a class="text-secondary hover:underline" href="#">Privacy Policy</a> and <a class="text-secondary hover:underline" href="#">User Agreement</a> regarding data handling.</p>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col gap-4">
+<button class="w-full bg-secondary-container text-on-secondary-container font-headline-md py-5 rounded-2xl hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group" type="submit">
+                            Create Account
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<div class="relative flex items-center justify-center py-2">
+<div class="absolute w-full h-[1px] bg-white/5"></div>
+<span class="relative px-4 bg-surface-container-high text-label-mono text-[10px] text-on-surface-variant uppercase tracking-[0.2em]">Already have an account?</span>
+</div>
+<a class="w-full text-center py-4 rounded-2xl border border-white/10 hover:bg-white/5 transition-colors font-body-sm text-on-surface" href="/login">
+                            Login to HexaTrack
+                        </a>
+</div>
+</form>
+</div>
+<!-- Visual Trust Section -->
+<div class="mt-12 grid grid-cols-2 md:grid-cols-3 gap-6 opacity-60 grayscale hover:grayscale-0 transition-all duration-700">
+<div class="flex items-center justify-center">
+<img alt="Trusted Partner" class="h-6 object-contain" data-alt="A clean, minimalist vector logo of a globally recognized financial security certification board, presented in a monochrome white finish. The logo appears subtly against a dark background, emphasizing corporate trust and high-end security compliance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV_geVQdP5Rptof5oWvpgj6MJEO9zn6LpFACiA7Xda5kLrScGJ87P4Erb9dp25FgCkV8DDpLGiIiUdeIhfwYiTLuJQhVF9Io8Nh2HmhUKvxzYrOvn6pAx6eIFdDpfojphXXX850jadUDsmBOe1mL_OWMvZu2Ri87F8EEwRKoboUHl1Wm5MMfVWwRMP3dsqZ3on4Itp2nOav8yMx1d2YAqMuer6QV_HTUnrXrIZbsGL17e-ZVbVGGNadGseHeTR26PWvvRvtP9xk1c"/>
+</div>
+<div class="flex items-center justify-center">
+<img alt="Trusted Partner" class="h-5 object-contain" data-alt="A professional fintech corporate logo featuring modern sans-serif typography and a geometric emblem. The design is rendered in a semi-transparent white, blending perfectly with the dark-mode aesthetic of the registration page." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfkEYERjXBnuo3lFmnUK12m0Wtnt0J1op6h9Ao53VvHxBVKQBE8JUKRFD0hiXRi3TaVP-NTeuOiARVh3g7p2kNL75lVJJC1urEpxau4--DY3CWe-68hb0sGbqXgkJst1LeiF_hp-qNmDG3zQnwJ-qAoZGfnD92xIU5klnsVDpW-G4QtRkiAImBBgBL33RCXiurmNLRGMvnzL25IDmQYncTleOZx27gnCPR2k7d8cC8bG4morX3mNyPgnH7xpVnR5HL7KP1HbOE3Ps"/>
+</div>
+<div class="hidden md:flex items-center justify-center">
+<img alt="Trusted Partner" class="h-6 object-contain" data-alt="The sophisticated logo of a top-tier digital encryption provider, characterized by sharp lines and a tech-forward feel. It is displayed as a subtle watermark style element to convey enterprise-grade protection for financial data." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2t13UHW5RNrcN10P8hAZTHHwCNcPRsyoqWPYqIRcM3lrkIdEH3BSBLe0-G6Iyg6jSzdw-C6KZ9iD1PvlLX77XCW-YYQF8LhL-mcb9MUnYw8kKQAs_4GYb1_5DV_j3diP298s5FE9wk1sSR2m-YkM6Dz3AUCnkqr8fo2zu0AVVc7VqpKO1My3HP1se4aBRC5UbCmB6kT1W6TdJShbLlYGYPTnMc6fcP7VBqWEry1nQV33lxwOob6wwUkrEhIVwK-tQi_0Y79i8AEk"/>
+</div>
+</div>
+<p class="text-center mt-12 text-label-mono text-[10px] text-on-surface-variant uppercase tracking-widest leading-loose">
+                HexaTrack utilizes 256-bit AES encryption<br/>
+                Managed by HexaCorp Global Financial Services
+            </p>
+</div>
+</main>
+<!-- Side Illustration (Desktop Only) -->
+<div class="hidden lg:block fixed top-1/2 right-12 -translate-y-1/2 w-1/4 max-w-sm">
+<div class="glass-card p-6 rounded-[2rem] space-y-6 rotate-3 hover:rotate-0 transition-transform duration-500">
+<div class="flex items-center justify-between">
+<span class="text-label-mono text-secondary">REAL-TIME SYNC</span>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">sync</span>
+</div>
+<div class="h-32 rounded-xl bg-gradient-to-br from-secondary-container/20 to-primary-container/20 flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+<span class="material-symbols-outlined text-4xl text-secondary animate-pulse">shield_locked</span>
+</div>
+<p class="text-body-sm text-on-surface-variant italic">"The most intuitive wealth tracker I've used. The security protocols are second to none."</p>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container"></div>
+<div>
+<p class="text-[10px] font-bold text-on-surface">MARCUS CHEN</p>
+<p class="text-[8px] text-on-surface-variant">CTO, FINTECH LABS</p>
+</div>
+</div>
+</div>
+</div>
+</body></html>

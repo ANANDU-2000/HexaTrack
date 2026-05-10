@@ -82,26 +82,31 @@ export function DashboardScreen({ compact = false, onAddTransaction }: { compact
         </header>
       )}
 
-      <section className="overflow-hidden rounded-3xl border border-white/[0.06] bg-[#121A22] p-5 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-        <div className="flex items-start justify-between gap-4">
+      <section className="overflow-hidden glass-card rounded-3xl p-6 accent-glow relative">
+        <div className="absolute top-0 left-0 w-32 h-32 bg-secondary/10 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+        <div className="flex items-start justify-between gap-4 relative z-10">
           <div className="min-w-0">
-            <p className="text-sm text-[#8B9BB4]">Total balance</p>
-            <p className="mt-2 break-words text-4xl font-bold tracking-normal text-[#F5F7FA]">{money(totalBalance)}</p>
-            <p className="mt-3 text-sm font-medium text-[#8B9BB4]">
-              Net cashflow{' '}
-              <span className={report.net >= 0 ? 'text-[#1FD18B]' : 'text-[#FF5C75]'}>{money(report.net)}</span>
+            <p className="font-label-mono text-xs uppercase tracking-widest text-on-surface-variant/70">Total Assets</p>
+            <h2 className="mt-2 font-display-lg text-3xl sm:text-4xl text-on-surface font-bold">{money(totalBalance)}</h2>
+            <p className="mt-3 text-sm font-medium flex items-center gap-1">
+              <span className={report.net >= 0 ? 'text-secondary' : 'text-danger'}>
+                {report.net >= 0 ? '+' : ''}{money(report.net)}
+              </span>
+              <span className="text-on-surface-variant/60 text-xs ml-1 font-normal font-label-mono">Net Flow</span>
             </p>
           </div>
           <button
             aria-label="Add transaction"
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#4F8CFF] text-white shadow-[0_12px_28px_rgba(79,140,255,0.3)] transition active:scale-95"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-secondary text-on-secondary shadow-[0_0_20px_rgba(173,198,255,0.3)] hover:opacity-90 transition active:scale-95"
             onClick={onAddTransaction}
             type="button"
           >
             <Plus size={22} />
           </button>
         </div>
-        <MiniLine cashflow={report.cashflow} />
+        <div className="relative z-10">
+          <MiniLine cashflow={report.cashflow} />
+        </div>
       </section>
 
       {!compact && (
@@ -112,75 +117,77 @@ export function DashboardScreen({ compact = false, onAddTransaction }: { compact
         </div>
       )}
 
-      <section className="rounded-3xl border border-white/[0.06] bg-[#121A22] p-4">
-        <div className="flex gap-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#4F8CFF]/15 text-[#4F8CFF]">
+      <section className="rounded-3xl border border-white/[0.06] bg-gradient-to-br from-primary-container/40 to-surface-container/40 p-5 border-l-primary/30 border-l-2">
+        <div className="flex gap-3 items-start">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
             <Sparkles size={18} />
           </div>
           <div className="min-w-0">
-            <h2 className="text-sm font-semibold text-[#F5F7FA]">Where money goes</h2>
-            <p className="mt-1 text-sm font-medium leading-6 text-[#8B9BB4]">
-              {dashboard?.insightLine ?? 'Connect spending data to see category insights for this month.'}
+            <h2 className="text-sm font-bold text-on-surface font-headline-md flex items-center gap-1.5">Smart Tip</h2>
+            <p className="mt-1.5 text-sm font-medium leading-relaxed text-on-surface-variant">
+              {dashboard?.insightLine ?? 'Connect your transaction stream to initialize smart wealth patterns.'}
             </p>
           </div>
         </div>
       </section>
 
-      <section className="card p-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="glass-card rounded-3xl p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
-            <h2 className="text-base font-semibold text-[#F5F7FA]">Top spending categories</h2>
-            <p className="mt-1 text-xs text-[#8B9BB4]">Instant category breakdown</p>
+            <h2 className="text-base font-bold text-on-surface font-headline-md">Analytics Pulse</h2>
+            <p className="mt-1 text-xs font-medium text-on-surface-variant/70 font-label-mono tracking-wider uppercase">Top Spend Classes</p>
           </div>
           <Donut amounts={spending.slice(0, 4).map((item) => item.amount)} />
         </div>
-        <div className="mt-4 space-y-4">
+        <div className="space-y-5">
           {spending.slice(0, 4).map((item, index) => (
-            <div key={item.categoryId}>
+            <div key={item.categoryId} className="group">
               <div className="mb-2 flex justify-between gap-3 text-sm">
-                <span className="truncate font-medium text-[#F5F7FA]">{item.categoryName}</span>
-                <span className="shrink-0 text-[#8B9BB4]">{money(item.amount)}</span>
+                <span className="truncate font-semibold text-on-surface group-hover:text-primary transition-colors">{item.categoryName}</span>
+                <span className="shrink-0 text-on-surface-variant font-label-mono font-medium">{money(item.amount)}</span>
               </div>
-              <div className="h-2 rounded-full bg-white/[0.08]">
+              <div className="h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
                 <div
-                  className={`${BAR_COLORS[index % BAR_COLORS.length]} h-2 rounded-full transition-all`}
-                  style={{ width: `${Math.max((item.amount / maxSpend) * 100, 8)}%` }}
+                  className={`${BAR_COLORS[index % BAR_COLORS.length]} h-full rounded-full transition-all duration-500`}
+                  style={{ width: `${Math.max((item.amount / maxSpend) * 100, 4)}%` }}
                 />
               </div>
             </div>
           ))}
-          {spending.length === 0 && <p className="text-sm text-[#8B9BB4]">Add a transaction to see spending patterns.</p>}
+          {spending.length === 0 && <p className="text-sm text-on-surface-variant">Add transactions to initialize insights.</p>}
         </div>
       </section>
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <section className="min-w-0">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-[#F5F7FA]">Recent transactions</h2>
-            <span className="shrink-0 text-xs font-medium text-[#4F8CFF]">{transactions.length} total</span>
+          <div className="mb-3 flex items-center justify-between gap-2 px-2">
+            <h2 className="text-base font-bold text-on-surface font-headline-md">Recent Flow</h2>
+            <span className="shrink-0 text-xs font-label-mono font-bold text-secondary">{transactions.length} TOTAL</span>
           </div>
-          <TransactionList categories={categories} transactions={recentTransactions} />
+          <div className="glass-card p-2 rounded-3xl">
+            <TransactionList categories={categories} transactions={recentTransactions} />
+          </div>
         </section>
 
-        <section className="card p-4">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-[#F5F7FA]">Recurring reminders</h2>
-            <span className="shrink-0 rounded-full bg-[#4F8CFF]/15 px-3 py-1 text-xs font-semibold text-[#4F8CFF]">{recurringDue.length} due</span>
+        <section className="glass-card p-6 rounded-3xl h-fit">
+          <div className="flex items-center justify-between gap-2 mb-6">
+            <h2 className="text-base font-bold text-on-surface font-headline-md">Schedule Reminders</h2>
+            <span className="shrink-0 rounded-full bg-primary/15 px-3 py-1 text-[10px] font-bold font-label-mono text-primary uppercase tracking-wider">{recurringDue.length} ACTIVE</span>
           </div>
-          <div className="mt-4 space-y-3">
+          <div className="space-y-3">
             {recurringDue.slice(0, 3).map((item) => {
               const category = categories.find((categoryItem) => categoryItem.id === item.categoryId);
               return (
-                <div key={item.id} className="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.06] bg-[#0B1015] p-3">
+                <div key={item.id} className="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.05] bg-surface-container-low hover:bg-surface-container transition-colors p-4 cursor-pointer group">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[#F5F7FA]">{category?.name ?? 'Recurring item'}</p>
-                    <p className="text-xs text-[#8B9BB4]">Next {item.nextRunOn}</p>
+                    <p className="truncate text-sm font-bold text-on-surface group-hover:text-primary transition-colors">{category?.name ?? 'Subscription'}</p>
+                    <p className="text-[11px] font-label-mono text-on-surface-variant/70 mt-1 uppercase tracking-wider">Next: {item.nextRunOn}</p>
                   </div>
-                  <p className="shrink-0 text-sm font-bold text-[#F5F7FA]">{money(item.amount)}</p>
+                  <p className="shrink-0 text-sm font-bold font-label-mono text-on-surface">{money(item.amount)}</p>
                 </div>
               );
             })}
-            {recurringDue.length === 0 && <p className="text-sm text-[#8B9BB4]">No recurring bills due yet.</p>}
+            {recurringDue.length === 0 && <p className="text-sm text-on-surface-variant font-medium text-center py-4 bg-surface-container-low/50 rounded-2xl border border-dashed border-white/10">No upcoming cycles</p>}
           </div>
         </section>
       </div>
@@ -191,25 +198,26 @@ export function DashboardScreen({ compact = false, onAddTransaction }: { compact
 function Insight({ label, value, detail, icon: Icon, tone = 'default' }: { label: string; value: string; detail: string; icon: React.ElementType; tone?: 'default' | 'success' | 'danger' }) {
   const toneClass =
     tone === 'success'
-      ? 'bg-[#1FD18B]/15 text-[#1FD18B]'
+      ? 'bg-success/15 text-success'
       : tone === 'danger'
-        ? 'bg-[#FF5C75]/15 text-[#FF5C75]'
-        : 'bg-[#4F8CFF]/12 text-[#4F8CFF]';
+        ? 'bg-danger/15 text-danger'
+        : 'bg-primary/15 text-primary';
   return (
-    <section className="card p-4">
+    <section className="glass-card p-5 rounded-3xl group hover:border-white/20 transition-all duration-300">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs text-[#8B9BB4]">{label}</p>
-          <p className="mt-2 truncate text-xl font-bold text-[#F5F7FA]">{value}</p>
+          <p className="text-xs font-bold font-label-mono text-on-surface-variant uppercase tracking-wider">{label}</p>
+          <p className="mt-2 truncate text-xl font-bold text-on-surface tracking-tight font-headline-md">{value}</p>
         </div>
-        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${toneClass}`}>
+        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl transition-transform group-hover:scale-110 duration-300 ${toneClass}`}>
           <Icon size={18} />
         </div>
       </div>
-      <p className="mt-3 text-xs text-[#8B9BB4]">{detail}</p>
+      <p className="mt-3 text-[11px] font-medium text-on-surface-variant/70 uppercase tracking-tight">{detail}</p>
     </section>
   );
 }
+
 
 function MiniLine({ cashflow }: { cashflow: ReportSummary['cashflow'] }) {
   const points = cashflow.slice(-8);
