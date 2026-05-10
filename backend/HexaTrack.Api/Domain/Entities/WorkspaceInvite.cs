@@ -8,7 +8,7 @@ public sealed class WorkspaceInvite
     public Guid WorkspaceId { get; set; }
     public string Email { get; set; } = "";
     public string TokenHash { get; set; } = "";
-    public WorkspaceRole Role { get; set; } = WorkspaceRole.Editor;
+    public WorkspaceRole Role { get; set; } = WorkspaceRole.Member;
     public Guid InvitedByUserId { get; set; }
     public DateTimeOffset ExpiresAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

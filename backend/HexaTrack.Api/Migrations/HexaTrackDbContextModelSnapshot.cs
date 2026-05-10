@@ -145,6 +145,10 @@ namespace HexaTrack.Api.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
                     b.Property<string>("MetadataJson")
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)");

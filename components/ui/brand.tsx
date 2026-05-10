@@ -6,10 +6,10 @@ type BrandMarkProps = {
   tone?: 'light' | 'dark';
 };
 
-export function BrandMark({ compact = false, className = '', tone = 'light' }: BrandMarkProps) {
+export function BrandMark({ compact = false, className = '', tone = 'dark' }: BrandMarkProps) {
   const titleClass = tone === 'dark' ? 'text-[#F5F7FA]' : 'text-[#111827]';
   const subtitleClass = tone === 'dark' ? 'text-[#8B9BB4]' : 'text-[#6B7280]';
-  const shadowClass = tone === 'dark' ? 'shadow-lg shadow-[#4F8CFF]/15' : 'shadow-lg shadow-emerald-500/20';
+  const shadowClass = tone === 'dark' ? 'shadow-lg shadow-[#4F8CFF]/15' : 'shadow-lg shadow-[#4F8CFF]/12';
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>

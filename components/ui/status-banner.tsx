@@ -4,16 +4,23 @@ export function StatusBanner({ error, loading, onDismiss }: { error: string | nu
   if (!loading && !error) return null;
 
   return (
-    <div className="mb-4 rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-sm">
+    <div className="mb-4 rounded-3xl border border-white/[0.06] bg-[#121A22] px-3 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.35)]">
       <div className="flex items-center gap-3">
-        <div className={`grid h-9 w-9 place-items-center rounded-xl ${error ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+        <div
+          className={`grid h-9 w-9 place-items-center rounded-xl ${
+            error ? 'bg-[#FF5C75]/15 text-[#FF5C75]' : 'bg-[#4F8CFF]/15 text-[#4F8CFF]'
+          }`}
+        >
           {error ? <AlertCircle size={18} /> : <Loader2 className="animate-spin" size={18} />}
         </div>
-        <p className={`min-w-0 flex-1 text-sm ${error ? 'text-red-700' : 'text-slate-600'}`}>
-          {error ?? 'Syncing HexaTrack data...'}
-        </p>
+        <p className={`min-w-0 flex-1 text-sm ${error ? 'text-[#FF5C75]' : 'text-[#8B9BB4]'}`}>{error ?? 'Syncing HexaTrack data...'}</p>
         {error && (
-          <button aria-label="Dismiss" className="grid h-8 w-8 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100" onClick={onDismiss} type="button">
+          <button
+            aria-label="Dismiss"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8B9BB4] transition hover:bg-white/[0.06] hover:text-[#F5F7FA]"
+            onClick={onDismiss}
+            type="button"
+          >
             <X size={16} />
           </button>
         )}

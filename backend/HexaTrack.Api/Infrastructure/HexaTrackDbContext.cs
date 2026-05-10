@@ -214,6 +214,7 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
             entity.Property(x => x.Action).HasMaxLength(120);
             entity.Property(x => x.TargetType).HasMaxLength(80);
             entity.Property(x => x.MetadataJson).HasMaxLength(4000);
+            entity.Property(x => x.IpAddress).HasMaxLength(45);
             entity.HasOne(x => x.Actor)
                 .WithMany()
                 .HasForeignKey(x => x.ActorUserId)

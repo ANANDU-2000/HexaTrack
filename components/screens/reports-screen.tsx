@@ -33,6 +33,8 @@ const emptyReport: ReportSummary = {
   spendingByCategory: [],
 };
 
+const CATEGORY_BAR = ['bg-[#4F8CFF]', 'bg-[#1FD18B]', 'bg-[#FF5C75]', 'bg-[#8B9BB4]/80'] as const;
+
 export function ReportsScreen() {
   const [period, setPeriod] = useState<Period>('month');
   const [report, setReport] = useState<ReportSummary | null>(null);
@@ -98,14 +100,16 @@ export function ReportsScreen() {
     <div className="space-y-5">
       <div>
         <p className="eyebrow">Insights</p>
-        <h1 className="text-2xl font-bold text-[#111827]">Reports</h1>
+        <h1 className="text-2xl font-bold text-[#F5F7FA]">Reports</h1>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 rounded-2xl border border-[#E5E7EB] bg-white p-1 shadow-[0_12px_30px_rgba(15,23,42,0.05)] sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/[0.06] bg-[#121A22] p-1 shadow-[0_12px_30px_rgba(0,0,0,0.25)] sm:grid-cols-4">
         {periodLabels.map(({ key, label }) => (
           <button
             key={key}
-            className={`rounded-xl py-2 text-xs font-semibold transition ${period === key ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#6B7280]'}`}
+            className={`rounded-xl py-2 text-xs font-semibold transition ${
+              period === key ? 'bg-[#4F8CFF] text-white shadow-sm' : 'text-[#8B9BB4]'
+            }`}
             onClick={() => setPeriod(key)}
             type="button"
           >
@@ -115,9 +119,9 @@ export function ReportsScreen() {
       </div>
 
       {error ? (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-800">
+        <div className="rounded-3xl border border-[#FF5C75]/25 bg-[#FF5C75]/10 p-4 text-sm text-[#FF5C75]">
           <p>{error}</p>
-          <button className="mt-3 inline-flex items-center gap-2 font-semibold text-red-900" onClick={handleRetry} type="button">
+          <button className="mt-3 inline-flex items-center gap-2 font-semibold text-[#F5F7FA]" onClick={handleRetry} type="button">
             <RefreshCw size={16} />
             Retry
           </button>
@@ -126,13 +130,13 @@ export function ReportsScreen() {
 
       {loading && !report ? (
         <div className="space-y-4">
-          <div className="h-10 animate-pulse rounded-xl bg-[#E5E7EB]" />
+          <div className="h-10 animate-pulse rounded-xl bg-white/10" />
           <div className="grid gap-3 sm:grid-cols-3">
             {[1, 2, 3].map((key) => (
-              <div key={key} className="h-28 animate-pulse rounded-2xl bg-[#F3F4F6]" />
+              <div key={key} className="h-28 animate-pulse rounded-3xl bg-white/5" />
             ))}
           </div>
-          <div className="h-56 animate-pulse rounded-2xl bg-[#F3F4F6]" />
+          <div className="h-56 animate-pulse rounded-3xl bg-white/5" />
         </div>
       ) : null}
 
@@ -145,19 +149,25 @@ export function ReportsScreen() {
           </div>
 
           <section className="card p-4">
-            <h2 className="text-base font-semibold text-[#111827]">Cashflow trend</h2>
-            <p className="mt-1 text-xs text-[#6B7280]">Income and expense by month (last {cashflowBars.length} periods)</p>
+            <h2 className="text-base font-semibold text-[#F5F7FA]">Cashflow trend</h2>
+            <p className="mt-1 text-xs text-[#8B9BB4]">Income and expense by month (last {cashflowBars.length} periods)</p>
             {cashflowBars.length === 0 ? (
-              <p className="mt-8 text-sm text-[#6B7280]">No cashflow data for this range.</p>
+              <p className="mt-8 text-sm text-[#8B9BB4]">No cashflow data for this range.</p>
             ) : (
-              <div className="mt-5 flex h-48 items-end gap-3 overflow-hidden">
+              <div className="mt-5 flex h-48 items-end gap-3 overflow-x-auto overflow-y-hidden pb-1">
                 {cashflowBars.map((point) => (
-                  <div key={point.period} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                  <div key={point.period} className="flex min-w-[2.5rem] flex-1 flex-col items-center gap-2">
                     <div className="flex h-36 w-full items-end justify-center gap-1">
-                      <div className="w-4 rounded-t bg-[#10B981] transition-all" style={{ height: `${Math.max((point.income / maxCashflow) * 100, 4)}%` }} />
-                      <div className="w-4 rounded-t bg-[#EF4444] transition-all" style={{ height: `${Math.max((point.expense / maxCashflow) * 100, 4)}%` }} />
+                      <div
+                        className="w-4 rounded-t bg-[#1FD18B] transition-all"
+                        style={{ height: `${Math.max((point.income / maxCashflow) * 100, 4)}%` }}
+                      />
+                      <div
+                        className="w-4 rounded-t bg-[#FF5C75] transition-all"
+                        style={{ height: `${Math.max((point.expense / maxCashflow) * 100, 4)}%` }}
+                      />
                     </div>
-                    <p className="truncate text-xs text-[#6B7280]">{new Date(point.period).toLocaleDateString('en-US', { month: 'short' })}</p>
+                    <p className="truncate text-xs text-[#8B9BB4]">{new Date(point.period).toLocaleDateString('en-US', { month: 'short' })}</p>
                   </div>
                 ))}
               </div>
@@ -165,34 +175,37 @@ export function ReportsScreen() {
           </section>
 
           <section className="card p-4">
-            <h2 className="text-base font-semibold text-[#111827]">Spending by category</h2>
+            <h2 className="text-base font-semibold text-[#F5F7FA]">Spending by category</h2>
             <div className="mt-4 space-y-4">
               {displayedCategories.map((item, index) => (
                 <div key={item.categoryId}>
                   <div className="mb-2 flex justify-between gap-3 text-sm">
-                    <span className="truncate font-medium text-[#111827]">{item.categoryName}</span>
-                    <span className="shrink-0 text-[#6B7280]">
+                    <span className="truncate font-medium text-[#F5F7FA]">{item.categoryName}</span>
+                    <span className="shrink-0 text-[#8B9BB4]">
                       {money(item.amount)} {' · '} {percent((item.amount / maxSpend) * 100)}
                     </span>
                   </div>
-                  <div className="h-2 rounded-full bg-[#E5E7EB]">
-                    <div className={['bg-[#10B981]', 'bg-[#059669]', 'bg-amber-400', 'bg-sky-400'][index % 4] + ' h-2 rounded-full transition-all'} style={{ width: `${Math.max((item.amount / maxSpend) * 100, 6)}%` }} />
+                  <div className="h-2 rounded-full bg-white/[0.08]">
+                    <div
+                      className={`${CATEGORY_BAR[index % CATEGORY_BAR.length]} h-2 rounded-full transition-all`}
+                      style={{ width: `${Math.max((item.amount / maxSpend) * 100, 6)}%` }}
+                    />
                   </div>
                 </div>
               ))}
-              {displayedCategories.length === 0 ? <p className="text-sm text-[#6B7280]">Add expenses to generate category reports.</p> : null}
+              {displayedCategories.length === 0 ? <p className="text-sm text-[#8B9BB4]">Add expenses to generate category reports.</p> : null}
             </div>
           </section>
 
-          <section className="rounded-2xl border border-[#D1FAE5] bg-[#ECFDF5] p-4">
+          <section className="rounded-3xl border border-white/[0.06] bg-[#121A22] p-4">
             <div className="flex gap-3">
-              <TrendingUp className="mt-1 h-5 w-5 shrink-0 text-[#059669]" />
-              <p className="text-sm font-medium leading-6 text-[#6B7280]">{insightLine}</p>
+              <TrendingUp className="mt-1 h-5 w-5 shrink-0 text-[#4F8CFF]" />
+              <p className="text-sm font-medium leading-6 text-[#8B9BB4]">{insightLine}</p>
             </div>
           </section>
 
           {loading && report ? (
-            <div className="flex items-center gap-2 text-xs text-[#6B7280]">
+            <div className="flex items-center gap-2 text-xs text-[#8B9BB4]">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               Updating…
             </div>
@@ -204,14 +217,19 @@ export function ReportsScreen() {
 }
 
 function Metric({ icon: Icon, label, value, tone = 'default' }: { icon: React.ElementType; label: string; value: string; tone?: 'default' | 'success' | 'danger' }) {
-  const toneClass = tone === 'success' ? 'bg-[#D1FAE5] text-[#059669]' : tone === 'danger' ? 'bg-red-50 text-red-600' : 'bg-[#ECFDF5] text-[#059669]';
+  const toneClass =
+    tone === 'success'
+      ? 'bg-[#1FD18B]/15 text-[#1FD18B]'
+      : tone === 'danger'
+        ? 'bg-[#FF5C75]/15 text-[#FF5C75]'
+        : 'bg-[#4F8CFF]/12 text-[#4F8CFF]';
   return (
     <section className="card p-4">
       <div className={`grid h-10 w-10 place-items-center rounded-2xl ${toneClass}`}>
         <Icon size={18} />
       </div>
-      <p className="mt-3 text-xs text-[#6B7280]">{label}</p>
-      <p className="mt-1 truncate text-xl font-bold text-[#111827]">{value}</p>
+      <p className="mt-3 text-xs text-[#8B9BB4]">{label}</p>
+      <p className="mt-1 truncate text-xl font-bold text-[#F5F7FA]">{value}</p>
     </section>
   );
 }

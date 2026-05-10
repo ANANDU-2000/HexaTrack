@@ -8,6 +8,7 @@ public sealed class AdminAuditLog
     public string? TargetType { get; set; }
     public Guid? TargetId { get; set; }
     public string? MetadataJson { get; set; }
+    public string? IpAddress { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public User? Actor { get; set; }

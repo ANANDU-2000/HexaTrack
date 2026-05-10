@@ -2,7 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Google.Apis.Auth;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using HexaTrack.Api.Application.Dtos;
@@ -30,7 +32,10 @@ public sealed class AuthService(
     HexaTrackDbContext dbContext,
     IUnitOfWork unitOfWork,
     IOptions<JwtOptions> jwtOptions,
-    IOptions<GoogleAuthOptions> googleOptions) : IAuthService
+    IOptions<GoogleAuthOptions> googleOptions,
+    IAdminAuditService adminAudit,
+    IHttpContextAccessor httpContextAccessor,
+    ILogger<AuthService> logger) : IAuthService
 {
     public Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
         => unitOfWork.ExecuteInTransactionAsync(async ct =>
@@ -69,7 +74,19 @@ public sealed class AuthService(
             throw new UnauthorizedAccessException("Invalid credentials.");
         }
 
-        return CreateAuthResponse(user);
+        AuthResponse response = CreateAuthResponse(user);
+        string? ip = ClientIpResolver.Resolve(httpContextAccessor.HttpContext);
+        logger.LogInformation(
+            "Auth session issued provider=password userId={UserId} superAdmin={SuperAdmin} ip={ClientIp}",
+            user.Id,
+            user.IsSuperAdmin,
+            ip ?? "unknown");
+        if (user.IsSuperAdmin)
+        {
+            await adminAudit.LogAsync(user.Id, "admin.login", null, null, null, cancellationToken);
+        }
+
+        return response;
     }
 
     public async Task<AuthResponse> GoogleLoginAsync(GoogleLoginRequest request, CancellationToken cancellationToken)
@@ -105,7 +122,19 @@ public sealed class AuthService(
                 users.Update(user);
             }
 
-            return CreateAuthResponse(user);
+            AuthResponse response = CreateAuthResponse(user);
+            string? ip = ClientIpResolver.Resolve(httpContextAccessor.HttpContext);
+            logger.LogInformation(
+                "Auth session issued provider=google userId={UserId} superAdmin={SuperAdmin} ip={ClientIp}",
+                user.Id,
+                user.IsSuperAdmin,
+                ip ?? "unknown");
+            if (user.IsSuperAdmin)
+            {
+                await adminAudit.LogAsync(user.Id, "admin.login", null, null, null, ct);
+            }
+
+            return response;
         }, cancellationToken);
     }
 
@@ -167,7 +196,17 @@ public sealed class AuthService(
 
     public async Task<AuthMeResponse> GetMeAsync(Guid userId, CancellationToken cancellationToken)
     {
-        User user = await users.Query().AsNoTracking().SingleAsync(x => x.Id == userId, cancellationToken);
+        User? user = await users.Query().AsNoTracking().SingleOrDefaultAsync(x => x.Id == userId, cancellationToken);
+        if (user is null)
+        {
+            throw new UnauthorizedAccessException("Session is no longer valid.");
+        }
+
+        if (user.IsLocked)
+        {
+            throw new UnauthorizedAccessException("Account locked.");
+        }
+
         return new AuthMeResponse(new UserDto(user.Id, user.Email, user.DisplayName), user.IsSuperAdmin);
     }
 
@@ -221,6 +260,7 @@ public sealed class AuthService(
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.DisplayName),
+            new Claim(HexaTrackClaims.IsSuperAdmin, user.IsSuperAdmin ? "true" : "false"),
         };
         if (user.IsSuperAdmin)
         {

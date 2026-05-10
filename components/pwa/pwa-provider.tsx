@@ -96,42 +96,47 @@ export function PwaProvider() {
   return (
     <>
       {showSplash && (
-        <div className="pwa-splash fixed inset-0 z-[100] grid place-items-center bg-[#F8FAFC] px-6">
+        <div className="pwa-splash fixed inset-0 z-[100] grid place-items-center bg-[#0B1015] px-6">
           <div className="flex flex-col items-center">
-            <div className="grid h-24 w-24 place-items-center rounded-[2rem] bg-[#10B981] shadow-[0_24px_70px_rgba(16,185,129,0.32)]">
+            <div className="grid h-24 w-24 place-items-center rounded-[2rem] bg-[#4F8CFF] shadow-[0_24px_70px_rgba(79,140,255,0.35)]">
               <Image src="/icons/icon-192x192.png" alt="" width={80} height={80} className="h-20 w-20 rounded-[1.5rem]" priority />
             </div>
             <div className="mt-5">
-              <BrandMark compact />
+              <BrandMark compact tone="dark" />
             </div>
-            <p className="mt-3 text-sm font-semibold text-[#059669]">Smart Expense & Budget Tracking</p>
+            <p className="mt-3 text-sm font-semibold text-[#8B9BB4]">Smart expense & budget tracking</p>
           </div>
         </div>
       )}
 
       {!online && (
-        <div className="fixed inset-x-0 top-0 z-50 px-3 pt-[max(env(safe-area-inset-top),0.75rem)]">
-          <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-[#D1FAE5] bg-white/95 px-3 py-3 text-sm font-medium text-[#064E3B] shadow-[0_18px_42px_rgba(15,23,42,0.14)] backdrop-blur-xl">
-            <WifiOff className="h-5 w-5 shrink-0 text-[#059669]" />
+        <div className="fixed inset-x-0 top-0 z-[90] px-3 pt-[max(env(safe-area-inset-top),0.75rem)]">
+          <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#121A22]/95 px-3 py-3 text-sm font-medium text-[#F5F7FA] shadow-[0_18px_42px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+            <WifiOff className="h-5 w-5 shrink-0 text-[#4F8CFF]" />
             <span className="min-w-0 flex-1">Offline mode. Cached balances and transactions stay available.</span>
           </div>
         </div>
       )}
 
       {installPrompt && !dismissed && !standalone && (
-        <div className="fixed inset-x-0 bottom-[calc(6.7rem+env(safe-area-inset-bottom))] z-50 px-3 lg:bottom-5">
-          <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-[#D1FAE5] bg-white px-3 py-3 shadow-[0_18px_42px_rgba(15,23,42,0.14)]">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#ECFDF5] text-[#059669]">
+        <div className="fixed inset-x-0 bottom-[calc(6.7rem+env(safe-area-inset-bottom))] z-[90] px-3 lg:bottom-5">
+          <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#121A22] px-3 py-3 shadow-[0_18px_42px_rgba(0,0,0,0.35)]">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#4F8CFF]/15 text-[#4F8CFF]">
               <Download size={18} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-[#111827]">Install HexaTrack</p>
-              <p className="truncate text-xs text-[#6B7280]">Open faster in standalone mode.</p>
+              <p className="truncate text-sm font-semibold text-[#F5F7FA]">Install HexaTrack</p>
+              <p className="truncate text-xs text-[#8B9BB4]">Open faster in standalone mode.</p>
             </div>
             <button className="soft-button app-tap-target px-3 py-2" onClick={install} type="button">
               Install
             </button>
-            <button aria-label="Dismiss install prompt" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-[#6B7280] transition hover:bg-[#F8FAFC]" onClick={dismissInstall} type="button">
+            <button
+              aria-label="Dismiss install prompt"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-[#8B9BB4] transition hover:bg-white/[0.06]"
+              onClick={dismissInstall}
+              type="button"
+            >
               <X size={16} />
             </button>
           </div>

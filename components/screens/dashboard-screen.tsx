@@ -18,6 +18,8 @@ function recurringDueWithinWeek(all: RecurringTransaction[]): RecurringTransacti
     .slice(0, 5);
 }
 
+const BAR_COLORS = ['bg-[#4F8CFF]', 'bg-[#1FD18B]', 'bg-[#FF5C75]', 'bg-[#8B9BB4]/80'] as const;
+
 export function DashboardScreen({ compact = false, onAddTransaction }: { compact?: boolean; onAddTransaction: () => void }) {
   const loading = useFinanceStore((state) => state.loading);
   const accounts = useFinanceStore((state) => state.accounts);
@@ -50,18 +52,18 @@ export function DashboardScreen({ compact = false, onAddTransaction }: { compact
       <div className="space-y-5">
         {!compact && (
           <div className="hidden lg:block">
-            <div className="h-6 w-40 animate-pulse rounded-lg bg-[#E5E7EB]" />
-            <div className="mt-3 h-10 w-56 animate-pulse rounded-xl bg-[#E5E7EB]" />
+            <div className="h-6 w-40 animate-pulse rounded-lg bg-white/10" />
+            <div className="mt-3 h-10 w-56 animate-pulse rounded-xl bg-white/10" />
           </div>
         )}
-        <div className="h-40 animate-pulse rounded-2xl bg-[#ECFDF5]" />
+        <div className="h-40 animate-pulse rounded-3xl bg-white/5" />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-          <div className="h-28 animate-pulse rounded-2xl bg-[#F3F4F6]" />
-          <div className="h-28 animate-pulse rounded-2xl bg-[#F3F4F6]" />
-          <div className="hidden h-28 animate-pulse rounded-2xl bg-[#F3F4F6] md:block" />
+          <div className="h-28 animate-pulse rounded-3xl bg-white/5" />
+          <div className="h-28 animate-pulse rounded-3xl bg-white/5" />
+          <div className="hidden h-28 animate-pulse rounded-3xl bg-white/5 md:block" />
         </div>
-        <div className="h-24 animate-pulse rounded-2xl bg-[#F3F4F6]" />
-        <div className="h-48 animate-pulse rounded-2xl bg-[#F3F4F6]" />
+        <div className="h-24 animate-pulse rounded-3xl bg-white/5" />
+        <div className="h-48 animate-pulse rounded-3xl bg-white/5" />
       </div>
     );
   }
@@ -71,8 +73,8 @@ export function DashboardScreen({ compact = false, onAddTransaction }: { compact
       {!compact && (
         <header className="hidden items-center justify-between lg:flex">
           <div>
-            <p className="text-sm text-[#6B7280]">Welcome back</p>
-            <BrandMark className="mt-2" />
+            <p className="text-sm text-[#8B9BB4]">Welcome back</p>
+            <BrandMark tone="dark" className="mt-2" />
           </div>
           <button className="icon-button" type="button" aria-label="Notifications">
             <Bell size={19} />
@@ -80,16 +82,22 @@ export function DashboardScreen({ compact = false, onAddTransaction }: { compact
         </header>
       )}
 
-      <section className="overflow-hidden rounded-2xl border border-[#10B981]/20 bg-gradient-to-br from-[#10B981] via-[#059669] to-[#064E3B] p-5 text-white shadow-xl shadow-emerald-500/20">
+      <section className="overflow-hidden rounded-3xl border border-white/[0.06] bg-[#121A22] p-5 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-sm text-emerald-50/85">Total balance</p>
-            <p className="mt-2 break-words text-4xl font-bold tracking-normal">{money(totalBalance)}</p>
-            <p className="mt-3 text-sm font-medium text-emerald-50/85">
-              Net cashflow <span className={report.net >= 0 ? 'text-white' : 'text-red-100'}>{money(report.net)}</span>
+            <p className="text-sm text-[#8B9BB4]">Total balance</p>
+            <p className="mt-2 break-words text-4xl font-bold tracking-normal text-[#F5F7FA]">{money(totalBalance)}</p>
+            <p className="mt-3 text-sm font-medium text-[#8B9BB4]">
+              Net cashflow{' '}
+              <span className={report.net >= 0 ? 'text-[#1FD18B]' : 'text-[#FF5C75]'}>{money(report.net)}</span>
             </p>
           </div>
-          <button aria-label="Add transaction" className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-[#059669] shadow-lg shadow-black/15 transition active:scale-95" onClick={onAddTransaction} type="button">
+          <button
+            aria-label="Add transaction"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#4F8CFF] text-white shadow-[0_12px_28px_rgba(79,140,255,0.3)] transition active:scale-95"
+            onClick={onAddTransaction}
+            type="button"
+          >
             <Plus size={22} />
           </button>
         </div>
@@ -104,14 +112,14 @@ export function DashboardScreen({ compact = false, onAddTransaction }: { compact
         </div>
       )}
 
-      <section className="rounded-2xl border border-[#D1FAE5] bg-[#ECFDF5] p-4">
+      <section className="rounded-3xl border border-white/[0.06] bg-[#121A22] p-4">
         <div className="flex gap-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#D1FAE5] text-[#059669]">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#4F8CFF]/15 text-[#4F8CFF]">
             <Sparkles size={18} />
           </div>
-          <div>
-            <h2 className="text-sm font-semibold text-[#111827]">Where money goes</h2>
-            <p className="mt-1 text-sm font-medium leading-6 text-[#6B7280]">
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold text-[#F5F7FA]">Where money goes</h2>
+            <p className="mt-1 text-sm font-medium leading-6 text-[#8B9BB4]">
               {dashboard?.insightLine ?? 'Connect spending data to see category insights for this month.'}
             </p>
           </div>
@@ -119,10 +127,10 @@ export function DashboardScreen({ compact = false, onAddTransaction }: { compact
       </section>
 
       <section className="card p-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-[#111827]">Top spending categories</h2>
-            <p className="mt-1 text-xs text-[#6B7280]">Instant category breakdown</p>
+            <h2 className="text-base font-semibold text-[#F5F7FA]">Top spending categories</h2>
+            <p className="mt-1 text-xs text-[#8B9BB4]">Instant category breakdown</p>
           </div>
           <Donut amounts={spending.slice(0, 4).map((item) => item.amount)} />
         </div>
@@ -130,46 +138,49 @@ export function DashboardScreen({ compact = false, onAddTransaction }: { compact
           {spending.slice(0, 4).map((item, index) => (
             <div key={item.categoryId}>
               <div className="mb-2 flex justify-between gap-3 text-sm">
-                <span className="truncate font-medium text-[#111827]">{item.categoryName}</span>
-                <span className="shrink-0 text-[#6B7280]">{money(item.amount)}</span>
+                <span className="truncate font-medium text-[#F5F7FA]">{item.categoryName}</span>
+                <span className="shrink-0 text-[#8B9BB4]">{money(item.amount)}</span>
               </div>
-              <div className="h-2 rounded-full bg-[#E5E7EB]">
-                <div className={['bg-[#10B981]', 'bg-[#059669]', 'bg-amber-400', 'bg-sky-400'][index] + ' h-2 rounded-full'} style={{ width: `${Math.max((item.amount / maxSpend) * 100, 8)}%` }} />
+              <div className="h-2 rounded-full bg-white/[0.08]">
+                <div
+                  className={`${BAR_COLORS[index % BAR_COLORS.length]} h-2 rounded-full transition-all`}
+                  style={{ width: `${Math.max((item.amount / maxSpend) * 100, 8)}%` }}
+                />
               </div>
             </div>
           ))}
-          {spending.length === 0 && <p className="text-sm text-[#6B7280]">Add a transaction to see spending patterns.</p>}
+          {spending.length === 0 && <p className="text-sm text-[#8B9BB4]">Add a transaction to see spending patterns.</p>}
         </div>
       </section>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <section>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-[#111827]">Recent transactions</h2>
-            <span className="text-xs font-medium text-[#059669]">{transactions.length} total</span>
+        <section className="min-w-0">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h2 className="text-base font-semibold text-[#F5F7FA]">Recent transactions</h2>
+            <span className="shrink-0 text-xs font-medium text-[#4F8CFF]">{transactions.length} total</span>
           </div>
           <TransactionList categories={categories} transactions={recentTransactions} />
         </section>
 
         <section className="card p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-[#111827]">Recurring reminders</h2>
-            <span className="rounded-full bg-[#D1FAE5] px-3 py-1 text-xs font-semibold text-[#059669]">{recurringDue.length} due</span>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-base font-semibold text-[#F5F7FA]">Recurring reminders</h2>
+            <span className="shrink-0 rounded-full bg-[#4F8CFF]/15 px-3 py-1 text-xs font-semibold text-[#4F8CFF]">{recurringDue.length} due</span>
           </div>
           <div className="mt-4 space-y-3">
             {recurringDue.slice(0, 3).map((item) => {
               const category = categories.find((categoryItem) => categoryItem.id === item.categoryId);
               return (
-                <div key={item.id} className="flex items-center justify-between gap-3 rounded-2xl bg-[#F8FAFC] p-3">
+                <div key={item.id} className="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.06] bg-[#0B1015] p-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[#111827]">{category?.name ?? 'Recurring item'}</p>
-                    <p className="text-xs text-[#6B7280]">Next {item.nextRunOn}</p>
+                    <p className="truncate text-sm font-semibold text-[#F5F7FA]">{category?.name ?? 'Recurring item'}</p>
+                    <p className="text-xs text-[#8B9BB4]">Next {item.nextRunOn}</p>
                   </div>
-                  <p className="text-sm font-bold text-[#111827]">{money(item.amount)}</p>
+                  <p className="shrink-0 text-sm font-bold text-[#F5F7FA]">{money(item.amount)}</p>
                 </div>
               );
             })}
-            {recurringDue.length === 0 && <p className="text-sm text-[#6B7280]">No recurring bills due yet.</p>}
+            {recurringDue.length === 0 && <p className="text-sm text-[#8B9BB4]">No recurring bills due yet.</p>}
           </div>
         </section>
       </div>
@@ -178,19 +189,24 @@ export function DashboardScreen({ compact = false, onAddTransaction }: { compact
 }
 
 function Insight({ label, value, detail, icon: Icon, tone = 'default' }: { label: string; value: string; detail: string; icon: React.ElementType; tone?: 'default' | 'success' | 'danger' }) {
-  const toneClass = tone === 'success' ? 'bg-[#D1FAE5] text-[#059669]' : tone === 'danger' ? 'bg-red-50 text-red-600' : 'bg-[#ECFDF5] text-[#059669]';
+  const toneClass =
+    tone === 'success'
+      ? 'bg-[#1FD18B]/15 text-[#1FD18B]'
+      : tone === 'danger'
+        ? 'bg-[#FF5C75]/15 text-[#FF5C75]'
+        : 'bg-[#4F8CFF]/12 text-[#4F8CFF]';
   return (
     <section className="card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs text-[#6B7280]">{label}</p>
-          <p className="mt-2 truncate text-xl font-bold text-[#111827]">{value}</p>
+          <p className="text-xs text-[#8B9BB4]">{label}</p>
+          <p className="mt-2 truncate text-xl font-bold text-[#F5F7FA]">{value}</p>
         </div>
         <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${toneClass}`}>
           <Icon size={18} />
         </div>
       </div>
-      <p className="mt-3 text-xs text-[#6B7280]">{detail}</p>
+      <p className="mt-3 text-xs text-[#8B9BB4]">{detail}</p>
     </section>
   );
 }
@@ -208,7 +224,7 @@ function MiniLine({ cashflow }: { cashflow: ReportSummary['cashflow'] }) {
   return (
     <div className="mt-6 flex h-12 items-end gap-2">
       {heights.map((height, index) => (
-        <span key={index} className="flex-1 rounded-full bg-white/25" style={{ height }} />
+        <span key={index} className="flex-1 rounded-full bg-[#4F8CFF]/25" style={{ height }} />
       ))}
     </div>
   );
@@ -220,8 +236,8 @@ function Donut({ amounts }: { amounts: number[] }) {
   const total = amounts.reduce((sum, amount) => sum + amount, 0);
   if (total <= 0) {
     return (
-      <div className="h-16 w-16 rounded-full border-2 border-white/30 bg-white/10 p-3">
-        <div className="h-full w-full rounded-full bg-white" />
+      <div className="h-16 w-16 shrink-0 rounded-full border-2 border-white/[0.08] bg-[#0B1015] p-3">
+        <div className="h-full w-full rounded-full bg-[#121A22]" />
       </div>
     );
   }
@@ -236,11 +252,8 @@ function Donut({ amounts }: { amounts: number[] }) {
   });
 
   return (
-    <div
-      className="h-16 w-16 rounded-full p-3"
-      style={{ background: `conic-gradient(${parts.join(',')})` }}
-    >
-      <div className="h-full w-full rounded-full bg-white" />
+    <div className="h-16 w-16 shrink-0 rounded-full p-3" style={{ background: `conic-gradient(${parts.join(',')})` }}>
+      <div className="h-full w-full rounded-full bg-[#121A22]" />
     </div>
   );
 }

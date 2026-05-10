@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
+using HexaTrack.Api.Application.Security;
 
 namespace HexaTrack.Api.Api;
 
@@ -13,11 +14,15 @@ public sealed class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorH
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Unhandled API error");
+            if (exception is not TooManyRequestsException)
+            {
+                logger.LogError(exception, "Unhandled API error");
+            }
 
             HttpStatusCode status = exception switch
             {
                 UnauthorizedAccessException => HttpStatusCode.Unauthorized,
+                TooManyRequestsException => (HttpStatusCode)429,
                 KeyNotFoundException => HttpStatusCode.NotFound,
                 InvalidOperationException => HttpStatusCode.BadRequest,
                 DbUpdateConcurrencyException => HttpStatusCode.Conflict,

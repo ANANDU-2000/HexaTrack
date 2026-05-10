@@ -3,20 +3,25 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
-  --background: #F8FAFC;
-  --foreground: #111827;
-  --primary: #10B981;
-  --primary-dark: #059669;
-  --primary-light: #D1FAE5;
-  --card: #FFFFFF;
-  --text-secondary: #6B7280;
-  --border: #E5E7EB;
+  color-scheme: dark;
+  --background: #0b1015;
+  --surface: #121a22;
+  --foreground: #f5f7fa;
+  --primary: #4f8cff;
+  --primary-muted: rgba(79, 140, 255, 0.18);
+  --success: #1fd18b;
+  --success-muted: rgba(31, 209, 139, 0.16);
+  --danger: #ff5c75;
+  --danger-muted: rgba(255, 92, 117, 0.16);
+  --muted: #8b9bb4;
+  --border: rgba(255, 255, 255, 0.06);
   --safe-top: env(safe-area-inset-top);
   --safe-right: env(safe-area-inset-right);
   --safe-bottom: env(safe-area-inset-bottom);
   --safe-left: env(safe-area-inset-left);
   --visual-viewport-height: 100dvh;
+  --sheet-z: 100;
+  --nav-z: 40;
 }
 
 * {
@@ -45,7 +50,7 @@ body {
   overflow-x: clip;
   background: var(--background);
   color: var(--foreground);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
   padding-left: var(--safe-left);
@@ -100,35 +105,65 @@ video {
 
 @layer components {
   .surface {
-    @apply border border-[#E5E7EB] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)];
+    @apply border bg-[#121A22];
+    border-color: var(--border);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
   }
 
   .icon-button {
-    @apply grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[#E5E7EB] bg-white text-[#111827] shadow-[0_10px_24px_rgba(15,23,42,0.06)] transition duration-200 hover:border-[#D1FAE5] hover:bg-[#F8FAFC] hover:text-[#059669] active:scale-95;
+    @apply grid h-11 w-11 shrink-0 place-items-center rounded-2xl text-[#F5F7FA] transition duration-200 active:scale-95;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .icon-button:hover {
+    border-color: rgba(79, 140, 255, 0.35);
+    background: rgba(79, 140, 255, 0.08);
   }
 
   .field {
-    @apply w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#10B981] focus:ring-4 focus:ring-[#D1FAE5];
+    @apply w-full rounded-2xl px-4 py-3 text-sm text-[#F5F7FA] outline-none transition placeholder:text-[#8B9BB4];
+    background: #0b1015;
+    border: 1px solid var(--border);
+  }
+
+  .field:focus {
+    border-color: rgba(79, 140, 255, 0.55);
+    box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.2);
   }
 
   .card {
-    @apply surface rounded-2xl;
+    @apply surface rounded-3xl;
   }
 
   .primary-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-[#10B981] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(16,185,129,0.24)] transition hover:bg-[#059669] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[18px] px-4 py-3 text-sm font-semibold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+    background: var(--primary);
+    box-shadow: 0 12px 28px rgba(79, 140, 255, 0.28);
+  }
+
+  .primary-button:hover {
+    filter: brightness(1.06);
   }
 
   .soft-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-[#D1FAE5] bg-[#ECFDF5] px-4 py-3 text-sm font-semibold text-[#059669] transition hover:bg-[#D1FAE5] active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-[18px] px-4 py-3 text-sm font-semibold transition active:scale-[0.98];
+    background: var(--primary-muted);
+    color: var(--primary);
+    border: 1px solid rgba(79, 140, 255, 0.25);
+  }
+
+  .soft-button:hover {
+    background: rgba(79, 140, 255, 0.22);
   }
 
   .eyebrow {
-    @apply text-xs font-semibold uppercase tracking-normal text-[#059669];
+    @apply text-xs font-semibold uppercase tracking-wide text-[#4F8CFF];
   }
 
   .muted-text {
-    @apply text-[#6B7280];
+    @apply text-[#8B9BB4];
   }
 
   .mobile-page-bottom {
@@ -195,4 +230,3 @@ video {
   visibility: hidden !important;
   pointer-events: none !important;
 }
-

@@ -97,7 +97,8 @@ public sealed class TransactionService(
 
         if (request.TransfersOnly)
         {
-            query = query.Where(x => x.Type == TransactionType.TransferOut || x.Type == TransactionType.TransferIn);
+            // Transfer = 3; legacy DB rows may still use 4 (former TransferIn).
+            query = query.Where(x => x.Type == TransactionType.Transfer || (int)x.Type == 4);
         }
         else if (request.Type.HasValue)
         {

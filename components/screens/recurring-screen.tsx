@@ -16,7 +16,7 @@ export function RecurringScreen() {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="eyebrow">Automation</p>
-          <h1 className="truncate text-2xl font-bold text-[#111827]">Recurring</h1>
+          <h1 className="truncate text-2xl font-bold text-[#F5F7FA]">Recurring</h1>
         </div>
         <button className="primary-button min-h-11 shrink-0 px-3 py-2" onClick={() => setIsAdding(true)} type="button">
           <Plus size={18} />
@@ -24,10 +24,10 @@ export function RecurringScreen() {
         </button>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-[#10B981]/20 bg-gradient-to-br from-[#10B981] via-[#059669] to-[#064E3B] p-4 text-white shadow-xl shadow-emerald-500/20 sm:p-5">
-        <p className="text-sm text-emerald-50/85">Upcoming this month</p>
-        <h2 className="mt-2 break-words text-3xl font-bold">{money(upcomingTotal)}</h2>
-        <p className="mt-2 text-sm font-medium text-emerald-50/85">Across {recurring.length} recurring payments</p>
+      <section className="overflow-hidden rounded-3xl border border-white/[0.06] bg-[#121A22] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.35)] sm:p-5">
+        <p className="text-sm text-[#8B9BB4]">Upcoming this month</p>
+        <h2 className="mt-2 break-words text-3xl font-bold text-[#F5F7FA]">{money(upcomingTotal)}</h2>
+        <p className="mt-2 text-sm font-medium text-[#8B9BB4]">Across {recurring.length} recurring payments</p>
       </section>
 
       <div className="grid gap-3 md:grid-cols-2">
@@ -36,27 +36,30 @@ export function RecurringScreen() {
           return (
             <article key={item.id} className="card p-4">
               <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#ECFDF5] text-[#059669]">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#4F8CFF]/15 text-[#4F8CFF]">
                   <CalendarClock size={20} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[#111827]">{category?.name ?? 'Recurring item'}</p>
-                  <p className="truncate text-xs text-[#6B7280]">
+                  <p className="truncate text-sm font-semibold text-[#F5F7FA]">{category?.name ?? 'Recurring item'}</p>
+                  <p className="truncate text-xs text-[#8B9BB4]">
                     {item.frequency} {' · '} next {shortDate(item.nextRunOn)}
                   </p>
                 </div>
-                <p className="shrink-0 text-sm font-bold text-[#111827]">{money(item.amount)}</p>
+                <p className="shrink-0 text-sm font-bold text-[#F5F7FA]">{money(item.amount)}</p>
               </div>
-              <div className="mt-4 flex items-center justify-between rounded-2xl bg-[#F8FAFC] px-3 py-2">
-                <span className="text-xs font-medium text-[#6B7280]">{item.isActive ? 'Active schedule' : 'Paused'}</span>
-                <button className="grid h-10 w-10 place-items-center rounded-xl border border-[#E5E7EB] bg-white text-[#059669] transition active:scale-95" type="button">
+              <div className="mt-4 flex items-center justify-between rounded-2xl border border-white/[0.06] bg-[#0B1015] px-3 py-2">
+                <span className="text-xs font-medium text-[#8B9BB4]">{item.isActive ? 'Active schedule' : 'Paused'}</span>
+                <button
+                  className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.06] bg-[#121A22] text-[#4F8CFF] transition active:scale-95"
+                  type="button"
+                >
                   {item.isActive ? <Pause size={16} /> : <Play size={16} />}
                 </button>
               </div>
             </article>
           );
         })}
-        {recurring.length === 0 && <p className="card p-4 text-sm text-[#6B7280]">No recurring payments configured.</p>}
+        {recurring.length === 0 && <p className="card p-4 text-sm text-[#8B9BB4]">No recurring payments configured.</p>}
       </div>
       <AddRecurringSheet open={isAdding} onOpenChange={setIsAdding} />
     </AppScreen>

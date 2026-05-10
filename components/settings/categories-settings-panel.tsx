@@ -100,27 +100,27 @@ export function CategoriesSettingsPanel() {
   return (
     <div className="space-y-4">
       {error ? (
-        <div className="rounded-2xl border border-[#E5E7EB] bg-[#FEF2F2] px-4 py-3 text-sm text-[#111827]" role="alert">
+        <div className="rounded-2xl border border-[#FF5C75]/25 bg-[#FF5C75]/10 px-4 py-3 text-sm text-[#FF5C75]" role="alert">
           {error}
         </div>
       ) : null}
 
       <section className="card p-4">
         <div className="flex items-start gap-3">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#ECFDF5] text-[#059669]">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#4F8CFF]/12 text-[#4F8CFF]">
             <Layers size={19} aria-hidden />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[#111827]">Top-level category</p>
-            <p className="mt-1 text-xs leading-5 text-[#6B7280]">Parent categories can hold subcategories. Transactions use subcategories when they exist.</p>
+            <p className="text-sm font-semibold text-[#F5F7FA]">Top-level category</p>
+            <p className="mt-1 text-xs leading-5 text-[#8B9BB4]">Parent categories can hold subcategories. Transactions use subcategories when they exist.</p>
           </div>
         </div>
         <form className="mt-4 space-y-3" onSubmit={(e) => void handleAddRoot(e)}>
-          <label className="block text-xs font-medium text-[#6B7280]">
+          <label className="block text-xs font-medium text-[#8B9BB4]">
             Name
             <input className="field mt-1" disabled={disabled} name="rootName" placeholder="e.g. Projects" type="text" />
           </label>
-          <label className="block text-xs font-medium text-[#6B7280]">
+          <label className="block text-xs font-medium text-[#8B9BB4]">
             Type
             <select className="field mt-1" disabled={disabled} name="rootType" defaultValue="Expense">
               <option value="Expense">Expense</option>
@@ -135,30 +135,30 @@ export function CategoriesSettingsPanel() {
       </section>
 
       <section className="card overflow-hidden">
-        <div className="border-b border-[#E5E7EB] px-4 py-3">
-          <p className="text-sm font-semibold text-[#111827]">Your categories</p>
-          <p className="mt-1 text-xs text-[#6B7280]">Subcategories appear under each parent. Remove only when unused by transactions.</p>
+        <div className="border-b border-white/[0.06] px-4 py-3">
+          <p className="text-sm font-semibold text-[#F5F7FA]">Your categories</p>
+          <p className="mt-1 text-xs text-[#8B9BB4]">Subcategories appear under each parent. Remove only when unused by transactions.</p>
         </div>
         {roots.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-[#6B7280]">No categories yet. Add one above.</p>
+          <p className="px-4 py-8 text-center text-sm text-[#8B9BB4]">No categories yet. Add one above.</p>
         ) : (
-          <ul className="divide-y divide-[#E5E7EB]">
+          <ul className="divide-y divide-white/[0.06]">
             {roots.map((parent) => {
               const subs = subsByParent.get(parent.id) ?? [];
               return (
                 <li className="px-4 py-4" key={parent.id}>
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold text-[#111827]">{parent.name}</p>
-                    <span className="shrink-0 rounded-full bg-[#F8FAFC] px-2 py-0.5 text-xs font-medium text-[#6B7280]">{parent.type}</span>
+                    <p className="truncate text-sm font-semibold text-[#F5F7FA]">{parent.name}</p>
+                    <span className="shrink-0 rounded-full bg-[#0B1015] px-2 py-0.5 text-xs font-medium text-[#8B9BB4]">{parent.type}</span>
                   </div>
                   {subs.length > 0 ? (
                     <ul className="mt-3 space-y-2">
                       {subs.map((sub) => (
-                        <li className="flex items-center justify-between gap-2 rounded-xl bg-[#F8FAFC] px-3 py-2.5" key={sub.id}>
-                          <span className="truncate text-sm text-[#111827]">{sub.name}</span>
+                        <li className="flex items-center justify-between gap-2 rounded-xl border border-white/[0.06] bg-[#0B1015] px-3 py-2.5" key={sub.id}>
+                          <span className="truncate text-sm text-[#F5F7FA]">{sub.name}</span>
                           <button
                             aria-label={`Remove ${sub.name}`}
-                            className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-xl text-[#6B7280] transition hover:bg-white hover:text-[#FF5C75]"
+                            className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-xl text-[#8B9BB4] transition hover:bg-white/[0.06] hover:text-[#FF5C75]"
                             disabled={disabled}
                             onClick={() => void handleDeleteSub(parent.id, sub.id, sub.name)}
                             type="button"
@@ -169,11 +169,15 @@ export function CategoriesSettingsPanel() {
                       ))}
                     </ul>
                   ) : (
-                    <p className="mt-2 text-xs text-[#6B7280]">No subcategories yet.</p>
+                    <p className="mt-2 text-xs text-[#8B9BB4]">No subcategories yet.</p>
                   )}
                   <form className="mt-3 flex gap-2" onSubmit={(e) => void handleAddSub(parent.id, e)}>
                     <input className="field min-h-11 flex-1 py-2 text-sm" disabled={disabled} name="subName" placeholder="New subcategory" type="text" />
-                    <button className="min-h-11 shrink-0 rounded-[18px] bg-[#ECFDF5] px-4 text-sm font-semibold text-[#059669] transition hover:bg-[#D1FAE5] disabled:opacity-50" disabled={disabled} type="submit">
+                    <button
+                      className="min-h-11 shrink-0 rounded-[18px] bg-[#4F8CFF]/15 px-4 text-sm font-semibold text-[#4F8CFF] transition hover:bg-[#4F8CFF]/25 disabled:opacity-50"
+                      disabled={disabled}
+                      type="submit"
+                    >
                       Add
                     </button>
                   </form>

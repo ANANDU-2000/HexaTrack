@@ -39,8 +39,8 @@ export const metadata: Metadata = {
   other: {
     'mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-status-bar-style': 'default',
-    'msapplication-TileColor': '#10B981',
+    'apple-mobile-web-app-status-bar-style': 'black-translucent',
+    'msapplication-TileColor': '#0B1015',
     'msapplication-tap-highlight': 'no',
   },
 };
@@ -50,7 +50,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: 'cover',
-  themeColor: '#10B981',
+  themeColor: '#0B1015',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

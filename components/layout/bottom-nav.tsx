@@ -20,9 +20,9 @@ type BottomNavProps = {
 export function BottomNav({ activeScreen, onAddTransaction, onNavigate }: BottomNavProps) {
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(env(safe-area-inset-bottom),0.85rem)] lg:hidden">
-      <nav className="pointer-events-auto relative mx-auto max-w-md">
-        <div className="absolute inset-x-4 bottom-0 h-14 rounded-[2rem] bg-emerald-500/10 blur-2xl" />
-        <div className="relative grid min-h-[5.25rem] grid-cols-[1fr_1fr_4.75rem_1fr_1fr] items-end rounded-[2rem] border border-white/80 bg-white/90 px-2 pb-2 pt-3 shadow-[0_20px_52px_rgba(15,23,42,0.16)] backdrop-blur-2xl">
+      <nav className="pointer-events-auto relative mx-auto max-w-md" aria-label="Primary">
+        <div className="absolute inset-x-4 bottom-0 h-14 rounded-[2rem] bg-[#4F8CFF]/12 blur-2xl" />
+        <div className="relative grid min-h-[5.25rem] grid-cols-[1fr_1fr_4.75rem_1fr_1fr] items-end rounded-[2rem] border border-white/[0.06] bg-[#121A22]/95 px-2 pb-2 pt-3 shadow-[0_20px_52px_rgba(0,0,0,0.45)] backdrop-blur-xl">
           {tabs.slice(0, 2).map((item) => (
             <BottomNavItem key={item.key} active={activeScreen === item.key} icon={item.icon} label={item.label} onClick={() => onNavigate(item.key)} />
           ))}
@@ -30,7 +30,7 @@ export function BottomNav({ activeScreen, onAddTransaction, onNavigate }: Bottom
           <div className="relative flex h-full items-center justify-center">
             <motion.button
               aria-label="Add expense"
-              className="absolute -top-8 grid h-16 w-16 place-items-center rounded-full bg-[#10B981] text-white shadow-[0_18px_36px_rgba(16,185,129,0.38)] ring-8 ring-white transition-colors hover:bg-[#059669]"
+              className="absolute -top-8 grid h-16 w-16 place-items-center rounded-full bg-[#4F8CFF] text-white shadow-[0_18px_36px_rgba(79,140,255,0.35)] ring-8 ring-[#0B1015] transition-colors hover:brightness-110"
               onClick={onAddTransaction}
               type="button"
               whileTap={{ scale: 0.92 }}
@@ -53,7 +53,7 @@ function BottomNavItem({ active, icon: Icon, label, onClick }: { active: boolean
   return (
     <motion.button
       className={`relative flex min-h-[4.25rem] min-w-0 flex-col items-center justify-center gap-1.5 rounded-3xl px-1 text-[11px] font-semibold leading-none transition-colors ${
-        active ? 'text-[#059669]' : 'text-[#6B7280]'
+        active ? 'text-[#4F8CFF]' : 'text-[#8B9BB4]'
       }`}
       onClick={onClick}
       type="button"
@@ -63,7 +63,7 @@ function BottomNavItem({ active, icon: Icon, label, onClick }: { active: boolean
       <AnimatePresence>
         {active && (
           <motion.span
-            className="absolute inset-x-1 top-1 h-[3.9rem] rounded-3xl bg-[#ECFDF5]"
+            className="absolute inset-x-1 top-1 h-[3.9rem] rounded-3xl bg-[#4F8CFF]/12"
             layoutId="bottom-nav-active-pill"
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}

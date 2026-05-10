@@ -1,15 +1,25 @@
 import type {
   Account,
+  AdminAnalyticsDashboard,
+  AdminAnalyticsOverview,
+  AdminAuditListResult,
+  AdminCreateUserRequest,
+  AdminCreateUserResponse,
   AdminUserListResult,
+  AdminWorkspaceListResult,
+  AiUsageSummaryResult,
   AuthMeResponse,
   AuthResponse,
   Category,
   DashboardSummary,
+  FeatureFlagDto,
+  GlobalSettingDto,
   InviteAcceptRequest,
   LoginRequest,
   PagedResult,
   RegisterRequest,
   ReportSummary,
+  SubscriptionPlan,
   Transaction,
   TransactionSearchParams,
   Transfer,
@@ -137,6 +147,37 @@ function getErrorMessage(body: ApiErrorBody, status: number) {
   return status === 0 ? 'Unable to reach HexaTrack API.' : 'Request failed. Please try again.';
 }
 
+/** Older APIs may omit enterprise fields; prevents admin UI crashes. */
+function normalizeAdminAnalyticsDashboard(data: AdminAnalyticsDashboard): AdminAnalyticsDashboard {
+  const newUsersByDay = data.newUsersByDay ?? [];
+  const newWorkspacesByDay = data.newWorkspacesByDay ?? [];
+  let cumulativeWorkspacesByDay = data.cumulativeWorkspacesByDay ?? [];
+  if (cumulativeWorkspacesByDay.length === 0 && newWorkspacesByDay.length > 0) {
+    let run = 0;
+    cumulativeWorkspacesByDay = newWorkspacesByDay.map((d) => {
+      run += d.value;
+      return { date: d.date, value: run };
+    });
+  }
+
+  return {
+    newUsersByDay,
+    cumulativeUsersByDay: data.cumulativeUsersByDay ?? [],
+    newWorkspacesByDay,
+    cumulativeWorkspacesByDay,
+    tokenUsageByDay: data.tokenUsageByDay ?? [],
+    activeSubscriptionsByPlan: data.activeSubscriptionsByPlan ?? [],
+    estimatedMrrInr: data.estimatedMrrInr ?? 0,
+    payingSubscriptionCount: data.payingSubscriptionCount ?? 0,
+    averageRevenuePerPayingUserInr: data.averageRevenuePerPayingUserInr ?? 0,
+    activeUsersByDay: data.activeUsersByDay ?? [],
+    transactionsByDay: data.transactionsByDay ?? [],
+    newPayingSubscriptionsByDay: data.newPayingSubscriptionsByDay ?? [],
+    tokenEstimatedCostByDay: data.tokenEstimatedCostByDay ?? [],
+    expenseCategoryTotals: data.expenseCategoryTotals ?? [],
+  };
+}
+
 export const hexaTrackApi = {
   auth: {
     login: (payload: LoginRequest) =>
@@ -257,6 +298,61 @@ export const hexaTrackApi = {
       const qs = params.toString();
       return apiRequest<AdminUserListResult>(`/api/admin/users?${qs}`);
     },
+    createUser: (payload: AdminCreateUserRequest) =>
+      apiRequest<AdminCreateUserResponse>('/api/admin/users', {
+        method: 'POST',
+        body: payload,
+      }),
+    deleteUser: (userId: string) =>
+      apiRequest<void>(`/api/admin/users/${userId}`, { method: 'DELETE' }),
+    setLocked: (userId: string, locked: boolean) =>
+      apiRequest<void>(`/api/admin/users/${userId}/locked`, {
+        method: 'PUT',
+        body: { locked },
+      }),
+    setSubscription: (userId: string, plan: SubscriptionPlan) =>
+      apiRequest<void>(`/api/admin/users/${userId}/subscription`, {
+        method: 'PUT',
+        body: { plan },
+      }),
+    setSuperAdmin: (userId: string, isSuperAdmin: boolean) =>
+      apiRequest<void>(`/api/admin/users/${userId}/superadmin`, {
+        method: 'PUT',
+        body: { isSuperAdmin },
+      }),
+    workspaces: (q?: string, page = 1, pageSize = 20) => {
+      const params = new URLSearchParams();
+      if (q?.trim()) params.set('q', q.trim());
+      params.set('page', String(page));
+      params.set('pageSize', String(pageSize));
+      return apiRequest<AdminWorkspaceListResult>(`/api/admin/workspaces?${params.toString()}`);
+    },
+    featureFlags: () => apiRequest<FeatureFlagDto[]>('/api/admin/feature-flags'),
+    setFeatureFlag: (key: string, value: string) =>
+      apiRequest<void>(`/api/admin/feature-flags/${encodeURIComponent(key)}`, {
+        method: 'PUT',
+        body: { value },
+      }),
+    auditLog: (page = 1, pageSize = 50) => {
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('pageSize', String(pageSize));
+      return apiRequest<AdminAuditListResult>(`/api/admin/audit?${params.toString()}`);
+    },
+    aiUsage: (days = 30) =>
+      apiRequest<AiUsageSummaryResult>(`/api/admin/ai/usage?days=${days}`),
+    analyticsOverview: () =>
+      apiRequest<AdminAnalyticsOverview>('/api/admin/analytics/overview'),
+    analyticsDashboard: async (days = 90) => {
+      const raw = await apiRequest<AdminAnalyticsDashboard>(`/api/admin/analytics/dashboard?days=${days}`);
+      return normalizeAdminAnalyticsDashboard(raw);
+    },
+    globalSettings: () => apiRequest<GlobalSettingDto[]>('/api/admin/global-settings'),
+    setGlobalSetting: (key: string, value: string) =>
+      apiRequest<void>(`/api/admin/global-settings/${encodeURIComponent(key)}`, {
+        method: 'PUT',
+        body: { value },
+      }),
   },
   workspaces: {
     list: () => apiRequest<Workspace[]>('/api/workspaces'),

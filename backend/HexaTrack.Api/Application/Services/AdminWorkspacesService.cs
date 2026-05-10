@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using HexaTrack.Api.Application.Dtos;
+using HexaTrack.Api.Domain;
 using HexaTrack.Api.Domain.Entities;
 using HexaTrack.Api.Infrastructure;
 
@@ -17,19 +18,33 @@ public sealed class AdminWorkspacesService(HexaTrackDbContext db) : IAdminWorksp
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 100);
 
-        IQueryable<Workspace> workspaces = db.Workspaces.AsNoTracking();
+        IQueryable<Workspace> baseQuery = db.Workspaces.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(query))
         {
             string term = query.Trim().ToLowerInvariant();
-            workspaces = workspaces.Where(x => x.Name.ToLower().Contains(term));
+            baseQuery = baseQuery.Where(w =>
+                w.Name.ToLower().Contains(term)
+                || db.Users.Any(u => u.Id == w.OwnerUserId && u.Email.ToLower().Contains(term)));
         }
 
-        int total = await workspaces.CountAsync(cancellationToken);
+        int total = await baseQuery.CountAsync(cancellationToken);
 
         List<AdminWorkspaceListItemDto> items = await (
-            from w in workspaces.OrderByDescending(w => w.CreatedAt)
+            from w in baseQuery
             join u in db.Users.AsNoTracking() on w.OwnerUserId equals u.Id
-            select new AdminWorkspaceListItemDto(w.Id, w.Name, w.OwnerUserId, u.Email, w.CreatedAt))
+            orderby w.CreatedAt descending
+            select new AdminWorkspaceListItemDto(
+                w.Id,
+                w.Name,
+                w.Type,
+                w.OwnerUserId,
+                u.Email,
+                w.CreatedAt,
+                db.WorkspaceMembers.Count(m => m.WorkspaceId == w.Id),
+                db.UserSubscriptions
+                    .Where(s => s.UserId == u.Id)
+                    .Select(s => (SubscriptionPlan?)s.Plan)
+                    .FirstOrDefault()))
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using HexaTrack.Api.Application.Dtos;
+using HexaTrack.Api.Application.Security;
 using HexaTrack.Api.Domain.Entities;
 using HexaTrack.Api.Infrastructure;
 
@@ -11,10 +13,11 @@ public interface IAdminAuditService
     Task<AdminAuditListResult> ListAsync(int page, int pageSize, CancellationToken cancellationToken);
 }
 
-public sealed class AdminAuditService(HexaTrackDbContext db) : IAdminAuditService
+public sealed class AdminAuditService(HexaTrackDbContext db, IHttpContextAccessor httpContextAccessor) : IAdminAuditService
 {
     public async Task LogAsync(Guid actorUserId, string action, string? targetType, Guid? targetId, string? metadataJson, CancellationToken cancellationToken)
     {
+        string? ip = ClientIpResolver.Resolve(httpContextAccessor.HttpContext);
         db.AdminAuditLogs.Add(new AdminAuditLog
         {
             ActorUserId = actorUserId,
@@ -22,6 +25,7 @@ public sealed class AdminAuditService(HexaTrackDbContext db) : IAdminAuditServic
             TargetType = targetType,
             TargetId = targetId,
             MetadataJson = metadataJson,
+            IpAddress = ip,
             CreatedAt = DateTimeOffset.UtcNow,
         });
         await db.SaveChangesAsync(cancellationToken);
@@ -37,7 +41,7 @@ public sealed class AdminAuditService(HexaTrackDbContext db) : IAdminAuditServic
             .OrderByDescending(x => x.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(x => new AdminAuditLogDto(x.Id, x.ActorUserId, x.Action, x.TargetType, x.TargetId, x.CreatedAt))
+            .Select(x => new AdminAuditLogDto(x.Id, x.ActorUserId, x.Action, x.TargetType, x.TargetId, x.IpAddress, x.CreatedAt))
             .ToListAsync(cancellationToken);
         return new AdminAuditListResult(items, page, pageSize, total);
     }

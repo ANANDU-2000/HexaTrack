@@ -72,21 +72,21 @@ export function SettingsScreen() {
           <motion.div key="settings-root" className="space-y-4" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.18 }}>
             <div>
               <p className="eyebrow">Preferences</p>
-              <h1 className="text-2xl font-bold text-[#111827]">Settings</h1>
+              <h1 className="text-2xl font-bold text-[#F5F7FA]">Settings</h1>
             </div>
 
             <motion.button
-              className="card group flex min-h-[5.5rem] w-full items-center gap-4 p-4 text-left transition hover:border-[#D1FAE5] active:scale-[0.99]"
+              className="card group flex min-h-[5.5rem] w-full items-center gap-4 p-4 text-left transition hover:border-[#4F8CFF]/30 active:scale-[0.99]"
               onClick={() => setView('profile')}
               type="button"
               whileTap={{ scale: 0.985 }}
             >
-              <BrandMark compact />
+              <BrandMark compact tone="dark" />
               <div className="min-w-0 flex-1">
-                <h2 className="truncate text-lg font-bold text-[#111827]">HexaTrack</h2>
-                <p className="truncate text-sm text-[#6B7280]">Track Smarter. Spend Better.</p>
+                <h2 className="truncate text-lg font-bold text-[#F5F7FA]">HexaTrack</h2>
+                <p className="truncate text-sm text-[#8B9BB4]">Track Smarter. Spend Better.</p>
               </div>
-              <ChevronRight className="h-5 w-5 text-[#6B7280] transition group-hover:translate-x-0.5 group-hover:text-[#059669]" />
+              <ChevronRight className="h-5 w-5 text-[#8B9BB4] transition group-hover:translate-x-0.5 group-hover:text-[#4F8CFF]" />
             </motion.button>
 
             {menuGroups.map((group, groupIndex) => (
@@ -107,15 +107,24 @@ export function SettingsScreen() {
 
 function SettingsItem({ danger = false, detail, icon: Icon, onClick, title }: { danger?: boolean; detail: string; icon: React.ElementType; onClick: () => void; title: string }) {
   return (
-    <motion.button className="group flex min-h-[4.75rem] w-full items-center gap-3 border-b border-[#E5E7EB] px-4 py-3 text-left last:border-b-0 transition hover:bg-[#F8FAFC]" onClick={onClick} type="button" whileTap={{ scale: 0.985 }}>
-      <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${danger ? 'bg-red-50 text-red-600' : 'bg-[#ECFDF5] text-[#059669]'}`}>
+    <motion.button
+      className="group flex min-h-[4.75rem] w-full items-center gap-3 border-b border-white/[0.06] px-4 py-3 text-left last:border-b-0 transition hover:bg-white/[0.04]"
+      onClick={onClick}
+      type="button"
+      whileTap={{ scale: 0.985 }}
+    >
+      <div
+        className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${
+          danger ? 'bg-[#FF5C75]/15 text-[#FF5C75]' : 'bg-[#4F8CFF]/12 text-[#4F8CFF]'
+        }`}
+      >
         <Icon size={19} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className={`truncate text-sm font-semibold ${danger ? 'text-red-600' : 'text-[#111827]'}`}>{title}</p>
-        <p className="truncate text-xs text-[#6B7280]">{detail}</p>
+        <p className={`truncate text-sm font-semibold ${danger ? 'text-[#FF5C75]' : 'text-[#F5F7FA]'}`}>{title}</p>
+        <p className="truncate text-xs text-[#8B9BB4]">{detail}</p>
       </div>
-      <ChevronRight className="h-5 w-5 text-[#9CA3AF] transition group-hover:translate-x-0.5 group-hover:text-[#059669]" />
+      <ChevronRight className="h-5 w-5 text-[#8B9BB4] transition group-hover:translate-x-0.5 group-hover:text-[#4F8CFF]" />
     </motion.button>
   );
 }
@@ -124,7 +133,7 @@ function SettingsDetail({ onBack, onLogout, view }: { onBack: () => void; onLogo
   const [biometricEnabled, setBiometricEnabled] = useState(true);
   const [billAlerts, setBillAlerts] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
-  const [theme, setTheme] = useState<'Light' | 'Dark' | 'System'>('System');
+  const [theme, setTheme] = useState<'Light' | 'Dark' | 'System'>('Dark');
   const pushReady = notificationScheduler.supportsPush();
 
   const titleMap: Record<typeof view, string> = {
@@ -151,7 +160,7 @@ function SettingsDetail({ onBack, onLogout, view }: { onBack: () => void; onLogo
         </motion.button>
         <div className="min-w-0">
           <p className="eyebrow">Settings</p>
-          <h1 className="truncate text-2xl font-bold text-[#111827]">{titleMap[view]}</h1>
+          <h1 className="truncate text-2xl font-bold text-[#F5F7FA]">{titleMap[view]}</h1>
         </div>
       </div>
 
@@ -165,21 +174,30 @@ function SettingsDetail({ onBack, onLogout, view }: { onBack: () => void; onLogo
         </section>
       )}
       {view === 'notifications' && (
-        <section className="card divide-y divide-[#E5E7EB]">
+        <section className="card divide-y divide-white/[0.06]">
           <ToggleRow label="Recurring bill alerts" detail="Notify before scheduled payments are due." enabled={billAlerts} onToggle={() => setBillAlerts((value) => !value)} />
           <ToggleRow label="Budget warnings" detail="Notify when spending trends move unusually fast." enabled={budgetAlerts} onToggle={() => setBudgetAlerts((value) => !value)} />
           <div className="px-4 py-3">
-            <p className="text-sm font-semibold text-[#111827]">Push notification structure</p>
-            <p className="mt-1 text-xs leading-5 text-[#6B7280]">{pushReady ? 'This install can support recurring payment and budget alert push flows.' : 'Recurring payment and budget alert intents are stored locally until push is enabled.'}</p>
+            <p className="text-sm font-semibold text-[#F5F7FA]">Push notification structure</p>
+            <p className="mt-1 text-xs leading-5 text-[#8B9BB4]">
+              {pushReady ? 'This install can support recurring payment and budget alert push flows.' : 'Recurring payment and budget alert intents are stored locally until push is enabled.'}
+            </p>
           </div>
         </section>
       )}
       {view === 'appearance' && (
         <section className="card p-4">
-          <p className="text-sm font-semibold text-[#111827]">Theme mode</p>
-          <div className="mt-3 grid grid-cols-3 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] p-1">
+          <p className="text-sm font-semibold text-[#F5F7FA]">Theme mode</p>
+          <div className="mt-3 grid grid-cols-3 rounded-2xl border border-white/[0.06] bg-[#0B1015] p-1">
             {(['Light', 'Dark', 'System'] as const).map((item) => (
-              <button key={item} className={`rounded-xl px-2 py-3 text-xs font-semibold transition ${theme === item ? 'bg-white text-[#059669] shadow-sm' : 'text-[#6B7280]'}`} onClick={() => setTheme(item)} type="button">
+              <button
+                key={item}
+                className={`rounded-xl px-2 py-3 text-xs font-semibold transition ${
+                  theme === item ? 'bg-[#121A22] text-[#4F8CFF] shadow-sm' : 'text-[#8B9BB4]'
+                }`}
+                onClick={() => setTheme(item)}
+                type="button"
+              >
                 {item === 'Light' && <Sun className="mx-auto mb-1 h-4 w-4" />}
                 {item === 'Dark' && <Moon className="mx-auto mb-1 h-4 w-4" />}
                 {item === 'System' && <Palette className="mx-auto mb-1 h-4 w-4" />}
@@ -196,9 +214,13 @@ function SettingsDetail({ onBack, onLogout, view }: { onBack: () => void; onLogo
       {view === 'about' && <Panel title="HexaTrack" detail="Track Smarter. Spend Better." rows={['Version: 0.0.0', 'Build: Local development', 'Made for premium fintech workflows']} />}
       {view === 'logout' && (
         <section className="card p-4">
-          <p className="text-sm font-semibold text-[#111827]">Sign out of this device?</p>
-          <p className="mt-1 text-sm leading-6 text-[#6B7280]">Your local session will be cleared and you can sign in again anytime.</p>
-          <button className="mt-4 min-h-12 w-full rounded-2xl bg-red-600 px-4 text-sm font-semibold text-white shadow-lg shadow-red-600/20 transition active:scale-[0.98]" onClick={onLogout} type="button">
+          <p className="text-sm font-semibold text-[#F5F7FA]">Sign out of this device?</p>
+          <p className="mt-1 text-sm leading-6 text-[#8B9BB4]">Your local session will be cleared and you can sign in again anytime.</p>
+          <button
+            className="mt-4 min-h-12 w-full rounded-[18px] bg-[#FF5C75] px-4 text-sm font-semibold text-white shadow-lg shadow-[#FF5C75]/25 transition active:scale-[0.98]"
+            onClick={onLogout}
+            type="button"
+          >
             Logout
           </button>
         </section>
@@ -210,11 +232,11 @@ function SettingsDetail({ onBack, onLogout, view }: { onBack: () => void; onLogo
 function Panel({ detail, rows, title }: { detail: string; rows: string[]; title: string }) {
   return (
     <section className="card p-4">
-      <p className="text-sm font-semibold text-[#111827]">{title}</p>
-      <p className="mt-1 text-sm leading-6 text-[#6B7280]">{detail}</p>
+      <p className="text-sm font-semibold text-[#F5F7FA]">{title}</p>
+      <p className="mt-1 text-sm leading-6 text-[#8B9BB4]">{detail}</p>
       <div className="mt-4 space-y-2">
         {rows.map((row) => (
-          <div key={row} className="rounded-2xl bg-[#F8FAFC] px-3 py-3 text-sm font-medium text-[#111827]">
+          <div key={row} className="rounded-2xl border border-white/[0.06] bg-[#0B1015] px-3 py-3 text-sm font-medium text-[#F5F7FA]">
             {row}
           </div>
         ))}
@@ -227,11 +249,11 @@ function ToggleRow({ detail, enabled, label, onToggle }: { detail: string; enabl
   return (
     <button className="flex min-h-[4.75rem] w-full items-center gap-3 px-4 py-3 text-left" onClick={onToggle} type="button">
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-[#111827]">{label}</p>
-        <p className="mt-0.5 text-xs leading-5 text-[#6B7280]">{detail}</p>
+        <p className="text-sm font-semibold text-[#F5F7FA]">{label}</p>
+        <p className="mt-0.5 text-xs leading-5 text-[#8B9BB4]">{detail}</p>
       </div>
-      <span className={`relative h-8 w-14 shrink-0 rounded-full p-1 transition ${enabled ? 'bg-[#10B981]' : 'bg-[#E5E7EB]'}`}>
-        <motion.span className="block h-6 w-6 rounded-full bg-white shadow-sm" animate={{ x: enabled ? 24 : 0 }} transition={{ type: 'spring', stiffness: 500, damping: 32 }} />
+      <span className={`relative h-8 w-14 shrink-0 rounded-full p-1 transition ${enabled ? 'bg-[#1FD18B]' : 'bg-white/15'}`}>
+        <motion.span className="block h-6 w-6 rounded-full bg-[#121A22] shadow-sm" animate={{ x: enabled ? 24 : 0 }} transition={{ type: 'spring', stiffness: 500, damping: 32 }} />
       </span>
     </button>
   );

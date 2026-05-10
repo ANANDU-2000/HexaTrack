@@ -31,6 +31,7 @@ export default function Home() {
   const loading = useFinanceStore((state) => state.loading);
   const error = useFinanceStore((state) => state.error);
   const clearError = useFinanceStore((state) => state.clearError);
+  const setFinanceError = useFinanceStore((state) => state.setError);
 
   const hydrateWorkspace = useWorkspaceStore((state) => state.hydrate);
   const ensureActiveWorkspace = useWorkspaceStore((state) => state.ensureActiveWorkspace);
@@ -43,10 +44,14 @@ export default function Home() {
   useEffect(() => {
     if (!user) return;
     void (async () => {
-      await ensureActiveWorkspace();
-      await loadWorkspace();
+      try {
+        await ensureActiveWorkspace();
+        await loadWorkspace();
+      } catch (e) {
+        setFinanceError(e instanceof Error ? e.message : 'Unable to load your workspace. Try signing in again.');
+      }
     })();
-  }, [ensureActiveWorkspace, loadWorkspace, user]);
+  }, [ensureActiveWorkspace, loadWorkspace, setFinanceError, user]);
 
   useEffect(() => {
     if (error) {
@@ -79,11 +84,11 @@ export default function Home() {
     return (
       <>
         <PwaProvider />
-        <main className="grid min-h-screen place-items-center px-4">
+        <main className="grid min-h-screen place-items-center bg-[#0B1015] px-4">
           <div className="surface rounded-3xl p-6">
-            <BrandMark />
-            <div className="mx-auto mt-5 h-10 w-10 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-            <p className="mt-3 text-center text-sm text-[#6B7280]">Preparing HexaTrack...</p>
+            <BrandMark tone="dark" />
+            <div className="mx-auto mt-5 h-10 w-10 animate-spin rounded-full border-2 border-[#4F8CFF] border-t-transparent" />
+            <p className="mt-3 text-center text-sm text-[#8B9BB4]">Preparing HexaTrack...</p>
           </div>
         </main>
       </>
@@ -114,11 +119,11 @@ export default function Home() {
 function ScreenSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="h-8 w-40 animate-pulse rounded-xl bg-[#E5E7EB]" />
-      <div className="h-24 animate-pulse rounded-2xl bg-[#ECFDF5]" />
+      <div className="h-8 w-40 animate-pulse rounded-xl bg-white/10" />
+      <div className="h-24 animate-pulse rounded-2xl bg-white/5" />
       <div className="grid grid-cols-2 gap-3">
-        <div className="h-28 animate-pulse rounded-2xl bg-white" />
-        <div className="h-28 animate-pulse rounded-2xl bg-white" />
+        <div className="h-28 animate-pulse rounded-2xl bg-white/5" />
+        <div className="h-28 animate-pulse rounded-2xl bg-white/5" />
       </div>
     </div>
   );

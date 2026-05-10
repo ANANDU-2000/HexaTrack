@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { configureApiClient, hexaTrackApi } from '@/lib/api';
-import type { AuthResponse, InviteAcceptRequest, LoginRequest, RegisterRequest, User } from '@/lib/types';
+import type {
+  AuthMeResponse,
+  AuthResponse,
+  InviteAcceptRequest,
+  LoginRequest,
+  RegisterRequest,
+  User,
+} from '@/lib/types';
 import { useWorkspaceStore } from '@/store/workspace-store';
 
 const AUTH_STORAGE_KEY = 'hexatrack.auth.v1';
@@ -22,6 +29,8 @@ type AuthState = {
   error: string | null;
   hydrated: boolean;
   hydrate: () => void;
+  /** Reconcile role flags with server (e.g. after demotion). Updates persisted session when tokens exist. */
+  applyMeResponse: (me: AuthMeResponse) => void;
   login: (request: LoginRequest) => Promise<void>;
   register: (request: RegisterRequest) => Promise<void>;
   acceptInvite: (request: InviteAcceptRequest) => Promise<void>;
@@ -62,7 +71,7 @@ function clearPersistedAuth() {
   }
 }
 
-export const useAuthStore = create<AuthState>((set) => {
+export const useAuthStore = create<AuthState>((set, get) => {
   async function applyAuthResponse(response: AuthResponse) {
     const me = await hexaTrackApi.auth.me(response.accessToken);
     const persisted: PersistedAuth = {
@@ -98,6 +107,22 @@ export const useAuthStore = create<AuthState>((set) => {
         user: auth?.user ?? null,
         isSuperAdmin: auth?.isSuperAdmin ?? false,
         hydrated: true,
+      });
+    },
+    applyMeResponse: (me) => {
+      const token = get().accessToken;
+      const expiresAt = get().expiresAt;
+      if (token && expiresAt) {
+        persistAuth({
+          accessToken: token,
+          expiresAt,
+          user: me.user,
+          isSuperAdmin: me.isSuperAdmin,
+        });
+      }
+      set({
+        user: me.user,
+        isSuperAdmin: me.isSuperAdmin,
       });
     },
     login: async (request) => {

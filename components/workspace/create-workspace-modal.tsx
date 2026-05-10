@@ -63,7 +63,7 @@ export function CreateWorkspaceModal({ open, onOpenChange, onCreated }: CreateWo
       <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 pt-3">
         <div>
           <p className="eyebrow">Workspace</p>
-          <h2 id="create-workspace-title" className="text-xl font-bold text-[#111827]">
+          <h2 id="create-workspace-title" className="text-xl font-bold text-[#F5F7FA]">
             New workspace
           </h2>
         </div>
@@ -73,11 +73,11 @@ export function CreateWorkspaceModal({ open, onOpenChange, onCreated }: CreateWo
       </div>
 
       <form className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]" onSubmit={(e) => void handleSubmit(e)}>
-        <label className="block text-sm font-medium text-[#111827]">
+        <label className="block text-sm font-medium text-[#F5F7FA]">
           Name
           <input
             autoComplete="organization"
-            className="mt-2 w-full rounded-[18px] border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] outline-none ring-emerald-600 focus:ring-2"
+            className="field mt-2 text-base"
             defaultValue=""
             name="name"
             placeholder="e.g. Freelance"
@@ -86,10 +86,10 @@ export function CreateWorkspaceModal({ open, onOpenChange, onCreated }: CreateWo
           {errors.name ? <p className="mt-1 text-sm text-[#FF5C75]">{errors.name}</p> : null}
         </label>
 
-        <label className="block text-sm font-medium text-[#111827]">
+        <label className="block text-sm font-medium text-[#F5F7FA]">
           Type
           <select
-            className="mt-2 w-full rounded-[18px] border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] outline-none ring-emerald-600 focus:ring-2"
+            className="field mt-2 text-base"
             defaultValue="Personal"
             name="type"
           >
@@ -100,10 +100,10 @@ export function CreateWorkspaceModal({ open, onOpenChange, onCreated }: CreateWo
           {errors.type ? <p className="mt-1 text-sm text-[#FF5C75]">{errors.type}</p> : null}
         </label>
 
-        <label className="block text-sm font-medium text-[#111827]">
+        <label className="block text-sm font-medium text-[#F5F7FA]">
           Currency
           <select
-            className="mt-2 w-full rounded-[18px] border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] outline-none ring-emerald-600 focus:ring-2"
+            className="field mt-2 text-base"
             defaultValue="USD"
             name="currency"
           >

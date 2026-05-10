@@ -22,9 +22,9 @@ public sealed class WorkspaceInviteService(HexaTrackDbContext db) : IWorkspaceIn
             .SingleOrDefaultAsync(x => x.WorkspaceId == workspaceId && x.UserId == invitedByUserId, cancellationToken)
             ?? throw new UnauthorizedAccessException("You are not a member of this workspace.");
 
-        if (membership.Role != WorkspaceRole.Owner && membership.Role != WorkspaceRole.Admin)
+        if (membership.Role != WorkspaceRole.Owner && membership.Role != WorkspaceRole.Member)
         {
-            throw new UnauthorizedAccessException("Only owners and admins can invite members.");
+            throw new UnauthorizedAccessException("Only owners and members can invite people to this workspace.");
         }
 
         string email = request.Email.Trim().ToLowerInvariant();

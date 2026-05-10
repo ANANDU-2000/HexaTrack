@@ -25,6 +25,7 @@ type FinanceState = {
   dashboard: DashboardSummary | null;
   loading: boolean;
   error: string | null;
+  setError: (message: string | null) => void;
   loadWorkspace: () => Promise<void>;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'tags'> & { tagNames?: string[] }) => Promise<void>;
   addRecurring: (payload: {
@@ -118,6 +119,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
   loading: false,
   error: null,
   clearError: () => set({ error: null }),
+  setError: (message) => set({ error: message }),
   loadWorkspace: async () => {
     set({ loading: true, error: null });
     try {

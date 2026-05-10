@@ -101,19 +101,19 @@ export function HistoryScreen() {
     <div className="space-y-5">
       <div>
         <p className="eyebrow">Ledger</p>
-        <h1 className="text-2xl font-bold text-[#111827]">History timeline</h1>
+        <h1 className="text-2xl font-bold text-[#F5F7FA]">History timeline</h1>
       </div>
 
-      <label className="flex h-12 items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-white px-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-        <Search size={18} className="text-[#6B7280]" />
+      <label className="flex h-12 items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#121A22] px-4 shadow-[0_12px_30px_rgba(0,0,0,0.25)]">
+        <Search size={18} className="text-[#8B9BB4]" />
         <input
-          className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+          className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#F5F7FA] outline-none placeholder:text-[#8B9BB4]/70"
           onChange={(event) => setQueryInput(event.target.value)}
           placeholder="Search merchant, notes"
           value={queryInput}
           autoComplete="off"
         />
-        {loading && items.length > 0 ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#6B7280]" aria-hidden /> : null}
+        {loading && items.length > 0 ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#8B9BB4]" aria-hidden /> : null}
       </label>
 
       <div className="flex flex-wrap gap-2">
@@ -121,7 +121,9 @@ export function HistoryScreen() {
           <button
             key={filter}
             className={`rounded-full px-3 py-2 text-xs font-medium transition active:scale-95 ${
-              activeFilter === filter ? 'bg-[#10B981] text-white shadow-lg shadow-emerald-500/20' : 'border border-[#E5E7EB] bg-white text-[#6B7280]'
+              activeFilter === filter
+                ? 'bg-[#4F8CFF] text-white shadow-lg shadow-[#4F8CFF]/25'
+                : 'border border-white/[0.06] bg-[#121A22] text-[#8B9BB4]'
             }`}
             onClick={() => setActiveFilter(filter)}
             type="button"
@@ -132,9 +134,9 @@ export function HistoryScreen() {
       </div>
 
       {error ? (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-800">
+        <div className="rounded-3xl border border-[#FF5C75]/25 bg-[#FF5C75]/10 p-4 text-sm text-[#FF5C75]">
           <p>{error}</p>
-          <button className="mt-3 inline-flex items-center gap-2 font-semibold text-red-900" onClick={handleRetry} type="button">
+          <button className="mt-3 inline-flex items-center gap-2 font-semibold text-[#F5F7FA]" onClick={handleRetry} type="button">
             <RefreshCw size={16} />
             Retry
           </button>
@@ -144,25 +146,25 @@ export function HistoryScreen() {
       {loading && items.length === 0 && !error ? (
         <div className="space-y-3">
           {[1, 2, 3, 4].map((key) => (
-            <div key={key} className="h-16 animate-pulse rounded-2xl bg-[#E5E7EB]" />
+            <div key={key} className="h-16 animate-pulse rounded-2xl bg-white/10" />
           ))}
         </div>
       ) : null}
 
       {!loading && !error && items.length === 0 ? (
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white px-4 py-12 text-center">
-          <p className="text-sm font-medium text-[#111827]">No transactions match</p>
-          <p className="mt-2 text-sm text-[#6B7280]">Try another search or filter.</p>
+        <div className="rounded-3xl border border-white/[0.06] bg-[#121A22] px-4 py-12 text-center">
+          <p className="text-sm font-medium text-[#F5F7FA]">No transactions match</p>
+          <p className="mt-2 text-sm text-[#8B9BB4]">Try another search or filter.</p>
         </div>
       ) : null}
 
       {items.length > 0 ? (
         <section>
-          <h2 className="mb-3 text-xs font-semibold uppercase text-[#6B7280]">Results ({totalCount})</h2>
+          <h2 className="mb-3 text-xs font-semibold uppercase text-[#8B9BB4]">Results ({totalCount})</h2>
           <TransactionList categories={categories} transactions={items} />
           {hasMore ? (
             <button
-              className="mt-5 w-full rounded-[18px] border border-[#E5E7EB] bg-white py-3 text-sm font-semibold text-[#111827] transition hover:bg-[#F8FAFC] disabled:opacity-50"
+              className="mt-5 w-full rounded-[18px] border border-white/[0.06] bg-[#121A22] py-3 text-sm font-semibold text-[#F5F7FA] transition hover:bg-white/[0.04] disabled:opacity-50"
               disabled={loading}
               onClick={handleLoadMore}
               type="button"

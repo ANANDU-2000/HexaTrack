@@ -43,7 +43,7 @@ public sealed class AdminFeatureFlagsService(HexaTrackDbContext db, IAdminAuditS
         }
 
         await db.SaveChangesAsync(cancellationToken);
-        await audit.LogAsync(actorUserId, "feature_flag.upsert", "GlobalFeatureFlag", null,
+        await audit.LogAsync(actorUserId, "featureflag.update", "GlobalFeatureFlag", null,
             JsonSerializer.Serialize(new { key }), cancellationToken);
     }
 }

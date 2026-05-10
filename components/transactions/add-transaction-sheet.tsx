@@ -1,7 +1,7 @@
 import { Calendar, Check, Tag, Wallet, X } from 'lucide-react';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { z } from 'zod';
 import { useFinanceStore } from '@/store/finance-store';
+import { z } from 'zod';
 import type { TransactionType } from '@/lib/types';
 import { BottomSheet } from '@/components/ui/mobile-layout';
 
@@ -21,10 +21,12 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
   const accounts = useFinanceStore((state) => state.accounts);
   const categories = useFinanceStore((state) => state.categories);
   const addTransaction = useFinanceStore((state) => state.addTransaction);
+  const clearFinanceError = useFinanceStore((state) => state.clearError);
   const [type, setType] = useState<TransactionType>('Expense');
   const [parentCategoryId, setParentCategoryId] = useState('');
   const [subcategoryId, setSubcategoryId] = useState('');
   const [errors, setErrors] = useState<Errors>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const filteredByType = useMemo(() => categories.filter((category) => category.type === type), [categories, type]);
 
@@ -39,7 +41,10 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
   );
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setSubmitting(false);
+      return;
+    }
     setParentCategoryId((previous) => {
       const valid = rootCategories.some((c) => c.id === previous);
       if (valid && previous) return previous;
@@ -59,7 +64,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
 
   if (!open) return null;
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const result = transactionSchema.safeParse({
@@ -90,19 +95,27 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
       return;
     }
 
-    void addTransaction({
-      accountId: result.data.accountId,
-      categoryId: resolvedCategoryId,
-      type: result.data.type,
-      amount: result.data.amount,
-      currency: 'USD',
-      merchant: result.data.merchant,
-      note: result.data.note,
-      occurredOn: result.data.occurredOn,
-      tagNames: result.data.tags?.split(',').map((tagName) => tagName.trim()).filter(Boolean),
-    });
-    setErrors({});
-    onOpenChange(false);
+    setSubmitting(true);
+    clearFinanceError();
+    try {
+      await addTransaction({
+        accountId: result.data.accountId,
+        categoryId: resolvedCategoryId,
+        type: result.data.type,
+        amount: result.data.amount,
+        currency: 'USD',
+        merchant: result.data.merchant,
+        note: result.data.note,
+        occurredOn: result.data.occurredOn,
+        tagNames: result.data.tags?.split(',').map((tagName) => tagName.trim()).filter(Boolean),
+      });
+      const stillError = useFinanceStore.getState().error;
+      if (stillError) return;
+      setErrors({});
+      onOpenChange(false);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -110,7 +123,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
       <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 pt-3">
         <div>
           <p className="eyebrow">HexaTrack entry</p>
-          <h2 id="add-transaction-title" className="text-xl font-bold text-[#111827]">
+          <h2 id="add-transaction-title" className="text-xl font-bold text-[#F5F7FA]">
             Add transaction
           </h2>
         </div>
@@ -120,35 +133,41 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
       </div>
 
       {accounts.length === 0 || categories.length === 0 ? (
-        <div className="mx-4 mb-4 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] px-4 py-4 text-sm text-[#6B7280]">
+        <div className="mx-4 mb-4 rounded-2xl border border-white/[0.06] bg-[#0B1015] px-4 py-4 text-sm text-[#8B9BB4]">
           Load your workspace first. If the API is offline, saved transactions will stay local.
         </div>
       ) : (
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={(e) => void handleSubmit(e)}>
           <div className="flex-1 space-y-4 overflow-y-auto px-4 pb-4">
             <section className="py-2 text-center">
-              <label className="text-sm text-[#6B7280]" htmlFor="amount">
+              <label className="text-sm text-[#8B9BB4]" htmlFor="amount">
                 Amount
               </label>
               <div className="mt-2 flex items-center justify-center">
-                <span className="mr-1 text-3xl font-semibold text-[#6B7280]">$</span>
+                <span className="mr-1 text-3xl font-semibold text-[#8B9BB4]">$</span>
                 <input
                   autoFocus
-                  className="w-full max-w-[280px] bg-transparent text-center text-5xl font-bold text-[#111827] outline-none placeholder:text-[#D1D5DB] sm:text-6xl"
+                  className="w-full max-w-[280px] bg-transparent text-center text-5xl font-bold text-[#F5F7FA] outline-none placeholder:text-[#8B9BB4]/50 sm:text-6xl"
                   id="amount"
                   inputMode="decimal"
                   name="amount"
                   placeholder="0"
                 />
               </div>
-              {errors.amount && <span className="mt-2 block text-xs text-red-600">{errors.amount}</span>}
+              {errors.amount && <span className="mt-2 block text-xs text-[#FF5C75]">{errors.amount}</span>}
             </section>
 
-            <div className="grid grid-cols-2 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] p-1">
+            <div className="grid grid-cols-2 rounded-2xl border border-white/[0.06] bg-[#0B1015] p-1">
               {(['Expense', 'Income'] as const).map((item) => (
                 <button
                   key={item}
-                  className={`rounded-xl px-3 py-3 text-sm font-semibold transition active:scale-[0.98] ${type === item ? (item === 'Income' ? 'bg-[#10B981] text-white shadow-lg shadow-emerald-500/20' : 'bg-red-500 text-white shadow-lg shadow-red-500/20') : 'text-[#6B7280]'}`}
+                  className={`rounded-xl px-3 py-3 text-sm font-semibold transition active:scale-[0.98] ${
+                    type === item
+                      ? item === 'Income'
+                        ? 'bg-[#1FD18B] text-[#0B1015] shadow-lg shadow-[#1FD18B]/20'
+                        : 'bg-[#FF5C75] text-white shadow-lg shadow-[#FF5C75]/25'
+                      : 'text-[#8B9BB4]'
+                  }`}
                   onClick={() => setType(item)}
                   type="button"
                 >
@@ -159,7 +178,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-1 flex items-center gap-2 text-xs font-medium text-[#6B7280]">
+                <span className="mb-1 flex items-center gap-2 text-xs font-medium text-[#8B9BB4]">
                   <Wallet size={14} /> Account
                 </span>
                 <select className="field" defaultValue={accounts[0]?.id} name="accountId">
@@ -169,11 +188,11 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                     </option>
                   ))}
                 </select>
-                {errors.accountId && <span className="mt-1 block text-xs text-red-600">{errors.accountId}</span>}
+                {errors.accountId && <span className="mt-1 block text-xs text-[#FF5C75]">{errors.accountId}</span>}
               </label>
 
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#6B7280]">Category</span>
+                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Category</span>
                 <select
                   className="field"
                   name="parentCategoryId"
@@ -186,13 +205,13 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                     </option>
                   ))}
                 </select>
-                {errors.category && <span className="mt-1 block text-xs text-red-600">{errors.category}</span>}
+                {errors.category && <span className="mt-1 block text-xs text-[#FF5C75]">{errors.category}</span>}
               </label>
             </div>
 
             {subcategories.length > 0 ? (
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#6B7280]">Subcategory</span>
+                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Subcategory</span>
                 <select
                   className="field"
                   name="subcategoryId"
@@ -205,41 +224,41 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                     </option>
                   ))}
                 </select>
-                {errors.subcategory && <span className="mt-1 block text-xs text-red-600">{errors.subcategory}</span>}
+                {errors.subcategory && <span className="mt-1 block text-xs text-[#FF5C75]">{errors.subcategory}</span>}
               </label>
             ) : null}
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-1 flex items-center gap-2 text-xs font-medium text-[#6B7280]">
+                <span className="mb-1 flex items-center gap-2 text-xs font-medium text-[#8B9BB4]">
                   <Calendar size={14} /> Date
                 </span>
                 <input className="field" defaultValue={new Date().toISOString().slice(0, 10)} name="occurredOn" type="date" />
-                {errors.occurredOn && <span className="mt-1 block text-xs text-red-600">{errors.occurredOn}</span>}
+                {errors.occurredOn && <span className="mt-1 block text-xs text-[#FF5C75]">{errors.occurredOn}</span>}
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#6B7280]">Merchant</span>
+                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Merchant</span>
                 <input className="field" name="merchant" placeholder="Coffee, rent, payroll" />
               </label>
             </div>
 
             <label className="block">
-              <span className="mb-1 flex items-center gap-2 text-xs font-medium text-[#6B7280]">
+              <span className="mb-1 flex items-center gap-2 text-xs font-medium text-[#8B9BB4]">
                 <Tag size={14} /> Tags
               </span>
               <input className="field" name="tags" placeholder="work, reimbursable" />
             </label>
 
             <label className="block">
-              <span className="mb-1 block text-xs font-medium text-[#6B7280]">Notes</span>
+              <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Notes</span>
               <textarea className="field min-h-20 resize-none" name="note" placeholder="Optional note" />
             </label>
           </div>
 
-          <div className="keyboard-safe-padding shrink-0 border-t border-[#E5E7EB] bg-white px-4 pt-3">
-            <button className="primary-button min-h-14 w-full" type="submit">
+          <div className="keyboard-safe-padding shrink-0 border-t border-white/[0.06] bg-[#0B1015] px-4 pt-3">
+            <button className="primary-button min-h-14 w-full" disabled={submitting} type="submit">
               <Check size={19} />
-              Save transaction
+              {submitting ? 'Saving…' : 'Save transaction'}
             </button>
           </div>
         </form>

@@ -1,5 +1,5 @@
-export type AccountType = 'Cash' | 'Bank' | 'Wallet' | 'Credit';
-export type TransactionType = 'Income' | 'Expense' | 'TransferOut' | 'TransferIn';
+export type AccountType = 'Cash' | 'Bank' | 'Wallet' | 'Credit' | 'Savings' | 'Investment';
+export type TransactionType = 'Income' | 'Expense' | 'Transfer';
 export type RecurrenceFrequency = 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
 export type SplitMethod = 'Equal' | 'Custom' | 'Percentage';
 
@@ -30,12 +30,15 @@ export type AuthMeResponse = {
   isSuperAdmin: boolean;
 };
 
-export type WorkspaceRoleName = 'Owner' | 'Admin' | 'Editor' | 'Viewer';
+export type WorkspaceRoleName = 'Owner' | 'Member' | 'Viewer';
 
 export type InviteAcceptRequest = {
   token: string;
   password: string;
 };
+
+/** Matches API `SubscriptionPlan` (JSON string enum). */
+export type SubscriptionPlan = 'Free' | 'Basic' | 'Pro' | 'ProMax';
 
 export type AdminUserListItem = {
   id: string;
@@ -44,6 +47,7 @@ export type AdminUserListItem = {
   createdAt: string;
   isSuperAdmin: boolean;
   isLocked: boolean;
+  subscriptionPlan: SubscriptionPlan | null;
 };
 
 export type AdminUserListResult = {
@@ -51,6 +55,137 @@ export type AdminUserListResult = {
   page: number;
   pageSize: number;
   totalCount: number;
+};
+
+export type AdminCreateUserRequest = {
+  email: string;
+  password: string;
+  workspaceName: string;
+  workspaceType: WorkspaceType;
+  currency: 'USD' | 'INR' | 'EUR' | 'AED';
+  isSuperAdmin: boolean;
+  /** Workspace membership for the seeded default workspace (API default: Owner). */
+  initialWorkspaceRole?: 'Owner' | 'Member' | 'Viewer';
+};
+
+export type AdminCreateUserResponse = {
+  id: string;
+  email: string;
+  displayName: string;
+  isSuperAdmin: boolean;
+};
+
+export type AdminWorkspaceListItem = {
+  id: string;
+  name: string;
+  type: WorkspaceType;
+  ownerUserId: string;
+  ownerEmail: string;
+  createdAt: string;
+  memberCount: number;
+  ownerSubscriptionPlan: SubscriptionPlan | null;
+};
+
+export type AdminWorkspaceListResult = {
+  items: AdminWorkspaceListItem[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+};
+
+export type FeatureFlagDto = {
+  key: string;
+  value: string;
+  updatedAt: string;
+};
+
+export type AdminAuditLogDto = {
+  id: string;
+  actorUserId: string;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+};
+
+export type AdminAuditListResult = {
+  items: AdminAuditLogDto[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+};
+
+export type AiUsageSummaryRow = {
+  userId: string;
+  email: string;
+  totalPromptTokens: number;
+  totalCompletionTokens: number;
+};
+
+export type AiUsageSummaryResult = {
+  rows: AiUsageSummaryRow[];
+};
+
+export type AdminAnalyticsOverview = {
+  totalUsers: number;
+  superAdminUsers: number;
+  lockedUsers: number;
+  totalWorkspaces: number;
+  activeSubscriptions: number;
+  aiPromptTokensLast30Days: number;
+  aiCompletionTokensLast30Days: number;
+};
+
+export type AdminTimeSeriesPoint = {
+  date: string;
+  value: number;
+};
+
+export type AdminTokenUsageDay = {
+  date: string;
+  promptTokens: number;
+  completionTokens: number;
+};
+
+export type AdminSubscriptionTier = {
+  plan: string;
+  count: number;
+};
+
+export type AdminTokenCostDay = {
+  date: string;
+  estimatedCostUsd: number;
+};
+
+export type AdminExpenseCategoryAgg = {
+  categoryName: string;
+  currency: string;
+  totalAmount: number;
+  transactionCount: number;
+};
+
+export type AdminAnalyticsDashboard = {
+  newUsersByDay: AdminTimeSeriesPoint[];
+  cumulativeUsersByDay: AdminTimeSeriesPoint[];
+  newWorkspacesByDay: AdminTimeSeriesPoint[];
+  cumulativeWorkspacesByDay: AdminTimeSeriesPoint[];
+  tokenUsageByDay: AdminTokenUsageDay[];
+  activeSubscriptionsByPlan: AdminSubscriptionTier[];
+  estimatedMrrInr: number;
+  payingSubscriptionCount: number;
+  averageRevenuePerPayingUserInr: number;
+  activeUsersByDay: AdminTimeSeriesPoint[];
+  transactionsByDay: AdminTimeSeriesPoint[];
+  newPayingSubscriptionsByDay: AdminTimeSeriesPoint[];
+  tokenEstimatedCostByDay: AdminTokenCostDay[];
+  expenseCategoryTotals: AdminExpenseCategoryAgg[];
+};
+
+export type GlobalSettingDto = {
+  key: string;
+  value: string;
+  updatedAt: string;
 };
 
 export type LoginRequest = {

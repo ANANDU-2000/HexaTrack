@@ -63,26 +63,26 @@ export function WorkspaceSwitcher() {
         <button
           aria-expanded={menuOpen}
           aria-haspopup="listbox"
-          className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-[18px] border border-[#E5E7EB] bg-[#F8FAFC] px-3 py-2.5 text-left text-sm font-medium text-[#111827] transition hover:bg-white"
+          className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-[18px] border border-white/[0.06] bg-[#121A22] px-3 py-2.5 text-left text-sm font-medium text-[#F5F7FA] transition hover:bg-white/[0.04]"
           onClick={() => setMenuOpen((open) => !open)}
           type="button"
         >
           <span className="flex min-w-0 flex-1 items-center gap-2">
-            <Layers aria-hidden className="h-[18px] w-[18px] shrink-0 text-[#6B7280]" />
+            <Layers aria-hidden className="h-[18px] w-[18px] shrink-0 text-[#8B9BB4]" />
             <span className="truncate">{active?.name ?? 'Workspace'}</span>
           </span>
-          <ChevronDown aria-hidden className={`h-[18px] w-[18px] shrink-0 text-[#6B7280] transition ${menuOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown aria-hidden className={`h-[18px] w-[18px] shrink-0 text-[#8B9BB4] transition ${menuOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {menuOpen ? (
           <div
-            className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[min(320px,70vh)] overflow-auto rounded-2xl border border-[#E5E7EB] bg-white py-2 shadow-lg"
+            className="absolute left-0 right-0 top-[calc(100%+8px)] z-[45] max-h-[min(320px,70vh)] overflow-auto rounded-2xl border border-white/[0.06] bg-[#121A22] py-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
             role="listbox"
           >
             {workspaces.map((w) => (
               <button
                 className={`flex w-full min-h-[44px] items-center px-4 py-3 text-left text-sm ${
-                  w.id === activeWorkspaceId ? 'bg-[#ECFDF5] font-medium text-[#059669]' : 'text-[#111827] hover:bg-[#F8FAFC]'
+                  w.id === activeWorkspaceId ? 'bg-[#4F8CFF]/15 font-medium text-[#4F8CFF]' : 'text-[#F5F7FA] hover:bg-white/[0.04]'
                 }`}
                 key={w.id}
                 onClick={() => handleSelect(w.id)}
@@ -91,12 +91,12 @@ export function WorkspaceSwitcher() {
                 type="button"
               >
                 <span className="truncate">{w.name}</span>
-                {w.isDefault ? <span className="ml-2 shrink-0 text-xs text-[#6B7280]">Default</span> : null}
+                {w.isDefault ? <span className="ml-2 shrink-0 text-xs text-[#8B9BB4]">Default</span> : null}
               </button>
             ))}
-            <div className="my-2 border-t border-[#E5E7EB]" />
+            <div className="my-2 border-t border-white/[0.06]" />
             <button
-              className="flex w-full min-h-[44px] items-center gap-2 px-4 py-3 text-left text-sm font-medium text-[#059669] hover:bg-[#F8FAFC]"
+              className="flex w-full min-h-[44px] items-center gap-2 px-4 py-3 text-left text-sm font-medium text-[#4F8CFF] hover:bg-white/[0.04]"
               onClick={() => {
                 setMenuOpen(false);
                 setCreateOpen(true);

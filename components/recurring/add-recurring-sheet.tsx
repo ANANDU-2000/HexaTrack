@@ -22,6 +22,7 @@ export function AddRecurringSheet({ open, onOpenChange }: { open: boolean; onOpe
   const categories = useFinanceStore((state) => state.categories);
   const addRecurring = useFinanceStore((state) => state.addRecurring);
   const loading = useFinanceStore((state) => state.loading);
+  const clearFinanceError = useFinanceStore((state) => state.clearError);
   const [type, setType] = useState<TransactionType>('Expense');
   const [frequency, setFrequency] = useState<RecurrenceFrequency>('Monthly');
   const [parentCategoryId, setParentCategoryId] = useState('');
@@ -93,6 +94,7 @@ export function AddRecurringSheet({ open, onOpenChange }: { open: boolean; onOpe
     }
 
     setErrors({});
+    clearFinanceError();
     await addRecurring({
       accountId: result.data.accountId,
       categoryId: resolvedCategoryId,
@@ -104,6 +106,7 @@ export function AddRecurringSheet({ open, onOpenChange }: { open: boolean; onOpe
       nextRunOn: result.data.nextRunOn,
       endsOn: result.data.endsOn,
     });
+    if (useFinanceStore.getState().error) return;
     onOpenChange(false);
   }
 
@@ -112,7 +115,7 @@ export function AddRecurringSheet({ open, onOpenChange }: { open: boolean; onOpe
       <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 pt-3">
         <div>
           <p className="eyebrow">Automation</p>
-          <h2 id="add-recurring-title" className="text-xl font-semibold text-[#111827]">
+          <h2 id="add-recurring-title" className="text-xl font-semibold text-[#F5F7FA]">
             Add recurring
           </h2>
         </div>
@@ -122,22 +125,22 @@ export function AddRecurringSheet({ open, onOpenChange }: { open: boolean; onOpe
       </div>
 
       {accounts.length === 0 || categories.length === 0 ? (
-        <div className="mx-4 mb-4 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] px-4 py-4 text-sm text-[#6B7280]">
+        <div className="mx-4 mb-4 rounded-2xl border border-white/[0.06] bg-[#0B1015] px-4 py-4 text-sm text-[#8B9BB4]">
           Load your workspace first (accounts/categories). If the API is down or you are not signed in, recurring schedules cannot be created.
         </div>
       ) : (
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={(e) => void handleSubmit(e)}>
           <div className="flex-1 space-y-4 overflow-y-auto px-4 pb-4">
             <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#6B7280]">Type</span>
+                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Type</span>
                 <select className="field" onChange={(e) => setType(e.target.value as TransactionType)} value={type}>
                   <option value="Expense">Expense</option>
                   <option value="Income">Income</option>
                 </select>
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#6B7280]">Frequency</span>
+                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Frequency</span>
                 <select className="field" onChange={(e) => setFrequency(e.target.value as RecurrenceFrequency)} value={frequency}>
                   <option value="Daily">Daily</option>
                   <option value="Weekly">Weekly</option>
@@ -148,14 +151,14 @@ export function AddRecurringSheet({ open, onOpenChange }: { open: boolean; onOpe
             </div>
 
             <label className="block">
-              <span className="mb-1 block text-xs font-medium text-[#6B7280]">Amount</span>
+              <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Amount</span>
               <input className="field text-2xl font-semibold" inputMode="decimal" name="amount" placeholder="0.00" />
-              {errors.amount && <span className="mt-1 block text-xs text-red-600">{errors.amount}</span>}
+              {errors.amount && <span className="mt-1 block text-xs text-[#FF5C75]">{errors.amount}</span>}
             </label>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#6B7280]">Account</span>
+                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Account</span>
                 <select className="field" defaultValue={accounts[0]?.id} name="accountId">
                   {accounts.map((account) => (
                     <option key={account.id} value={account.id}>
@@ -163,11 +166,11 @@ export function AddRecurringSheet({ open, onOpenChange }: { open: boolean; onOpe
                     </option>
                   ))}
                 </select>
-                {errors.accountId && <span className="mt-1 block text-xs text-red-600">{errors.accountId}</span>}
+                {errors.accountId && <span className="mt-1 block text-xs text-[#FF5C75]">{errors.accountId}</span>}
               </label>
 
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#6B7280]">Category</span>
+                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Category</span>
                 <select
                   className="field"
                   name="parentCategoryId"
@@ -180,13 +183,13 @@ export function AddRecurringSheet({ open, onOpenChange }: { open: boolean; onOpe
                     </option>
                   ))}
                 </select>
-                {errors.category && <span className="mt-1 block text-xs text-red-600">{errors.category}</span>}
+                {errors.category && <span className="mt-1 block text-xs text-[#FF5C75]">{errors.category}</span>}
               </label>
             </div>
 
             {subcategories.length > 0 ? (
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#6B7280]">Subcategory</span>
+                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Subcategory</span>
                 <select
                   className="field"
                   name="subcategoryId"
@@ -199,29 +202,29 @@ export function AddRecurringSheet({ open, onOpenChange }: { open: boolean; onOpe
                     </option>
                   ))}
                 </select>
-                {errors.subcategory && <span className="mt-1 block text-xs text-red-600">{errors.subcategory}</span>}
+                {errors.subcategory && <span className="mt-1 block text-xs text-[#FF5C75]">{errors.subcategory}</span>}
               </label>
             ) : null}
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#6B7280]">Start date</span>
+                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Start date</span>
                 <input className="field" defaultValue={new Date().toISOString().slice(0, 10)} name="nextRunOn" type="date" />
-                {errors.nextRunOn && <span className="mt-1 block text-xs text-red-600">{errors.nextRunOn}</span>}
+                {errors.nextRunOn && <span className="mt-1 block text-xs text-[#FF5C75]">{errors.nextRunOn}</span>}
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-[#6B7280]">Ends on (optional)</span>
+                <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Ends on (optional)</span>
                 <input className="field" name="endsOn" type="date" />
               </label>
             </div>
 
             <label className="block">
-              <span className="mb-1 block text-xs font-medium text-[#6B7280]">Note</span>
+              <span className="mb-1 block text-xs font-medium text-[#8B9BB4]">Note</span>
               <textarea className="field min-h-20 resize-none" name="note" placeholder="Optional note" />
             </label>
           </div>
 
-          <div className="keyboard-safe-padding shrink-0 border-t border-[#E5E7EB] bg-white px-4 pt-3">
+          <div className="keyboard-safe-padding shrink-0 border-t border-white/[0.06] bg-[#0B1015] px-4 pt-3">
             <button className="primary-button min-h-14 w-full py-4" disabled={loading} type="submit">
               {loading ? 'Working...' : 'Create schedule'}
             </button>
