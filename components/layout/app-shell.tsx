@@ -78,18 +78,20 @@ export function AppShell({ activeScreen, children, onAddTransaction, onNavigate,
       </aside>
 
       <main className="mobile-page-bottom min-w-0 flex-1 px-4 pt-[max(env(safe-area-inset-top),1rem)] sm:px-6 lg:px-8 lg:pb-10 lg:pt-7">
-        <header className="mb-5 flex flex-col gap-3 lg:hidden">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="eyebrow">HexaTrack</p>
-              <h1 className="truncate text-2xl font-bold text-[#F5F7FA]">Track Smarter</h1>
+        {activeScreen !== 'dashboard' && (
+          <header className="mb-5 flex flex-col gap-3 lg:hidden">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="eyebrow">HexaTrack</p>
+                <h1 className="truncate text-2xl font-bold text-[#F5F7FA]">Track Smarter</h1>
+              </div>
+              <button aria-label="Add transaction" className="icon-button" onClick={onAddTransaction} type="button">
+                <Plus size={20} />
+              </button>
             </div>
-            <button aria-label="Add transaction" className="icon-button" onClick={onAddTransaction} type="button">
-              <Plus size={20} />
-            </button>
-          </div>
-          <WorkspaceSwitcher />
-        </header>
+            <WorkspaceSwitcher />
+          </header>
+        )}
         {children}
       </main>
 

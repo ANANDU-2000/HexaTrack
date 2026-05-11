@@ -32,10 +32,10 @@ export function LandingPage({ onGetStarted, onLogin }: LandingPageProps) {
             Sign In
           </button>
           <button 
-            onClick={onGetStarted} 
-            className="bg-secondary-container text-on-secondary-container px-6 py-2.5 rounded-full font-medium text-sm active:scale-95 transition-all hover:opacity-90 shadow-[0_0_20px_-5px_rgba(75,142,255,0.3)]"
+            onClick={onLogin} 
+            className="bg-[#4F8CFF] text-white px-6 py-2.5 rounded-full font-medium text-sm active:scale-95 transition-all hover:opacity-90 shadow-[0_0_20px_-5px_rgba(79,140,255,0.3)]"
           >
-            Get Started
+            Access Console
           </button>
         </div>
       </header>
@@ -62,10 +62,10 @@ export function LandingPage({ onGetStarted, onLogin }: LandingPageProps) {
               </p>
               <div className="flex flex-wrap gap-sm">
                 <button 
-                  onClick={onGetStarted} 
-                  className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-headline-md text-headline-md active:scale-95 transition-all hover:opacity-90 shadow-lg accent-glow"
+                  onClick={onLogin} 
+                  className="bg-[#4F8CFF] text-white px-8 py-4 rounded-full font-headline-md text-headline-md font-bold active:scale-95 transition-all hover:brightness-110 shadow-lg"
                 >
-                  Create Account
+                  Secure Login
                 </button>
                 <button className="glass-card text-on-surface px-8 py-4 rounded-full font-headline-md text-headline-md active:scale-95 transition-all hover:bg-white/5">
                   View Demo
@@ -303,10 +303,10 @@ export function LandingPage({ onGetStarted, onLogin }: LandingPageProps) {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
               <button 
-                onClick={onGetStarted}
-                className="bg-secondary-container text-on-secondary-container px-12 py-5 rounded-full font-bold text-lg active:scale-95 transition-all hover:opacity-90 shadow-xl accent-glow"
+                onClick={onLogin}
+                className="bg-[#4F8CFF] text-white px-12 py-5 rounded-full font-bold text-lg active:scale-95 transition-all hover:brightness-110 shadow-xl"
               >
-                Create Your Account
+                Access Portal
               </button>
               <button className="bg-transparent border border-white/20 text-on-surface px-12 py-5 rounded-full font-bold text-lg active:scale-95 transition-all hover:bg-white/5">
                 View Documentation

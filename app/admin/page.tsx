@@ -5,12 +5,16 @@ import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Activity,
   AlertCircle,
   BarChart3,
+  Bell,
+  Building2,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
   Command,
+  CreditCard,
   Eye,
   EyeOff,
   Flag,
@@ -48,7 +52,7 @@ import { ControlCenterOverview } from '@/components/admin/control-center-overvie
 import { CreateUserModal } from '@/components/admin/create-user-modal';
 import { BrandMark } from '@/components/ui/brand';
 
-type AdminSection = 'users' | 'workspaces' | 'flags' | 'audit' | 'ai' | 'analytics' | 'settings';
+type AdminSection = 'users' | 'workspaces' | 'organizations' | 'transactions' | 'flags' | 'audit' | 'ai' | 'analytics' | 'settings' | 'subscriptions' | 'notifications' | 'security';
 
 const PAGE_SIZE = 20;
 const SUBSCRIPTION_PLANS: SubscriptionPlan[] = ['Free', 'Basic', 'Pro', 'ProMax'];
@@ -225,6 +229,27 @@ export default function AdminPage() {
         onSelect: () => setSection('workspaces'),
       },
       {
+        id: 'go-orgs',
+        label: 'Organizations',
+        keywords: ['companies', 'groups'],
+        icon: Building2,
+        onSelect: () => setSection('organizations'),
+      },
+      {
+        id: 'go-tx',
+        label: 'Transactions',
+        keywords: ['monitoring', 'ledger', 'audits'],
+        icon: Activity,
+        onSelect: () => setSection('transactions'),
+      },
+      {
+        id: 'go-sub',
+        label: 'Subscriptions',
+        keywords: ['billing', 'plans'],
+        icon: CreditCard,
+        onSelect: () => setSection('subscriptions'),
+      },
+      {
         id: 'go-flags',
         label: 'Feature flags',
         keywords: ['toggles', 'features'],
@@ -247,11 +272,25 @@ export default function AdminPage() {
       },
       {
         id: 'go-analytics',
-        label: 'Analytics',
+        label: 'Dashboard',
         hint: 'Metrics, charts, audit feed',
-        keywords: ['home', 'dashboard', 'control', 'analytics'],
+        keywords: ['home', 'analytics'],
         icon: BarChart3,
         onSelect: () => setSection('analytics'),
+      },
+      {
+        id: 'go-notes',
+        label: 'Notifications',
+        keywords: ['alerts', 'inbox'],
+        icon: Bell,
+        onSelect: () => setSection('notifications'),
+      },
+      {
+        id: 'go-sec',
+        label: 'Security',
+        keywords: ['vault', 'access'],
+        icon: Shield,
+        onSelect: () => setSection('security'),
       },
       {
         id: 'go-settings',
@@ -677,13 +716,18 @@ export default function AdminPage() {
   }
 
   const navItems: { id: AdminSection; label: string; shortLabel: string; icon: any }[] = [
-    { id: 'users', label: 'Users', shortLabel: 'Users', icon: Users },
+    { id: 'analytics', label: 'Dashboard', shortLabel: 'Home', icon: BarChart3 },
     { id: 'workspaces', label: 'Workspaces', shortLabel: 'Spaces', icon: Globe },
-    { id: 'flags', label: 'Feature flags', shortLabel: 'Flags', icon: Flag },
+    { id: 'organizations', label: 'Organizations', shortLabel: 'Orgs', icon: Building2 },
+    { id: 'users', label: 'Users', shortLabel: 'Users', icon: Users },
+    { id: 'transactions', label: 'Transactions', shortLabel: 'Txs', icon: Activity },
+    { id: 'subscriptions', label: 'Subscriptions', shortLabel: 'Sub', icon: CreditCard },
+    { id: 'ai', label: 'AI Insights', shortLabel: 'AI', icon: Zap },
+    { id: 'notifications', label: 'Notifications', shortLabel: 'Alerts', icon: Bell },
+    { id: 'security', label: 'Security', shortLabel: 'Sec', icon: Shield },
     { id: 'audit', label: 'Audit logs', shortLabel: 'Audit', icon: ClipboardList },
-    { id: 'ai', label: 'AI usage', shortLabel: 'AI', icon: Zap },
-    { id: 'analytics', label: 'Analytics', shortLabel: 'Metrics', icon: BarChart3 },
-    { id: 'settings', label: 'Platform settings', shortLabel: 'Config', icon: Settings },
+    { id: 'flags', label: 'Feature flags', shortLabel: 'Flags', icon: Flag },
+    { id: 'settings', label: 'System Settings', shortLabel: 'Config', icon: Settings },
   ];
 
   return (
@@ -1393,6 +1437,23 @@ export default function AdminPage() {
                   </ul>
                 ) : null}
               </div>
+            </div>
+          )}
+          {['organizations', 'transactions', 'subscriptions', 'notifications', 'security'].includes(section) && (
+            <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[#121A22] border border-white/[0.06] text-[#8B9BB4] shadow-xl mb-6">
+                 {(() => {
+                   const i = navItems.find(x => x.id === section)?.icon;
+                   const Icon = i ? i : BarChart3;
+                   return <Icon size={32} />;
+                 })()}
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-[#F5F7FA]">
+                {navItems.find(x => x.id === section)?.label}
+              </h2>
+              <p className="mt-2 text-[#8B9BB4] max-w-md text-sm">
+                Real-time data pipelines provisioned. Specialized visual metrics awaiting final schema activation.
+              </p>
             </div>
           )}
             </motion.div>
