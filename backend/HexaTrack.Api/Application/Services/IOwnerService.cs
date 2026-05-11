@@ -8,7 +8,16 @@ public interface IOwnerService
     Task<OrganizationOverviewDto> GetOverviewAsync(Guid organizationId, CancellationToken ct);
     Task<List<Branch>> GetBranchesAsync(Guid organizationId, CancellationToken ct);
     Task<List<User>> GetStaffAsync(Guid organizationId, CancellationToken ct);
+    Task<User> CreateStaffAsync(Guid organizationId, CreateOwnerStaffRequest request, CancellationToken ct);
 }
+
+public sealed record CreateOwnerStaffRequest(
+    string FullName,
+    string Email,
+    string Password,
+    Guid BranchId,
+    string Department
+);
 
 public sealed record OrganizationOverviewDto(
     string Name,

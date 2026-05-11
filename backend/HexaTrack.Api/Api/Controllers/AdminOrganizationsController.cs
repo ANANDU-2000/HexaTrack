@@ -21,6 +21,13 @@ public sealed class AdminOrganizationsController(IAdminOrganizationsService orgS
         return Ok(result);
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetDetails(Guid id, CancellationToken ct = default)
+    {
+        var details = await orgService.GetDetailsAsync(id, ct);
+        return details == null ? NotFound() : Ok(details);
+    }
+
     [HttpGet("analytics")]
     public async Task<ActionResult<AdminOrganizationAnalyticsOverview>> GetAnalytics(CancellationToken ct = default)
     {
@@ -43,8 +50,16 @@ public sealed class AdminOrganizationsController(IAdminOrganizationsService orgS
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateOrganizationRequest request, CancellationToken ct = default)
     {
-        var result = await orgService.CreateOrganizationAsync(request, ct);
-        return Ok(result);
+        try 
+        {
+            var result = await orgService.CreateOrganizationAsync(request, ct);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            // Expose precise error text for stabilization audit feedback loop
+            return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+        }
     }
 
     [HttpPost("branch")]

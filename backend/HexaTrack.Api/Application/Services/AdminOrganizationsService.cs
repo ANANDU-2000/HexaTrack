@@ -20,6 +20,7 @@ public interface IAdminOrganizationsService
     Task<AdminOrganizationAnalyticsOverview> GetAnalyticsAsync(CancellationToken ct = default);
     Task<List<Organization>> GetAllLightAsync(CancellationToken ct = default);
     Task<List<Branch>> GetAllBranchesLightAsync(Guid? organizationId, CancellationToken ct = default);
+    Task<AdminOrganizationDetailsDto?> GetDetailsAsync(Guid id, CancellationToken ct = default);
 }
 
 public sealed class AdminOrganizationsService(HexaTrackDbContext db) : IAdminOrganizationsService
@@ -29,7 +30,9 @@ public sealed class AdminOrganizationsService(HexaTrackDbContext db) : IAdminOrg
         var org = new Organization
         {
             Name = request.Name.Trim(),
-            Slug = request.Slug?.Trim().ToLowerInvariant() ?? Guid.NewGuid().ToString("N")[..8],
+            Slug = !string.IsNullOrWhiteSpace(request.Slug) 
+                ? request.Slug.Trim().ToLowerInvariant() 
+                : Guid.NewGuid().ToString("N")[..8],
             Plan = request.Plan ?? "Free",
             BaseCurrency = request.Currency ?? "USD",
             MaxBranches = request.MaxBranches > 0 ? request.MaxBranches : 1,
@@ -66,13 +69,21 @@ public sealed class AdminOrganizationsService(HexaTrackDbContext db) : IAdminOrg
 
     public async Task<Branch> CreateBranchAsync(CreateBranchRequest request, CancellationToken ct = default)
     {
-        // Optionally provision a workspace alongside it
+        // Find the organization's first owner to bind as the initial technical owner of the workspace
+        var ownerId = await db.Users
+            .Where(u => u.OrganizationId == request.OrganizationId && u.OrganizationRole == "Owner")
+            .Select(u => u.Id)
+            .FirstOrDefaultAsync(ct);
+
+        // Provision a high-integrity bounded workspace node
         var ws = new Workspace
         {
             Name = $"{request.Name} Ledger",
             Currency = request.Currency ?? "USD",
             Type = Domain.WorkspaceType.Business,
-            OwnerUserId = Guid.Empty // Will assign later or keep blank
+            OwnerUserId = ownerId == Guid.Empty 
+                ? throw new InvalidOperationException("Unable to create branch workspace: target organization has no active owner defined.") 
+                : ownerId
         };
         db.Workspaces.Add(ws);
         await db.SaveChangesAsync(ct);
@@ -220,6 +231,41 @@ public sealed class AdminOrganizationsService(HexaTrackDbContext db) : IAdminOrg
             .OrderBy(b => b.Name)
             .Select(b => new Branch { Id = b.Id, Name = b.Name, OrganizationId = b.OrganizationId })
             .ToListAsync(ct);
+    }
+
+    public async Task<AdminOrganizationDetailsDto?> GetDetailsAsync(Guid id, CancellationToken ct = default)
+    {
+        var org = await db.Organizations.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (org == null) return null;
+
+        var branches = await db.Branches.AsNoTracking().Where(x => x.OrganizationId == id).ToListAsync(ct);
+        var users = await db.Users.AsNoTracking().Where(x => x.OrganizationId == id).ToListAsync(ct);
+
+        var owners = users.Where(u => u.OrganizationRole == "Owner").Select(u => new UserLightDto(u.Id, u.Email, u.DisplayName, u.Department, u.IsLocked)).ToList();
+        var staff = users.Where(u => u.OrganizationRole == "Staff").Select(u => new UserLightDto(u.Id, u.Email, u.DisplayName, u.Department, u.IsLocked)).ToList();
+
+        var branchDtos = branches.Select(b => new BranchDetailsDto(
+            b.Id,
+            b.Name,
+            b.Code,
+            users.Count(u => u.BranchId == b.Id),
+            b.Currency,
+            b.Timezone,
+            b.WorkspaceId)).ToList();
+
+        var info = new OrganizationListItemDto(
+            org.Id,
+            org.Name,
+            org.Slug,
+            org.Plan,
+            org.Status,
+            org.CreatedAt,
+            branches.Count,
+            owners.Count,
+            staff.Count,
+            CalculateEstimateMrr(org.Plan));
+
+        return new AdminOrganizationDetailsDto(info, org.MaxBranches, org.MaxStaff, org.BaseCurrency, branchDtos, owners, staff);
     }
 
     private static decimal CalculateEstimateMrr(string plan)

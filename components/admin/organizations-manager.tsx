@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Building2,
@@ -227,9 +228,10 @@ export default function OrganizationsManager() {
                                    </div>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                      <button className="p-2 hover:bg-white/10 rounded-lg text-[#8B9BB4] hover:text-white"><Edit size={14}/></button>
-                                      <button className="p-2 hover:bg-red-500/20 rounded-lg text-[#8B9BB4] hover:text-red-400"><Trash2 size={14}/></button>
+                                   <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Link href={`/admin/organizations/${org.id}`} className="h-8 px-3 flex items-center gap-1.5 bg-[#4F8CFF]/10 border border-[#4F8CFF]/20 rounded-lg text-xs font-bold text-[#4F8CFF] hover:bg-[#4F8CFF] hover:text-white transition-all">
+                                         Manage <ArrowUpRight size={12}/>
+                                      </Link>
                                       <button className="p-2 hover:bg-white/10 rounded-lg text-[#8B9BB4] hover:text-white"><MoreHorizontal size={14}/></button>
                                    </div>
                                 </td>
@@ -373,7 +375,7 @@ function FeatureTogglePanel() {
   );
 }
 
-function ModalWrapper({ title, desc, onClose, children }: { title: string; desc: string; onClose: () => void; children: React.ReactNode }) {
+export function ModalWrapper({ title, desc, onClose, children }: { title: string; desc: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
        <motion.div 
@@ -457,7 +459,7 @@ function CreateOrganizationModal({ onClose, onComplete }: { onClose: () => void;
   );
 }
 
-function CreateBranchModal({ onClose, onComplete, organizations }: { onClose: () => void; onComplete: () => void; organizations: OrganizationListItem[] }) {
+export function CreateBranchModal({ onClose, onComplete, organizations }: { onClose: () => void; onComplete: () => void; organizations: OrganizationListItem[] }) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     organizationId: organizations[0]?.id || '',
@@ -506,7 +508,7 @@ function CreateBranchModal({ onClose, onComplete, organizations }: { onClose: ()
   );
 }
 
-function AddOwnerModal({ onClose, onComplete, organizations }: { onClose: () => void; onComplete: () => void; organizations: OrganizationListItem[] }) {
+export function AddOwnerModal({ onClose, onComplete, organizations }: { onClose: () => void; onComplete: () => void; organizations: OrganizationListItem[] }) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     organizationId: organizations[0]?.id || '',
@@ -552,7 +554,7 @@ function AddOwnerModal({ onClose, onComplete, organizations }: { onClose: () => 
   );
 }
 
-function AddStaffModal({ onClose, onComplete, organizations }: { onClose: () => void; onComplete: () => void; organizations: OrganizationListItem[] }) {
+export function AddStaffModal({ onClose, onComplete, organizations }: { onClose: () => void; onComplete: () => void; organizations: OrganizationListItem[] }) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     organizationId: organizations[0]?.id || '',
@@ -608,7 +610,7 @@ function AddStaffModal({ onClose, onComplete, organizations }: { onClose: () => 
 }
 
 /** Form Components */
-function FormInput({ label, type = 'text', ...props }: { label: string; type?: string; [key: string]: any }) {
+export function FormInput({ label, type = 'text', ...props }: { label: string; type?: string; [key: string]: any }) {
   return (
     <div className="space-y-1.5">
        <label className="text-[11px] font-bold text-[#8B9BB4] uppercase tracking-wider">{label}</label>
@@ -621,7 +623,7 @@ function FormInput({ label, type = 'text', ...props }: { label: string; type?: s
   );
 }
 
-function FormSelect({ label, options, ...props }: { label: string; options: (string | {label: string, value: string})[]; [key: string]: any }) {
+export function FormSelect({ label, options, ...props }: { label: string; options: (string | {label: string, value: string})[]; [key: string]: any }) {
   return (
     <div className="space-y-1.5">
        <label className="text-[11px] font-bold text-[#8B9BB4] uppercase tracking-wider">{label}</label>

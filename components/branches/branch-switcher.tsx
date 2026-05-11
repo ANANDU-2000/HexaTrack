@@ -4,130 +4,156 @@ import {
   Building2, 
   Check, 
   ChevronDown, 
-  Globe, 
   Search, 
   Star, 
   MapPin,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-type Branch = {
-  id: string;
-  name: string;
-  location: string;
-  isFavorite: boolean;
-  currency: string;
-};
-
-const MOCK_BRANCHES: Branch[] = [
-  { id: '1', name: 'Dubai HQ', location: 'Business Bay, Dubai', isFavorite: true, currency: 'AED' },
-  { id: '2', name: 'Kochi Operations', location: 'Infopark, Kochi', isFavorite: true, currency: 'INR' },
-  { id: '3', name: 'Bangalore Tech', location: 'Whitefield, BLR', isFavorite: false, currency: 'INR' },
-  { id: '4', name: 'Abu Dhabi Office', location: 'Global Market, AD', isFavorite: false, currency: 'AED' },
-];
+import { hexaTrackApi } from '@/lib/api';
+import { useWorkspaceStore } from '@/store/workspace-store';
+import { useFinanceStore } from '@/store/finance-store';
+import type { LightBranch } from '@/lib/types';
 
 export function BranchSwitcher() {
   const [open, setOpen] = useState(false);
-  const [activeBranch, setActiveBranch] = useState<Branch>(MOCK_BRANCHES[0]);
+  const [branches, setBranches] = useState<LightBranch[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  
+  const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
+  const setActiveWorkspaceId = useWorkspaceStore((s) => s.setActiveWorkspaceId);
+  const loadFinanceWorkspace = useFinanceStore((s) => s.loadWorkspace);
 
-  const filtered = MOCK_BRANCHES.filter(b => 
-    b.name.toLowerCase().includes(search.toLowerCase()) ||
-    b.location.toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+     const load = async () => {
+        try {
+           const res = await hexaTrackApi.owner.listBranches();
+           setBranches(res);
+           // Auto-select first if none active
+           if (res.length > 0 && !activeWorkspaceId && res[0].workspaceId) {
+              setActiveWorkspaceId(res[0].workspaceId);
+              void loadFinanceWorkspace();
+           }
+        } catch (e) {
+           console.error(e);
+        } finally {
+           setLoading(false);
+        }
+     };
+     void load();
+  }, [activeWorkspaceId, setActiveWorkspaceId, loadFinanceWorkspace]);
+
+  const activeBranch = branches.find(b => b.workspaceId === activeWorkspaceId) || branches[0];
+
+  const handleSwitch = async (branch: any) => {
+     if (!branch.workspaceId) return;
+     setActiveWorkspaceId(branch.workspaceId);
+     setOpen(false);
+     // Trigger immediate global finance refresh across all components!
+     await loadFinanceWorkspace();
+  };
+
+  const filtered = branches.filter(b => 
+    b.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (loading && branches.length === 0) {
+     return (
+        <div className="h-11 px-4 bg-[#111827] border border-white/[0.05] rounded-2xl flex items-center gap-3 animate-pulse">
+           <div className="w-4 h-4 bg-white/10 rounded" />
+           <div className="w-20 h-3 bg-white/10 rounded" />
+        </div>
+     );
+  }
+
+  if (branches.length === 0) return null;
 
   return (
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#111827] px-4 py-2.5 transition hover:border-[#4F8CFF]/30 active:scale-[0.98] shadow-sm w-full sm:w-auto"
+        className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#111827] px-4 py-2.5 transition hover:border-[#4F8CFF]/30 active:scale-[0.98] shadow-sm w-full sm:w-auto group"
       >
-        <div className="h-8 w-8 rounded-xl bg-[#4F8CFF]/10 flex items-center justify-center text-[#4F8CFF] shrink-0">
+        <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#4F8CFF]/20 to-transparent flex items-center justify-center text-[#4F8CFF] border border-[#4F8CFF]/20 shrink-0 group-hover:from-[#4F8CFF] group-hover:text-white transition-all">
           <Building2 size={16} />
         </div>
-        <div className="min-w-0 flex-1 text-left">
-          <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider leading-none mb-0.5">Active Branch</p>
-          <p className="truncate text-sm font-bold text-[#F9FAFB]">{activeBranch.name}</p>
+        <div className="min-w-0 flex-1 text-left hidden sm:block">
+          <p className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest leading-none mb-0.5">Active Node</p>
+          <p className="truncate text-sm font-black text-[#F9FAFB]">{activeBranch?.name || 'Select Branch'}</p>
         </div>
-        <ChevronDown className={`h-4 w-4 text-[#9CA3AF] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 text-[#9CA3AF] transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>
         {open && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={() => setOpen(false)} />
             <motion.div
               initial={{ opacity: 0, y: 8, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.98 }}
-              transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="absolute left-0 top-full mt-2 z-50 w-full sm:w-[320px] bg-[#111827] border border-white/[0.08] rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-2xl"
+              transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
+              className="absolute left-0 top-full mt-3 z-50 w-[320px] bg-[#111827] border border-white/[0.08] rounded-[28px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)] overflow-hidden"
             >
-              <div className="p-3 border-b border-white/[0.04] bg-white/[0.01]">
+              <div className="p-4 border-b border-white/[0.05] bg-white/[0.01]">
+                 <div className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-[0.2em] mb-3">Operational Nodes</div>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/60 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
                   <input 
                     type="text"
                     autoFocus
-                    placeholder="Filter branches..."
+                    placeholder="Locate branch..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full bg-[#0B1015] border border-white/[0.05] rounded-xl py-2 pl-9 pr-4 text-xs font-medium text-[#F9FAFB] outline-none focus:border-[#4F8CFF]/40 transition"
+                    className="w-full bg-[#0B1015] border border-white/[0.06] rounded-xl py-2.5 pl-9 pr-4 text-xs font-bold text-white placeholder:text-[#9CA3AF]/30 outline-none focus:border-[#4F8CFF]/50 transition-all shadow-inner"
                   />
                 </div>
               </div>
 
-              <div className="max-h-[300px] overflow-y-auto p-2 space-y-1 custom-scrollbar">
-                
-                {/* Favorites Label */}
-                {filtered.filter(b => b.isFavorite).length > 0 && (
-                  <div className="px-2 pt-1 pb-0.5">
-                     <span className="text-[10px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest">Favorites</span>
-                  </div>
-                )}
-
+              <div className="max-h-[280px] overflow-y-auto p-2 space-y-1 custom-scrollbar">
                 {filtered.map(branch => {
-                  const isActive = branch.id === activeBranch.id;
+                  const isActive = branch.workspaceId === activeWorkspaceId;
                   return (
                     <button
                       key={branch.id}
-                      onClick={() => {
-                        setActiveBranch(branch);
-                        setOpen(false);
-                      }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left group ${
-                        isActive ? 'bg-[#4F8CFF]/10' : 'hover:bg-white/[0.03]'
-                      }`}
+                      disabled={!branch.workspaceId}
+                      onClick={() => handleSwitch(branch)}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl transition-all text-left group relative ${
+                        isActive ? 'bg-[#4F8CFF]/10 border border-[#4F8CFF]/20' : 'hover:bg-white/[0.03] border border-transparent'
+                      } ${!branch.workspaceId ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-                        isActive ? 'bg-[#4F8CFF] text-white' : 'bg-white/[0.04] text-[#9CA3AF] group-hover:text-[#F9FAFB]'
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-all border ${
+                        isActive ? 'bg-[#4F8CFF] border-white/20 text-white shadow-lg shadow-[#4F8CFF]/30' : 'bg-white/[0.04] border-white/[0.05] text-[#9CA3AF] group-hover:text-white group-hover:bg-white/[0.08]'
                       }`}>
-                         <MapPin size={14} />
+                         <MapPin size={16} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className={`text-sm font-semibold truncate ${isActive ? 'text-[#4F8CFF]' : 'text-[#F9FAFB]'}`}>
-                            {branch.name}
-                          </p>
-                          {branch.isFavorite && <Star size={10} className="text-yellow-500 fill-yellow-500 shrink-0" />}
-                        </div>
-                        <p className="text-[11px] text-[#9CA3AF] truncate font-medium">{branch.location} • {branch.currency}</p>
+                         <p className={`text-sm font-black truncate ${isActive ? 'text-[#4F8CFF]' : 'text-white'}`}>
+                           {branch.name}
+                         </p>
+                        <p className="text-[10px] text-[#9CA3AF] font-bold uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                           {branch.code || 'STNDRD'} • {branch.currency || 'USD'}
+                        </p>
                       </div>
-                      {isActive && <Check size={16} className="text-[#4F8CFF] shrink-0" />}
+                      {isActive && <Check size={18} className="text-[#4F8CFF] shrink-0 mr-1" />}
                     </button>
                   );
                 })}
 
                 {filtered.length === 0 && (
-                  <div className="p-4 text-center text-xs text-[#9CA3AF] font-medium">No matching branches found.</div>
+                  <div className="py-8 text-center text-xs text-[#9CA3AF] font-bold uppercase tracking-wider flex flex-col items-center gap-2">
+                     <div className="w-10 h-10 rounded-full bg-white/[0.03] flex items-center justify-center"><Search size={14} /></div>
+                     Zero Results
+                  </div>
                 )}
               </div>
 
-              <div className="p-2 border-t border-white/[0.04] bg-white/[0.01]">
-                <button className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-white/[0.1] text-xs font-bold text-[#F9FAFB] hover:bg-white/[0.02] hover:border-[#4F8CFF]/30 transition-colors">
-                   <Plus size={14} /> Add Branch
+              <div className="p-3 border-t border-white/[0.04] bg-white/[0.01]">
+                <button className="w-full flex items-center justify-center gap-2 h-10 rounded-xl border border-dashed border-white/[0.15] text-xs font-black text-white uppercase tracking-wider hover:bg-white/[0.04] hover:border-[#4F8CFF]/40 transition-all">
+                   <Plus size={14} /> Provision Node
                 </button>
               </div>
 

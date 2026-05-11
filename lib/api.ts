@@ -26,6 +26,18 @@ import type {
   TransferRequest,
   Workspace,
   WorkspaceRoleName,
+  AdminOrganizationListResult,
+  AdminOrganizationAnalytics,
+  LightOrganization,
+  LightBranch,
+  AdminOrganizationDetailsDto,
+  CreateOrganizationRequest,
+  CreateBranchRequest,
+  AddOwnerRequest,
+  AddStaffRequest,
+  OrganizationOverviewDto,
+  AdminUserListItem,
+  CreateOwnerStaffRequest
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:5014';
@@ -76,6 +88,7 @@ function pathNeedsWorkspaceHeader(path: string): boolean {
   if (p.startsWith('/api/subscription')) return false;
   if (p.startsWith('/api/backup')) return false;
   if (p.startsWith('/api/groups')) return false;
+  if (p.startsWith('/api/owner')) return false;
   const normalized = p.replace(/\/$/, '') || '/';
   if (normalized === '/api/workspaces') return false;
   const singleWorkspace = /^\/api\/workspaces\/([^/]+)$/.exec(normalized);
@@ -366,6 +379,8 @@ export const hexaTrackApi = {
       apiRequest<LightOrganization[]>('/api/admin/organizations/all'),
     allBranches: (organizationId?: string) =>
       apiRequest<LightBranch[]>(`/api/admin/organizations/branches${organizationId ? `?organizationId=${organizationId}` : ''}`),
+    getOrganizationDetails: (id: string) =>
+      apiRequest<AdminOrganizationDetailsDto>(`/api/admin/organizations/${id}`),
     createOrganization: (payload: CreateOrganizationRequest) =>
       apiRequest<any>('/api/admin/organizations', {
         method: 'POST',
@@ -396,13 +411,24 @@ export const hexaTrackApi = {
         method: 'POST',
         body: payload,
       }),
-    owner: {
-      overview: () =>
-        apiRequest<OrganizationOverviewDto>('/api/owner/overview'),
-      listBranches: () =>
-        apiRequest<LightBranch[]>('/api/owner/branches'),
-      listStaff: () =>
-        apiRequest<AdminUserListItem[]>('/api/owner/staff'),
+  },
+  owner: {
+    overview: () =>
+      apiRequest<OrganizationOverviewDto>('/api/owner/overview'),
+    listBranches: () =>
+      apiRequest<LightBranch[]>('/api/owner/branches'),
+    listStaff: () =>
+      apiRequest<AdminUserListItem[]>('/api/owner/staff'),
+    createStaff: (payload: CreateOwnerStaffRequest) =>
+      apiRequest<any>('/api/owner/staff', { method: 'POST', body: payload }),
+    assets: {
+      list: () => apiRequest<any[]>('/api/owner/assets'),
+      create: (payload: any) => apiRequest<any>('/api/owner/assets', { method: 'POST', body: payload })
     },
+    integrations: {
+      list: () => apiRequest<any[]>('/api/owner/integrations'),
+      connect: (provider: string) => apiRequest<any>('/api/owner/integrations/connect', { method: 'POST', body: { provider } })
+    },
+    ledger: () => apiRequest<any[]>('/api/owner/ledger'),
   },
 };

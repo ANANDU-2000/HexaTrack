@@ -68,4 +68,31 @@ public sealed class OwnerService(HexaTrackDbContext db) : IOwnerService
             .OrderBy(u => u.DisplayName)
             .ToListAsync(ct);
     }
+
+    public async Task<User> CreateStaffAsync(Guid organizationId, CreateOwnerStaffRequest request, CancellationToken ct)
+    {
+        // 1. Verify branch authority & existence within the organization
+        var branchValid = await db.Branches.AnyAsync(b => b.Id == request.BranchId && b.OrganizationId == organizationId, ct);
+        if (!branchValid) throw new UnauthorizedAccessException("Selected branch does not belong to your organization matrix.");
+
+        // 2. Ensure account integrity collision prevention
+        var existing = await db.Users.AnyAsync(u => u.Email.ToLower() == request.Email.Trim().ToLower(), ct);
+        if (existing) throw new InvalidOperationException("A user vector with this email identity is already registered in our persistence layer.");
+
+        // 3. Build secure entity graph
+        var staff = new User
+        {
+            Email = request.Email.Trim().ToLowerInvariant(),
+            DisplayName = request.FullName.Trim(),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            OrganizationId = organizationId,
+            BranchId = request.BranchId,
+            OrganizationRole = "Staff",
+            Department = request.Department.Trim()
+        };
+
+        db.Users.Add(staff);
+        await db.SaveChangesAsync(ct);
+        return staff;
+    }
 }

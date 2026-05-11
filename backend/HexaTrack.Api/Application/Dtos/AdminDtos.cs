@@ -122,3 +122,27 @@ public sealed record AdminOrganizationAnalyticsOverview(
     int ActiveBranches,
     decimal TotalMrr);
 
+public sealed record AdminOrganizationDetailsDto(
+    OrganizationListItemDto Info,
+    int MaxBranches,
+    int MaxStaff,
+    string Currency,
+    List<BranchDetailsDto> Branches,
+    List<UserLightDto> Owners,
+    List<UserLightDto> Staff);
+
+public sealed record BranchDetailsDto(
+    Guid Id,
+    string Name,
+    string? Code,
+    int StaffCount,
+    string? Currency,
+    string? Timezone,
+    Guid? WorkspaceId);
+
+public sealed record UserLightDto(
+    Guid Id,
+    string Email,
+    string DisplayName,
+    string? Department,
+    bool IsLocked);

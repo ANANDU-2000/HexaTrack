@@ -29,6 +29,8 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
     public DbSet<GlobalSetting> GlobalSettings => Set<GlobalSetting>();
     public DbSet<WorkspaceInvite> WorkspaceInvites => Set<WorkspaceInvite>();
     public DbSet<AiUsageDaily> AiUsageDaily => Set<AiUsageDaily>();
+    public DbSet<Asset> Assets => Set<Asset>();
+    public DbSet<Integration> Integrations => Set<Integration>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -300,6 +302,31 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
             entity.HasOne(x => x.User)
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Asset>(entity =>
+        {
+            entity.Property(x => x.PurchaseAmount).HasPrecision(18, 2);
+            entity.HasOne(x => x.Organization)
+                .WithMany()
+                .HasForeignKey(x => x.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Branch)
+                .WithMany()
+                .HasForeignKey(x => x.BranchId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.AssignedUser)
+                .WithMany()
+                .HasForeignKey(x => x.AssignedUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Integration>(entity =>
+        {
+            entity.HasOne(x => x.Organization)
+                .WithMany()
+                .HasForeignKey(x => x.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

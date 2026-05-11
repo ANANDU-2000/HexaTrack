@@ -36,4 +36,21 @@ public sealed class OwnerController(ICurrentUser currentUser, IOwnerService owne
         
         return Ok(await ownerService.GetStaffAsync(orgId.Value, ct));
     }
+
+    [HttpPost("staff")]
+    public async Task<IActionResult> CreateStaff([FromBody] CreateOwnerStaffRequest request, CancellationToken ct)
+    {
+        var orgId = currentUser.OrganizationId;
+        if (!orgId.HasValue) return BadRequest("Identity context is unbound from valid organization authorization.");
+
+        try
+        {
+            var res = await ownerService.CreateStaffAsync(orgId.Value, request, ct);
+            return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }

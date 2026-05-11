@@ -344,6 +344,34 @@ export type AdminOrganizationListResult = {
   totalCount: number;
 };
 
+export type BranchDetailsDto = {
+  id: string;
+  name: string;
+  code?: string;
+  staffCount: number;
+  currency?: string;
+  timezone?: string;
+  workspaceId?: string;
+};
+
+export type UserLightDto = {
+  id: string;
+  email: string;
+  displayName: string;
+  department?: string;
+  isLocked: boolean;
+};
+
+export type AdminOrganizationDetailsDto = {
+  info: OrganizationListItem;
+  maxBranches: number;
+  maxStaff: number;
+  currency: string;
+  branches: BranchDetailsDto[];
+  owners: UserLightDto[];
+  staff: UserLightDto[];
+};
+
 export type AdminOrganizationAnalytics = {
   totalOrganizations: number;
   totalOwners: number;
@@ -399,6 +427,9 @@ export type LightBranch = {
   id: string;
   name: string;
   organizationId: string;
+  workspaceId?: string | null;
+  code?: string;
+  currency?: string;
 };
 
 export type BranchStatDto = {
@@ -413,5 +444,13 @@ export type OrganizationOverviewDto = {
   staffCount: number;
   totalFlow: number;
   branchVelocity: BranchStatDto[];
+};
+
+export type CreateOwnerStaffRequest = {
+  fullName: string;
+  email: string;
+  password: string;
+  branchId: string;
+  department: string;
 };
 
