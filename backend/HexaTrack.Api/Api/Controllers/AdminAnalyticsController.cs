@@ -19,4 +19,11 @@ public sealed class AdminAnalyticsController(IAdminAnalyticsService analytics) :
     [HttpGet("dashboard")]
     public Task<AdminAnalyticsDashboardDto> Dashboard([FromQuery] int days = 90, CancellationToken cancellationToken = default)
         => analytics.GetDashboardAsync(days, cancellationToken);
+
+    [HttpGet("categories")]
+    public Task<IReadOnlyList<AdminExpenseCategoryAggDto>> GetCategoryTotals(
+        [FromQuery] int days = 30,
+        [FromQuery] Guid? orgId = null,
+        CancellationToken cancellationToken = default)
+        => analytics.GetCategoryTotalsAsync(days, orgId, cancellationToken);
 }

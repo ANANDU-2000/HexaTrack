@@ -13,6 +13,9 @@ public interface IRecurringTransactionService
 {
     Task<IReadOnlyCollection<RecurringTransactionDto>> ListAsync(CancellationToken cancellationToken);
     Task<RecurringTransactionDto> CreateAsync(CreateRecurringTransactionRequest request, CancellationToken cancellationToken);
+    Task ActivateAsync(Guid id, CancellationToken cancellationToken);
+    Task DeactivateAsync(Guid id, CancellationToken cancellationToken);
+    Task<TransactionDto> RunNowAsync(Guid id, CancellationToken cancellationToken);
     Task ProcessDueAsync(CancellationToken cancellationToken);
 }
 
@@ -67,6 +70,41 @@ public sealed class RecurringTransactionService(
             return new RecurringTransactionDto(recurring.Id, recurring.AccountId, recurring.CategoryId, recurring.Type, recurring.Frequency, recurring.Amount, recurring.Currency, recurring.Note, recurring.NextRunOn, recurring.EndsOn, recurring.IsActive);
         }, cancellationToken);
 
+    public Task ActivateAsync(Guid id, CancellationToken cancellationToken)
+        => SetActiveStateAsync(id, true, cancellationToken);
+
+    public Task DeactivateAsync(Guid id, CancellationToken cancellationToken)
+        => SetActiveStateAsync(id, false, cancellationToken);
+
+    public Task<TransactionDto> RunNowAsync(Guid id, CancellationToken cancellationToken)
+        => unitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            RecurringTransaction item = await recurringTransactions.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                .SingleOrDefaultAsync(x => x.Id == id, ct)
+                ?? throw new KeyNotFoundException("Recurring transaction not found.");
+
+            Account account = await accounts.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                .SingleOrDefaultAsync(x => x.Id == item.AccountId && !x.IsArchived, ct)
+                ?? throw new KeyNotFoundException("Account not found.");
+
+            account.Balance += item.Type == TransactionType.Income ? item.Amount : -item.Amount;
+
+            var transaction = new DomainTransaction
+            {
+                UserId = currentUser.UserId,
+                WorkspaceId = currentWorkspace.WorkspaceId,
+                AccountId = item.AccountId,
+                CategoryId = item.CategoryId,
+                Type = item.Type,
+                Amount = item.Amount,
+                Currency = item.Currency,
+                Note = item.Note,
+                OccurredOn = DateOnly.FromDateTime(DateTime.UtcNow)
+            };
+            await transactions.AddAsync(transaction, ct);
+            return new TransactionDto(transaction.Id, transaction.AccountId, transaction.CategoryId, transaction.Type, transaction.Amount, transaction.Currency, transaction.Merchant, transaction.Note, transaction.OccurredOn, []);
+        }, cancellationToken);
+
     public async Task ProcessDueAsync(CancellationToken cancellationToken)
     {
         DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -113,5 +151,14 @@ public sealed class RecurringTransactionService(
         RecurrenceFrequency.Yearly => date.AddYears(1),
         _ => throw new ArgumentOutOfRangeException(nameof(frequency), frequency, null)
     };
+
+    private Task SetActiveStateAsync(Guid id, bool active, CancellationToken cancellationToken)
+        => unitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            RecurringTransaction item = await recurringTransactions.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                .SingleOrDefaultAsync(x => x.Id == id, ct)
+                ?? throw new KeyNotFoundException("Recurring transaction not found.");
+            item.IsActive = active;
+        }, cancellationToken);
 }
 

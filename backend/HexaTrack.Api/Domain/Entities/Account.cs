@@ -13,6 +13,7 @@ public sealed class Account
     public decimal Balance { get; set; }
     public bool IsArchived { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? DeletedAt { get; set; }
 
     public User? User { get; set; }
     public Workspace? Workspace { get; set; }

@@ -10,5 +10,7 @@ public sealed record UserDto(
     string DisplayName, 
     Guid? OrganizationId = null, 
     Guid? BranchId = null, 
-    string? OrganizationRole = null);
+    string? OrganizationRole = null,
+    string? BranchName = null,
+    string? Department = null);
 

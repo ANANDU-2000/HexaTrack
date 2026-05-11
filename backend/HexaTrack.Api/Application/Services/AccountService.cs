@@ -12,10 +12,13 @@ public interface IAccountService
     Task<IReadOnlyCollection<AccountDto>> ListAsync(CancellationToken cancellationToken);
     Task<AccountDto> CreateAsync(CreateAccountRequest request, CancellationToken cancellationToken);
     Task<AccountDto> UpdateAsync(Guid id, UpdateAccountRequest request, CancellationToken cancellationToken);
+    Task ArchiveAsync(Guid id, CancellationToken cancellationToken);
+    Task UnarchiveAsync(Guid id, CancellationToken cancellationToken);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken);
     Task<TransferDto> TransferAsync(TransferRequest request, CancellationToken cancellationToken);
 }
 
-public sealed class AccountService(IUserScopedRepository<Account> accounts, IUserScopedRepository<AccountTransfer> transfers, ICurrentUser currentUser, ICurrentWorkspace currentWorkspace, IUnitOfWork unitOfWork) : IAccountService
+public sealed class AccountService(HexaTrackDbContext db, IUserScopedRepository<Account> accounts, IUserScopedRepository<AccountTransfer> transfers, ICurrentUser currentUser, ICurrentWorkspace currentWorkspace, IUnitOfWork unitOfWork) : IAccountService
 {
     public async Task<IReadOnlyCollection<AccountDto>> ListAsync(CancellationToken cancellationToken)
         => await accounts.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
@@ -50,6 +53,32 @@ public sealed class AccountService(IUserScopedRepository<Account> accounts, IUse
             account.Name = request.Name.Trim();
             account.IsArchived = request.IsArchived;
             return new AccountDto(account.Id, account.Name, account.Type, account.Currency, account.Balance);
+        }, cancellationToken);
+
+    public Task ArchiveAsync(Guid id, CancellationToken cancellationToken)
+        => SetArchiveStateAsync(id, true, cancellationToken);
+
+    public Task UnarchiveAsync(Guid id, CancellationToken cancellationToken)
+        => SetArchiveStateAsync(id, false, cancellationToken);
+
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+        => unitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            Account account = await accounts.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                .SingleOrDefaultAsync(x => x.Id == id, ct)
+                ?? throw new KeyNotFoundException("Account not found.");
+
+            if (account.Balance != 0)
+            {
+                throw new InvalidOperationException("Account has a non-zero balance. Transfer or clear balance before deleting.");
+            }
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            account.DeletedAt = now;
+            account.IsArchived = true;
+            await db.Transactions
+                .Where(t => t.AccountId == id && t.WorkspaceId == currentWorkspace.WorkspaceId && t.UserId == currentUser.UserId)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.DeletedAt, now), ct);
         }, cancellationToken);
 
     public Task<TransferDto> TransferAsync(TransferRequest request, CancellationToken cancellationToken)
@@ -112,6 +141,15 @@ public sealed class AccountService(IUserScopedRepository<Account> accounts, IUse
 
             await transfers.AddAsync(transfer, ct);
             return new TransferDto(transfer.Id, transfer.FromAccountId, transfer.ToAccountId, transfer.Amount, transfer.Currency, transfer.FeeAmount, transfer.TransferOn);
+        }, cancellationToken);
+
+    private Task SetArchiveStateAsync(Guid id, bool archived, CancellationToken cancellationToken)
+        => unitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            Account account = await accounts.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                .SingleOrDefaultAsync(x => x.Id == id, ct)
+                ?? throw new KeyNotFoundException("Account not found.");
+            account.IsArchived = archived;
         }, cancellationToken);
 }
 

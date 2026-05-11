@@ -20,7 +20,7 @@ public sealed class Asset
     public string Category { get; set; } = string.Empty;
 
     public decimal PurchaseAmount { get; set; }
-    public DateTime PurchaseDate { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset PurchaseDate { get; set; } = DateTimeOffset.UtcNow;
 
     [MaxLength(50)]
     public string Status { get; set; } = "Active";
@@ -37,6 +37,6 @@ public sealed class Asset
     public Guid? AssignedUserId { get; set; }
     public User? AssignedUser { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 }

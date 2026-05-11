@@ -18,6 +18,24 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
     public Task<CategoryDto> Create(CreateCategoryRequest request, CancellationToken cancellationToken)
         => categoryService.CreateAsync(request, cancellationToken);
 
+    [HttpPut("{id:guid}")]
+    public Task<CategoryDto> Update(Guid id, UpdateCategoryRequest request, CancellationToken cancellationToken)
+        => categoryService.UpdateAsync(id, request, cancellationToken);
+
+    [HttpPost("{id:guid}/archive")]
+    public async Task<IActionResult> Archive(Guid id, CancellationToken cancellationToken)
+    {
+        await categoryService.ArchiveAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/unarchive")]
+    public async Task<IActionResult> Unarchive(Guid id, CancellationToken cancellationToken)
+    {
+        await categoryService.UnarchiveAsync(id, cancellationToken);
+        return NoContent();
+    }
+
     [HttpGet("{parentId:guid}/subcategories")]
     public Task<IReadOnlyCollection<CategoryDto>> ListSubcategories(Guid parentId, CancellationToken cancellationToken)
         => categoryService.ListSubcategoriesAsync(parentId, cancellationToken);

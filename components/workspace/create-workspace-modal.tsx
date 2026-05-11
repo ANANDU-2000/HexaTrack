@@ -59,7 +59,7 @@ export function CreateWorkspaceModal({ open, onOpenChange, onCreated }: CreateWo
   }
 
   return (
-    <BottomSheet labelledBy="create-workspace-title">
+    <BottomSheet open={open} onClose={() => onOpenChange(false)} labelledBy="create-workspace-title">
       <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 pt-3">
         <div>
           <p className="eyebrow">Workspace</p>

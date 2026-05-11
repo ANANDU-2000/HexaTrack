@@ -7,6 +7,7 @@ import type {
   AdminCreateUserResponse,
   AdminUserListResult,
   AdminWorkspaceListResult,
+  AdminExpenseCategoryAgg,
   AiUsageSummaryResult,
   AuthMeResponse,
   AuthResponse,
@@ -22,6 +23,7 @@ import type {
   SubscriptionPlan,
   Transaction,
   TransactionSearchParams,
+  UpdateTransactionRequest,
   Transfer,
   TransferRequest,
   Workspace,
@@ -32,12 +34,24 @@ import type {
   LightBranch,
   AdminOrganizationDetailsDto,
   CreateOrganizationRequest,
+  UpdateOrganizationRequest,
+  SuspendOrganizationRequest,
   CreateBranchRequest,
+  UpdateBranchRequest,
   AddOwnerRequest,
   AddStaffRequest,
+  ReassignStaffBranchRequest,
+  StaffReassignRequest,
+  RouteDto,
+  CreateRouteRequest,
+  UpdateRouteRequest,
+  OrgFinancialSummaryDto,
   OrganizationOverviewDto,
   AdminUserListItem,
-  CreateOwnerStaffRequest
+  CreateOwnerStaffRequest,
+  StaffDashboardDto,
+  StaffTask,
+  StaffNotification
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:5014';
@@ -89,6 +103,9 @@ function pathNeedsWorkspaceHeader(path: string): boolean {
   if (p.startsWith('/api/backup')) return false;
   if (p.startsWith('/api/groups')) return false;
   if (p.startsWith('/api/owner')) return false;
+  if (p.startsWith('/api/staff')) return false;
+  if (p.startsWith('/api/ledger')) return false;
+  if (p.startsWith('/api/analytics')) return false;
   const normalized = p.replace(/\/$/, '') || '/';
   if (normalized === '/api/workspaces') return false;
   const singleWorkspace = /^\/api\/workspaces\/([^/]+)$/.exec(normalized);
@@ -188,6 +205,13 @@ function normalizeAdminAnalyticsDashboard(data: AdminAnalyticsDashboard): AdminA
     newPayingSubscriptionsByDay: data.newPayingSubscriptionsByDay ?? [],
     tokenEstimatedCostByDay: data.tokenEstimatedCostByDay ?? [],
     expenseCategoryTotals: data.expenseCategoryTotals ?? [],
+    totalSystemIncome30d: data.totalSystemIncome30d ?? 0,
+    totalSystemExpense30d: data.totalSystemExpense30d ?? 0,
+    totalSystemNet30d: data.totalSystemNet30d ?? 0,
+    totalActiveOrganizations: data.totalActiveOrganizations ?? 0,
+    totalSuspendedOrganizations: data.totalSuspendedOrganizations ?? 0,
+    totalIndividualUsers: data.totalIndividualUsers ?? 0,
+    totalOrganizationUsers: data.totalOrganizationUsers ?? 0,
   };
 }
 
@@ -220,6 +244,8 @@ export const hexaTrackApi = {
       }),
   },
   accounts: () => apiRequest<Account[]>('/api/accounts'),
+  createAccount: (payload: { name: string; type: Account['type']; currency: string; openingBalance: number }) =>
+    apiRequest<Account>('/api/accounts', { method: 'POST', body: payload }),
   transfer: (payload: TransferRequest) =>
     apiRequest<Transfer>('/api/accounts/transfer', {
       method: 'POST',
@@ -238,6 +264,13 @@ export const hexaTrackApi = {
         method: 'POST',
         body: payload,
       }),
+    update: (id: string, payload: { name?: string | null; color?: string | null; icon?: string | null }) =>
+      apiRequest<Category>(`/api/categories/${id}`, {
+        method: 'PUT',
+        body: payload,
+      }),
+    archive: (id: string) => apiRequest<void>(`/api/categories/${id}/archive`, { method: 'POST' }),
+    unarchive: (id: string) => apiRequest<void>(`/api/categories/${id}/unarchive`, { method: 'POST' }),
     subcategories: {
       list: (parentId: string) => apiRequest<Category[]>(`/api/categories/${parentId}/subcategories`),
       create: (parentId: string, payload: { name: string; color?: string | null; icon?: string | null }) =>
@@ -290,12 +323,36 @@ export const hexaTrackApi = {
       const qs = q.toString();
       return apiRequest<PagedResult<Transaction>>(`/api/transactions/search?${qs}`);
     },
+    update: (id: string, payload: UpdateTransactionRequest) =>
+      apiRequest<Transaction>(`/api/transactions/${id}`, {
+        method: 'PUT',
+        body: payload,
+      }),
+    delete: (id: string) =>
+      apiRequest<void>(`/api/transactions/${id}`, {
+        method: 'DELETE',
+      }),
   },
   createTransaction: (payload: unknown) =>
     apiRequest<Transaction>('/api/transactions', {
       method: 'POST',
       body: payload,
     }),
+  income: {
+    create: (payload: unknown) => apiRequest<Transaction>('/api/income', { method: 'POST', body: payload }),
+  },
+  expenses: {
+    create: (payload: unknown) => apiRequest<Transaction>('/api/expenses', { method: 'POST', body: payload }),
+  },
+  ledger: (page = 1, pageSize = 100) =>
+    apiRequest<{ items: any[]; page: number; pageSize: number; totalCount: number; consolidatedBalance: number }>(`/api/ledger?page=${page}&pageSize=${pageSize}`),
+  analytics: (from?: string, to?: string) => {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    const qs = params.toString();
+    return apiRequest<any>(`/api/analytics${qs ? `?${qs}` : ''}`);
+  },
   reportSummary: (from: string, to: string) =>
     apiRequest<ReportSummary>(`/api/reports/summary?from=${from}&to=${to}`),
   dashboard: {
@@ -360,6 +417,12 @@ export const hexaTrackApi = {
       const raw = await apiRequest<AdminAnalyticsDashboard>(`/api/admin/analytics/dashboard?days=${days}`);
       return normalizeAdminAnalyticsDashboard(raw);
     },
+    categoryTotals: (days = 30, orgId?: string) => {
+      const params = new URLSearchParams();
+      params.set('days', String(days));
+      if (orgId) params.set('orgId', orgId);
+      return apiRequest<AdminExpenseCategoryAgg[]>(`/api/admin/analytics/categories?${params.toString()}`);
+    },
     globalSettings: () => apiRequest<GlobalSettingDto[]>('/api/admin/global-settings'),
     setGlobalSetting: (key: string, value: string) =>
       apiRequest<void>(`/api/admin/global-settings/${encodeURIComponent(key)}`, {
@@ -373,6 +436,13 @@ export const hexaTrackApi = {
       p.set('pageSize', String(pageSize));
       return apiRequest<AdminOrganizationListResult>(`/api/admin/organizations?${p.toString()}`);
     },
+    individualUsers: (query?: string, page = 1, pageSize = 20) => {
+      const p = new URLSearchParams();
+      if (query) p.set('query', query);
+      p.set('page', String(page));
+      p.set('pageSize', String(pageSize));
+      return apiRequest<AdminUserListResult>(`/api/admin/users/individual?${p.toString()}`);
+    },
     organizationAnalytics: () =>
       apiRequest<AdminOrganizationAnalytics>('/api/admin/organizations/analytics'),
     allOrganizations: () =>
@@ -381,16 +451,41 @@ export const hexaTrackApi = {
       apiRequest<LightBranch[]>(`/api/admin/organizations/branches${organizationId ? `?organizationId=${organizationId}` : ''}`),
     getOrganizationDetails: (id: string) =>
       apiRequest<AdminOrganizationDetailsDto>(`/api/admin/organizations/${id}`),
+    getOrganizationFinancials: (id: string, days = 30) =>
+      apiRequest<OrgFinancialSummaryDto>(`/api/admin/organizations/${id}/financials?days=${days}`),
     createOrganization: (payload: CreateOrganizationRequest) =>
       apiRequest<any>('/api/admin/organizations', {
         method: 'POST',
         body: payload,
       }),
+    updateOrganization: (id: string, payload: UpdateOrganizationRequest) =>
+      apiRequest<any>(`/api/admin/organizations/${id}`, {
+        method: 'PUT',
+        body: payload,
+      }),
+    suspendOrganization: (id: string, payload: SuspendOrganizationRequest) =>
+      apiRequest<void>(`/api/admin/organizations/${id}/suspend`, {
+        method: 'POST',
+        body: payload,
+      }),
+    activateOrganization: (id: string) =>
+      apiRequest<void>(`/api/admin/organizations/${id}/activate`, { method: 'POST' }),
+    deleteOrganization: (id: string) =>
+      apiRequest<void>(`/api/admin/organizations/${id}`, { method: 'DELETE' }),
     createBranch: (payload: CreateBranchRequest) =>
       apiRequest<any>('/api/admin/organizations/branch', {
         method: 'POST',
         body: payload,
       }),
+    getBranch: (id: string) =>
+      apiRequest<LightBranch>(`/api/admin/organizations/branch/${id}`),
+    updateBranch: (id: string, payload: UpdateBranchRequest) =>
+      apiRequest<any>(`/api/admin/organizations/branch/${id}`, {
+        method: 'PUT',
+        body: payload,
+      }),
+    deleteBranch: (id: string) =>
+      apiRequest<void>(`/api/admin/organizations/branch/${id}`, { method: 'DELETE' }),
     addOwner: (payload: AddOwnerRequest) =>
       apiRequest<any>('/api/admin/organizations/owner', {
         method: 'POST',
@@ -401,6 +496,64 @@ export const hexaTrackApi = {
         method: 'POST',
         body: payload,
       }),
+    reassignStaffBranch: (userId: string, payload: ReassignStaffBranchRequest) =>
+      apiRequest<void>(`/api/admin/organizations/staff/${userId}/branch`, {
+        method: 'PUT',
+        body: payload,
+      }),
+    removeStaff: (userId: string) =>
+      apiRequest<void>(`/api/admin/organizations/staff/${userId}`, { method: 'DELETE' }),
+    routes: {
+      list: (organizationId?: string, branchId?: string, page = 1, pageSize = 20) => {
+        const params = new URLSearchParams();
+        if (organizationId) params.set('organizationId', organizationId);
+        if (branchId) params.set('branchId', branchId);
+        params.set('page', String(page));
+        params.set('pageSize', String(pageSize));
+        return apiRequest<PagedResult<RouteDto>>(`/api/admin/routes?${params.toString()}`);
+      },
+      get: (id: string) => apiRequest<RouteDto>(`/api/admin/routes/${id}`),
+      create: (payload: CreateRouteRequest) =>
+        apiRequest<RouteDto>('/api/admin/routes', { method: 'POST', body: payload }),
+      update: (id: string, payload: UpdateRouteRequest) =>
+        apiRequest<RouteDto>(`/api/admin/routes/${id}`, { method: 'PUT', body: payload }),
+      delete: (id: string) => apiRequest<void>(`/api/admin/routes/${id}`, { method: 'DELETE' }),
+      assignStaff: (id: string, userId: string) =>
+        apiRequest<void>(`/api/admin/routes/${id}/assign-staff/${userId}`, { method: 'POST' }),
+      unassignStaff: (id: string, userId: string) =>
+        apiRequest<void>(`/api/admin/routes/${id}/assign-staff/${userId}`, { method: 'DELETE' }),
+    },
+  },
+  staff: {
+    dashboard: () => apiRequest<StaffDashboardDto>('/api/staff/dashboard'),
+    tasks: () => apiRequest<StaffTask[]>('/api/staff/tasks'),
+    transactions: (params: TransactionSearchParams = {}) => {
+      const q = new URLSearchParams();
+      if (params.query?.trim()) q.set('query', params.query.trim());
+      if (params.type) q.set('type', params.type);
+      q.set('page', String(params.page ?? 1));
+      q.set('pageSize', String(params.pageSize ?? 50));
+      return apiRequest<PagedResult<Transaction>>(`/api/staff/transactions?${q.toString()}`);
+    },
+    createTransaction: (payload: unknown) =>
+      apiRequest<Transaction>('/api/staff/transactions', { method: 'POST', body: payload }),
+    createIncome: (payload: unknown) =>
+      apiRequest<Transaction>('/api/staff/income', { method: 'POST', body: payload }),
+    createExpense: (payload: unknown) =>
+      apiRequest<Transaction>('/api/staff/expenses', { method: 'POST', body: payload }),
+    assignBranch: (userId: string, branchId: string) =>
+      apiRequest<AdminUserListItem>('/api/staff/assign-branch', {
+        method: 'POST',
+        body: { userId, branchId },
+      }),
+    reassign: (id: string, payload: StaffReassignRequest) =>
+      apiRequest<AdminUserListItem>(`/api/staff/${id}/reassign`, {
+        method: 'PATCH',
+        body: payload,
+      }),
+  },
+  branches: {
+    staff: (id: string) => apiRequest<AdminUserListItem[]>(`/api/branches/${id}/staff`),
   },
   workspaces: {
     list: () => apiRequest<Workspace[]>('/api/workspaces'),
@@ -417,8 +570,15 @@ export const hexaTrackApi = {
       apiRequest<OrganizationOverviewDto>('/api/owner/overview'),
     listBranches: () =>
       apiRequest<LightBranch[]>('/api/owner/branches'),
-    listStaff: () =>
-      apiRequest<AdminUserListItem[]>('/api/owner/staff'),
+    listStaff: (branchId?: string, query?: string) => {
+      const params = new URLSearchParams();
+      if (branchId) params.set('branchId', branchId);
+      if (query?.trim()) params.set('query', query.trim());
+      const qs = params.toString();
+      return apiRequest<AdminUserListItem[]>(`/api/owner/staff${qs ? `?${qs}` : ''}`);
+    },
+    branchStaff: (branchId: string) =>
+      apiRequest<AdminUserListItem[]>(`/api/owner/branches/${branchId}/staff`),
     createStaff: (payload: CreateOwnerStaffRequest) =>
       apiRequest<any>('/api/owner/staff', { method: 'POST', body: payload }),
     assets: {

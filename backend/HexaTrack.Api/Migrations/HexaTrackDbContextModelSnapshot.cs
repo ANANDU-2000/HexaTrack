@@ -41,6 +41,9 @@ namespace HexaTrack.Api.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("IsArchived")
                         .HasColumnType("boolean");
 
@@ -222,7 +225,7 @@ namespace HexaTrack.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
@@ -241,7 +244,7 @@ namespace HexaTrack.Api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
-                    b.Property<DateTime>("PurchaseDate")
+                    b.Property<DateTimeOffset>("PurchaseDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Status")
@@ -249,7 +252,7 @@ namespace HexaTrack.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -362,6 +365,9 @@ namespace HexaTrack.Api.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Icon")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
@@ -389,6 +395,10 @@ namespace HexaTrack.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ParentCategoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("WorkspaceId", "UserId");
 
                     b.HasIndex("WorkspaceId", "Name", "ParentCategoryId")
                         .IsUnique()
@@ -658,6 +668,15 @@ namespace HexaTrack.Api.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsSuspended")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("MaxBranches")
                         .HasColumnType("integer");
 
@@ -669,19 +688,19 @@ namespace HexaTrack.Api.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
-                    b.Property<string>("Plan")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("Plan")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Slug")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<string>("SuspendReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTimeOffset?>("SuspendedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -691,6 +710,8 @@ namespace HexaTrack.Api.Migrations
                     b.HasIndex("Slug")
                         .IsUnique()
                         .HasFilter("\"Slug\" IS NOT NULL");
+
+                    b.HasIndex("Plan", "IsActive");
 
                     b.ToTable("Organizations");
                 });
@@ -755,6 +776,53 @@ namespace HexaTrack.Api.Migrations
                     b.ToTable("RecurringTransactions");
                 });
 
+            modelBuilder.Entity("HexaTrack.Api.Domain.Entities.Route", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("BranchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("OrganizationId", "Code")
+                        .IsUnique()
+                        .HasFilter("\"Code\" IS NOT NULL");
+
+                    b.HasIndex("OrganizationId", "IsActive");
+
+                    b.ToTable("Routes");
+                });
+
             modelBuilder.Entity("HexaTrack.Api.Domain.Entities.Tag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -803,6 +871,9 @@ namespace HexaTrack.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("IdempotencyKey")
                         .HasMaxLength(120)
@@ -880,6 +951,9 @@ namespace HexaTrack.Api.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Department")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -913,6 +987,12 @@ namespace HexaTrack.Api.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("RouteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
@@ -925,6 +1005,8 @@ namespace HexaTrack.Api.Migrations
                         .HasFilter("\"GoogleSubject\" IS NOT NULL");
 
                     b.HasIndex("OrganizationId");
+
+                    b.HasIndex("RouteId");
 
                     b.ToTable("Users");
                 });
@@ -1170,6 +1252,12 @@ namespace HexaTrack.Api.Migrations
                         .HasForeignKey("ParentCategoryId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("HexaTrack.Api.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("HexaTrack.Api.Domain.Entities.Workspace", "Workspace")
                         .WithMany()
                         .HasForeignKey("WorkspaceId")
@@ -1221,6 +1309,24 @@ namespace HexaTrack.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Workspace");
+                });
+
+            modelBuilder.Entity("HexaTrack.Api.Domain.Entities.Route", b =>
+                {
+                    b.HasOne("HexaTrack.Api.Domain.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("HexaTrack.Api.Domain.Entities.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("HexaTrack.Api.Domain.Entities.Tag", b =>
@@ -1292,9 +1398,16 @@ namespace HexaTrack.Api.Migrations
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("HexaTrack.Api.Domain.Entities.Route", "Route")
+                        .WithMany("AssignedStaff")
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Branch");
 
                     b.Navigation("Organization");
+
+                    b.Navigation("Route");
                 });
 
             modelBuilder.Entity("HexaTrack.Api.Domain.Entities.Workspace", b =>
@@ -1371,6 +1484,11 @@ namespace HexaTrack.Api.Migrations
                     b.Navigation("Branches");
 
                     b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("HexaTrack.Api.Domain.Entities.Route", b =>
+                {
+                    b.Navigation("AssignedStaff");
                 });
 
             modelBuilder.Entity("HexaTrack.Api.Domain.Entities.Transaction", b =>

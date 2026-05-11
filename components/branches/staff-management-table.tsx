@@ -9,6 +9,12 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { hexaTrackApi } from '@/lib/api';
 import type { AdminUserListItem, LightBranch } from '@/lib/types';
+import { BranchBadge } from '@/components/branches/branch-badge';
+import { BranchFilterDropdown } from '@/components/branches/branch-filter-dropdown';
+import { BranchSelector } from '@/components/branches/branch-selector';
+import { BranchStaffAnalytics } from '@/components/branches/branch-staff-analytics';
+import { ReassignBranchModal } from '@/components/branches/reassign-branch-modal';
+import { StaffBranchCard } from '@/components/branches/staff-branch-card';
 
 export function StaffManagementTable() {
   const [search, setSearch] = useState('');
@@ -16,6 +22,8 @@ export function StaffManagementTable() {
   const [branches, setBranches] = useState<LightBranch[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBranchId, setSelectedBranchId] = useState('');
+  const [reassigning, setReassigning] = useState<AdminUserListItem | null>(null);
 
   async function loadData() {
     setLoading(true);
@@ -38,10 +46,18 @@ export function StaffManagementTable() {
   }, []);
 
   const filtered = staff.filter(s => 
-    s.displayName?.toLowerCase().includes(search.toLowerCase()) || 
-    s.email.toLowerCase().includes(search.toLowerCase()) ||
-    s.department?.toLowerCase().includes(search.toLowerCase())
+    (!selectedBranchId || s.branchId === selectedBranchId) &&
+    (
+      s.displayName?.toLowerCase().includes(search.toLowerCase()) || 
+      s.email.toLowerCase().includes(search.toLowerCase()) ||
+      s.department?.toLowerCase().includes(search.toLowerCase()) ||
+      s.branchName?.toLowerCase().includes(search.toLowerCase())
+    )
   );
+
+  function updateStaffRow(updated: AdminUserListItem) {
+    setStaff((items) => items.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)));
+  }
 
   return (
     <div className="space-y-5 animate-in fade-in duration-500 pb-10">
@@ -61,41 +77,33 @@ export function StaffManagementTable() {
         </button>
       </div>
 
-      {/* Dashboard Summary Tiles */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-         <div className="bg-[#111827] border border-white/[0.05] rounded-2xl p-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-[0.03]"><UsersFull size={64} /></div>
-            <div className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-1">Total Personnel</div>
-            <div className="text-3xl font-black text-white">{staff.length}</div>
-         </div>
-         <div className="bg-[#111827] border border-white/[0.05] rounded-2xl p-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-[0.03]"><Building2 size={64} /></div>
-            <div className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-1">Covered Branches</div>
-            <div className="text-3xl font-black text-white">{branches.length}</div>
-         </div>
-         <div className="bg-[#111827] border border-white/[0.05] rounded-2xl p-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-[0.03]"><CheckCircle2 size={64} /></div>
-            <div className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-1">Network Integrity</div>
-            <div className="text-2xl font-black text-[#22C55E]">SECURE</div>
-         </div>
-      </div>
+      <BranchStaffAnalytics staff={staff} branches={branches} />
 
       {/* Filters Toolbar */}
-      <div className="flex gap-3 items-center">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]/50 h-4 w-4" />
           <input 
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search vector by name, email, or dept..."
+            placeholder="Search by name, email, branch, or dept..."
             className="w-full h-12 bg-[#111827] border border-white/[0.06] rounded-xl pl-11 pr-4 text-sm text-white placeholder:text-[#9CA3AF]/40 outline-none focus:border-[#4F8CFF]/50 transition-all shadow-sm"
           />
         </div>
+        <BranchFilterDropdown branches={branches} value={selectedBranchId} onChange={setSelectedBranchId} />
+      </div>
+
+      <div className="grid gap-3 md:hidden">
+        {filtered.map((item) => (
+          <button key={item.id} type="button" onClick={() => setReassigning(item)} className="text-left">
+            <StaffBranchCard staff={item} />
+          </button>
+        ))}
       </div>
 
       {/* Tabular Engine */}
-      <div className="bg-[#111827] border border-white/[0.06] rounded-[24px] overflow-hidden shadow-xl relative min-h-[300px]">
+      <div className="bg-[#111827] border border-white/[0.06] rounded-[24px] overflow-hidden shadow-xl relative min-h-[300px] hidden md:block">
         {loading && staff.length === 0 ? (
            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#111827]/90 backdrop-blur-sm z-10">
              <Loader2 className="animate-spin h-8 w-8 text-[#4F8CFF] mb-3" />
@@ -107,11 +115,11 @@ export function StaffManagementTable() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/[0.04] bg-white/[0.02]">
-                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Associate Identity</th>
-                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Deployment Node</th>
-                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Authorization</th>
-                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Lifecycle</th>
-                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest text-right">Tactical</th>
+                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Avatar / Name / Email</th>
+                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Department</th>
+                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Assigned Branch</th>
+                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Status</th>
+                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
@@ -129,19 +137,13 @@ export function StaffManagementTable() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                     <div>
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                          <Briefcase size={12} className="text-[#9CA3AF]" />
-                          {s.department || 'Finance'}
-                        </div>
-                        {/* Branch binding placeholder logic if applicable in subsequent models */}
-                        <div className="text-[10px] text-[#9CA3AF] mt-0.5 uppercase font-medium">Standard Department</div>
+                     <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                       <Briefcase size={12} className="text-[#9CA3AF]" />
+                       {s.department || 'Finance'}
                      </div>
                   </td>
                   <td className="px-6 py-4">
-                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-500/10 border border-purple-500/20 text-purple-400">
-                        <Shield size={11} /> Staff Vector
-                     </span>
+                     <BranchBadge name={s.branchName} />
                   </td>
                   <td className="px-6 py-4">
                      {s.isLocked ? (
@@ -156,7 +158,8 @@ export function StaffManagementTable() {
                   </td>
                   <td className="px-6 py-4 text-right">
                      <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="h-8 w-8 flex items-center justify-center hover:bg-white/[0.05] border border-transparent hover:border-white/[0.1] rounded-lg text-[#9CA3AF] hover:text-white transition-all" title="Key Reset"><KeyRound size={14} /></button>
+                        <button onClick={() => setReassigning(s)} className="h-8 px-3 flex items-center justify-center hover:bg-[#4F8CFF]/10 border border-transparent hover:border-[#4F8CFF]/20 rounded-lg text-[#9CA3AF] hover:text-[#4F8CFF] transition-all text-xs font-bold" title="Change Branch">Change Branch</button>
+                        <button className="h-8 w-8 flex items-center justify-center hover:bg-white/[0.05] border border-transparent hover:border-white/[0.1] rounded-lg text-[#9CA3AF] hover:text-white transition-all" title="Reset Password"><KeyRound size={14} /></button>
                         <button className="h-8 w-8 flex items-center justify-center hover:bg-red-500/10 border border-transparent hover:border-red-500/20 rounded-lg text-[#9CA3AF] hover:text-red-400 transition-all" title="Terminate Access"><Trash2 size={14} /></button>
                         <button className="h-8 w-8 flex items-center justify-center hover:bg-white/[0.05] border border-transparent hover:border-white/[0.1] rounded-lg text-[#9CA3AF] hover:text-white transition-all"><MoreHorizontal size={14} /></button>
                      </div>
@@ -201,6 +204,14 @@ export function StaffManagementTable() {
                  void loadData();
               }}
            />
+        )}
+        {reassigning && (
+          <ReassignBranchModal
+            staff={reassigning}
+            branches={branches}
+            onClose={() => setReassigning(null)}
+            onSaved={updateStaffRow}
+          />
         )}
       </AnimatePresence>
     </div>
@@ -308,18 +319,12 @@ function CreateStaffModal({ branches, onClose, onSuccess }: { branches: LightBra
 
            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                 <label className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest ml-1">Branch Cluster</label>
-                 <select 
-                   required
+                 <BranchSelector
+                   branches={branches}
                    value={form.branchId}
-                   onChange={(e) => setForm({...form, branchId: e.target.value})}
-                   className="w-full h-12 px-3 bg-[#111827] border border-white/[0.06] rounded-xl text-sm text-white font-medium focus:border-[#4F8CFF]/50 outline-none appearance-none cursor-pointer"
-                 >
-                    {branches.length === 0 && <option value="">No Branches Found</option>}
-                    {branches.map((br) => (
-                       <option key={br.id} value={br.id} className="bg-[#0B1015] text-white">{br.name}</option>
-                    ))}
-                 </select>
+                   onChange={(branchId) => setForm({...form, branchId})}
+                   label="Branch Cluster"
+                 />
               </div>
 
               <div className="space-y-1.5">

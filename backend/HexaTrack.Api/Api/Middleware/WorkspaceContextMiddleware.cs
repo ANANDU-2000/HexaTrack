@@ -104,7 +104,10 @@ public sealed class WorkspaceContextMiddleware(RequestDelegate next)
         if (path.StartsWithSegments("/api/subscription") ||
             path.StartsWithSegments("/api/backup") ||
             path.StartsWithSegments("/api/groups") ||
-            path.StartsWithSegments("/api/owner"))
+            path.StartsWithSegments("/api/owner") ||
+            path.StartsWithSegments("/api/staff") ||
+            path.StartsWithSegments("/api/ledger") ||
+            path.StartsWithSegments("/api/analytics"))
         {
             return false;
         }

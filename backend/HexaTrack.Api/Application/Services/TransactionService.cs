@@ -14,9 +14,13 @@ public interface ITransactionService
     Task<IReadOnlyCollection<TransactionDto>> ListAsync(DateOnly? from, DateOnly? to, CancellationToken cancellationToken);
     Task<PagedResult<TransactionDto>> SearchAsync(TransactionSearchRequest request, CancellationToken cancellationToken);
     Task<TransactionDto> CreateAsync(CreateTransactionRequest request, CancellationToken cancellationToken);
+    Task<TransactionDto> UpdateAsync(Guid transactionId, UpdateTransactionRequest request, CancellationToken cancellationToken);
+    Task DeleteAsync(Guid transactionId, CancellationToken cancellationToken);
+    Task BulkDeleteAsync(BulkDeleteTransactionsRequest request, CancellationToken cancellationToken);
 }
 
 public sealed class TransactionService(
+    HexaTrackDbContext db,
     IUserScopedRepository<DomainTransaction> transactions,
     IUserScopedRepository<Account> accounts,
     IUserScopedRepository<Category> categories,
@@ -27,19 +31,27 @@ public sealed class TransactionService(
 {
     public async Task<IReadOnlyCollection<TransactionDto>> ListAsync(DateOnly? from, DateOnly? to, CancellationToken cancellationToken)
     {
+        if (from is null || to is null)
+        {
+            throw new InvalidOperationException("Use GET /api/transactions/search with date range. Direct list requires from + to.");
+        }
+
+        int daySpan = to.Value.DayNumber - from.Value.DayNumber;
+        if (daySpan < 0)
+        {
+            throw new InvalidOperationException("The end date must be on or after the start date.");
+        }
+
+        if (daySpan > 92)
+        {
+            throw new InvalidOperationException("Date range cannot exceed 92 days for list endpoint.");
+        }
+
         IQueryable<DomainTransaction> query = transactions.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
             .Include(x => x.TransactionTags).ThenInclude(x => x.Tag)
             .OrderByDescending(x => x.OccurredOn).ThenByDescending(x => x.CreatedAt);
 
-        if (from.HasValue)
-        {
-            query = query.Where(x => x.OccurredOn >= from.Value);
-        }
-
-        if (to.HasValue)
-        {
-            query = query.Where(x => x.OccurredOn <= to.Value);
-        }
+        query = query.Where(x => x.OccurredOn >= from.Value && x.OccurredOn <= to.Value);
 
         return await query.Select(x => new TransactionDto(
             x.Id,
@@ -60,6 +72,8 @@ public sealed class TransactionService(
         int page = Math.Max(request.Page, 1);
         int pageSize = Math.Clamp(request.PageSize, 1, 100);
         IQueryable<DomainTransaction> query = transactions.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+            .Include(x => x.Account)
+            .Include(x => x.Category)
             .Include(x => x.TransactionTags).ThenInclude(x => x.Tag);
 
         if (request.From.HasValue)
@@ -92,7 +106,9 @@ public sealed class TransactionService(
             string term = request.Query.Trim().ToLowerInvariant();
             query = query.Where(x =>
                 (x.Merchant != null && x.Merchant.ToLower().Contains(term)) ||
-                (x.Note != null && x.Note.ToLower().Contains(term)));
+                (x.Note != null && x.Note.ToLower().Contains(term)) ||
+                (x.Category != null && x.Category.Name.ToLower().Contains(term)) ||
+                (x.Account != null && x.Account.Name.ToLower().Contains(term)));
         }
 
         if (request.TransfersOnly)
@@ -198,5 +214,145 @@ public sealed class TransactionService(
 
             return new TransactionDto(transaction.Id, transaction.AccountId, transaction.CategoryId, transaction.Type, transaction.Amount, transaction.Currency, transaction.Merchant, transaction.Note, transaction.OccurredOn, []);
         }, cancellationToken);
+
+    public Task<TransactionDto> UpdateAsync(Guid transactionId, UpdateTransactionRequest request, CancellationToken cancellationToken)
+        => unitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            DomainTransaction transaction = await transactions.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                .Include(x => x.TransactionTags).ThenInclude(x => x.Tag)
+                .SingleOrDefaultAsync(x => x.Id == transactionId, ct)
+                ?? throw new KeyNotFoundException("Transaction not found.");
+
+            decimal newAmount = request.Amount ?? transaction.Amount;
+            if (newAmount <= 0)
+            {
+                throw new InvalidOperationException("Amount must be greater than zero.");
+            }
+
+            Guid newCategoryId = request.CategoryId ?? transaction.CategoryId;
+            if (newCategoryId != transaction.CategoryId)
+            {
+                Category? categoryRow = await categories.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                    .SingleOrDefaultAsync(x => x.Id == newCategoryId && x.Type == transaction.Type && !x.IsArchived, ct);
+                if (categoryRow is null)
+                {
+                    throw new InvalidOperationException("Category is invalid for this transaction type.");
+                }
+
+                bool categoryHasSubcategories = await categories.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                    .AnyAsync(x => x.ParentCategoryId == newCategoryId && !x.IsArchived, ct);
+                if (categoryHasSubcategories)
+                {
+                    throw new InvalidOperationException("Choose a subcategory for this category.");
+                }
+            }
+
+            decimal oldEffect = BalanceEffect(transaction.Type, transaction.Amount);
+            decimal newEffect = BalanceEffect(transaction.Type, newAmount);
+            decimal delta = newEffect - oldEffect;
+            if (delta != 0)
+            {
+                int updated = await accounts.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                    .Where(a => a.Id == transaction.AccountId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(a => a.Balance, a => a.Balance + delta), ct);
+                if (updated == 0)
+                {
+                    throw new KeyNotFoundException("Account not found.");
+                }
+            }
+
+            transaction.CategoryId = newCategoryId;
+            transaction.Amount = newAmount;
+            transaction.Merchant = request.Merchant;
+            transaction.Note = request.Note;
+            transaction.OccurredOn = request.OccurredOn ?? transaction.OccurredOn;
+
+            if (request.TagIds is not null)
+            {
+                await db.TransactionTags
+                    .Where(tt => tt.TransactionId == transaction.Id)
+                    .ExecuteDeleteAsync(ct);
+
+                List<Guid> validTagIds = await tags.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                    .Where(x => request.TagIds.Contains(x.Id))
+                    .Select(x => x.Id)
+                    .ToListAsync(ct);
+
+                transaction.TransactionTags = validTagIds.Distinct()
+                    .Select(tagId => new TransactionTag { TransactionId = transaction.Id, TagId = tagId })
+                    .ToList();
+            }
+
+            return ToDto(transaction);
+        }, cancellationToken);
+
+    public Task DeleteAsync(Guid transactionId, CancellationToken cancellationToken)
+        => unitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            DomainTransaction transaction = await transactions.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                .SingleOrDefaultAsync(x => x.Id == transactionId, ct)
+                ?? throw new KeyNotFoundException("Transaction not found.");
+
+            decimal reversal = -BalanceEffect(transaction.Type, transaction.Amount);
+            if (reversal != 0)
+            {
+                int updated = await accounts.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                    .Where(a => a.Id == transaction.AccountId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(a => a.Balance, a => a.Balance + reversal), ct);
+                if (updated == 0)
+                {
+                    throw new KeyNotFoundException("Account not found.");
+                }
+            }
+
+            transaction.DeletedAt = DateTimeOffset.UtcNow;
+        }, cancellationToken);
+
+    public Task BulkDeleteAsync(BulkDeleteTransactionsRequest request, CancellationToken cancellationToken)
+        => unitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            if (request.TransactionIds.Count is < 1 or > 100)
+            {
+                throw new InvalidOperationException("Bulk delete supports 1 to 100 transactions.");
+            }
+
+            Guid[] ids = request.TransactionIds.Distinct().ToArray();
+            List<DomainTransaction> rows = await transactions.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                .Where(t => ids.Contains(t.Id))
+                .ToListAsync(ct);
+
+            if (rows.Count != ids.Length)
+            {
+                throw new InvalidOperationException("One or more transactions do not belong to the current workspace.");
+            }
+
+            foreach (DomainTransaction transaction in rows)
+            {
+                decimal reversal = -BalanceEffect(transaction.Type, transaction.Amount);
+                if (reversal != 0)
+                {
+                    await accounts.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                        .Where(a => a.Id == transaction.AccountId)
+                        .ExecuteUpdateAsync(s => s.SetProperty(a => a.Balance, a => a.Balance + reversal), ct);
+                }
+                transaction.DeletedAt = DateTimeOffset.UtcNow;
+            }
+        }, cancellationToken);
+
+    private static decimal BalanceEffect(TransactionType type, decimal amount)
+        => type == TransactionType.Income ? amount : -amount;
+
+    private static TransactionDto ToDto(DomainTransaction transaction)
+        => new(
+            transaction.Id,
+            transaction.AccountId,
+            transaction.CategoryId,
+            transaction.Type,
+            transaction.Amount,
+            transaction.Currency,
+            transaction.Merchant,
+            transaction.Note,
+            transaction.OccurredOn,
+            transaction.TransactionTags.Select(tt => new TagDto(tt.TagId, tt.Tag!.Name)).ToList());
 }
 

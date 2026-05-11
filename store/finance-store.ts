@@ -197,12 +197,15 @@ export const useFinanceStore = create<FinanceState>((set) => ({
       });
 
       const { from, to } = monthToDateRange();
-      const dash = await hexaTrackApi.dashboard.summary(from, to);
+      const [dash, nextAccounts] = await Promise.all([
+        hexaTrackApi.dashboard.summary(from, to),
+        hexaTrackApi.accounts(),
+      ]);
 
       set((state) => {
         const nextTransactions = [created, ...state.transactions];
         cacheWorkspace({
-          accounts: state.accounts,
+          accounts: nextAccounts,
           categories: state.categories,
           tags: state.tags,
           recurring: state.recurring,
@@ -212,48 +215,17 @@ export const useFinanceStore = create<FinanceState>((set) => ({
           dashboard: dash,
         });
         return {
+          accounts: nextAccounts,
           transactions: nextTransactions,
           report: dash.report,
           dashboard: dash,
           loading: false,
         };
       });
-    } catch {
-      set((state) => {
-        const tags = (transaction.tagNames ?? []).map((name) => ({ id: `tag-${name}`, name }));
-        const nextTransaction: Transaction = {
-          ...transaction,
-          id: crypto.randomUUID(),
-          tags,
-        };
-
-        const nextTransactions = [nextTransaction, ...state.transactions];
-        const nextAccounts = state.accounts.map((account) => {
-          if (account.id !== transaction.accountId) return account;
-          const delta = transaction.type === 'Income' ? transaction.amount : -transaction.amount;
-          return { ...account, balance: account.balance + delta };
-        });
-        const nextReport = makeReport(nextTransactions);
-
-        cacheWorkspace({
-          accounts: nextAccounts,
-          categories: state.categories,
-          tags: [...state.tags, ...tags].filter((tag, index, rows) => rows.findIndex((item) => item.name === tag.name) === index),
-          recurring: state.recurring,
-          groupExpenses: state.groupExpenses,
-          transactions: nextTransactions,
-          report: nextReport,
-          dashboard: null,
-        });
-
-        return {
-          transactions: nextTransactions,
-          accounts: nextAccounts,
-          report: nextReport,
-          dashboard: null,
-          loading: false,
-          error: typeof navigator !== 'undefined' && !navigator.onLine ? 'Saved locally. HexaTrack will keep this transaction available offline.' : 'Saved locally. Connect the ASP.NET API to persist this transaction.',
-        };
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unable to persist transaction.',
       });
     }
   },

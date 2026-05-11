@@ -47,6 +47,16 @@ public enum SubscriptionPlan
     ProMax = 4
 }
 
+public enum OrgPlan
+{
+    Free = 0,
+    Basic = 1,
+    Growth = 2,
+    Pro = 3,
+    ProMax = 4,
+    Enterprise = 5
+}
+
 public enum BackupStatus
 {
     Pending = 1,

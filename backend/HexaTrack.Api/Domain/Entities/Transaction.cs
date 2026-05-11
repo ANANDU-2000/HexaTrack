@@ -18,6 +18,7 @@ public sealed class Transaction
     public Guid? TransferId { get; set; }
     public DateOnly OccurredOn { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? DeletedAt { get; set; }
 
     public Account? Account { get; set; }
     public Category? Category { get; set; }

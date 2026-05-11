@@ -9,6 +9,7 @@ public interface IAdminAnalyticsService
 {
     Task<AdminAnalyticsOverviewDto> GetOverviewAsync(CancellationToken cancellationToken);
     Task<AdminAnalyticsDashboardDto> GetDashboardAsync(int days, CancellationToken cancellationToken);
+    Task<IReadOnlyList<AdminExpenseCategoryAggDto>> GetCategoryTotalsAsync(int days, Guid? orgId, CancellationToken cancellationToken);
 }
 
 public sealed class AdminAnalyticsService(HexaTrackDbContext db) : IAdminAnalyticsService
@@ -55,6 +56,7 @@ public sealed class AdminAnalyticsService(HexaTrackDbContext db) : IAdminAnalyti
         days = Math.Clamp(days, 7, 365);
         DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
         DateOnly start = today.AddDays(-days + 1);
+        DateOnly financialStart30d = today.AddDays(-29);
 
         DateTimeOffset fromDateTime = new(start.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
@@ -161,6 +163,17 @@ public sealed class AdminAnalyticsService(HexaTrackDbContext db) : IAdminAnalyti
             .Select(x => new AdminExpenseCategoryAggDto(x.Name, x.Currency, x.Total, x.Count))
             .ToList();
 
+        decimal incomeSum30d = await db.Transactions.AsNoTracking()
+            .Where(t => t.Type == TransactionType.Income && t.OccurredOn >= financialStart30d && t.OccurredOn <= today)
+            .SumAsync(t => t.Amount, cancellationToken);
+        decimal expenseSum30d = await db.Transactions.AsNoTracking()
+            .Where(t => t.Type == TransactionType.Expense && t.OccurredOn >= financialStart30d && t.OccurredOn <= today)
+            .SumAsync(t => t.Amount, cancellationToken);
+        int activeOrgs = await db.Organizations.AsNoTracking().CountAsync(o => o.IsActive && !o.IsSuspended, cancellationToken);
+        int suspendedOrgs = await db.Organizations.AsNoTracking().CountAsync(o => o.IsSuspended, cancellationToken);
+        int individualUsers = await db.Users.AsNoTracking().CountAsync(u => u.OrganizationId == null && !u.IsSuperAdmin, cancellationToken);
+        int organizationUsers = await db.Users.AsNoTracking().CountAsync(u => u.OrganizationId != null, cancellationToken);
+
         List<AdminTimeSeriesPointDto> newUsers = [];
         List<AdminTimeSeriesPointDto> cumUsers = [];
         List<AdminTimeSeriesPointDto> newWs = [];
@@ -207,7 +220,45 @@ public sealed class AdminAnalyticsService(HexaTrackDbContext db) : IAdminAnalyti
             txSeries,
             paidSubSeries,
             tokenCostSeries,
-            expenseCats);
+            expenseCats,
+            incomeSum30d,
+            expenseSum30d,
+            incomeSum30d - expenseSum30d,
+            activeOrgs,
+            suspendedOrgs,
+            individualUsers,
+            organizationUsers);
+    }
+
+    public async Task<IReadOnlyList<AdminExpenseCategoryAggDto>> GetCategoryTotalsAsync(int days, Guid? orgId, CancellationToken cancellationToken)
+    {
+        days = Math.Clamp(days, 1, 365);
+        DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+        DateOnly start = today.AddDays(-days + 1);
+
+        IQueryable<HexaTrack.Api.Domain.Entities.Transaction> txQuery = db.Transactions.AsNoTracking()
+            .Where(t => t.Type == TransactionType.Expense && t.OccurredOn >= start && t.OccurredOn <= today);
+
+        if (orgId.HasValue)
+        {
+            List<Guid> workspaceIds = await db.Branches.AsNoTracking()
+                .Where(b => b.OrganizationId == orgId.Value && b.WorkspaceId.HasValue)
+                .Select(b => b.WorkspaceId!.Value)
+                .ToListAsync(cancellationToken);
+            txQuery = txQuery.Where(t => workspaceIds.Contains(t.WorkspaceId));
+        }
+
+        return await txQuery
+            .Join(
+                db.Categories.AsNoTracking(),
+                t => t.CategoryId,
+                c => c.Id,
+                (t, c) => new { c.Name, t.Currency, t.Amount })
+            .GroupBy(x => new { x.Name, x.Currency })
+            .Select(g => new AdminExpenseCategoryAggDto(g.Key.Name, g.Key.Currency, g.Sum(x => x.Amount), g.Count()))
+            .OrderByDescending(x => x.TotalAmount)
+            .Take(20)
+            .ToListAsync(cancellationToken);
     }
 
     private static decimal PlanMonthlyInr(SubscriptionPlan plan) =>

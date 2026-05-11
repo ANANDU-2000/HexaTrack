@@ -13,6 +13,7 @@ public sealed class Category
     public string? Color { get; set; }
     public string? Icon { get; set; }
     public bool IsArchived { get; set; }
+    public DateTimeOffset? DeletedAt { get; set; }
 
     public Category? ParentCategory { get; set; }
     public ICollection<Category> Subcategories { get; set; } = new List<Category>();

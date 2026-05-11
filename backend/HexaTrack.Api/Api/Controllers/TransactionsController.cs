@@ -21,5 +21,23 @@ public sealed class TransactionsController(ITransactionService transactionServic
     [HttpPost]
     public Task<TransactionDto> Create(CreateTransactionRequest request, CancellationToken cancellationToken)
         => transactionService.CreateAsync(request, cancellationToken);
+
+    [HttpPut("{id:guid}")]
+    public Task<TransactionDto> Update(Guid id, UpdateTransactionRequest request, CancellationToken cancellationToken)
+        => transactionService.UpdateAsync(id, request, cancellationToken);
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        await transactionService.DeleteAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("bulk-delete")]
+    public async Task<IActionResult> BulkDelete(BulkDeleteTransactionsRequest request, CancellationToken cancellationToken)
+    {
+        await transactionService.BulkDeleteAsync(request, cancellationToken);
+        return NoContent();
+    }
 }
 

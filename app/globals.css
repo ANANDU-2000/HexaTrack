@@ -118,6 +118,10 @@ video {
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
   }
 
+  .input-finance {
+    @apply h-12 w-full rounded-xl border border-white/[0.06] bg-[#121A22] px-4 text-sm font-semibold text-[#F5F7FA] outline-none transition focus:border-[#4F8CFF]/50;
+  }
+
   .icon-button:hover {
     border-color: rgba(79, 140, 255, 0.35);
     background: rgba(79, 140, 255, 0.08);

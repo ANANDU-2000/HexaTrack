@@ -12,6 +12,9 @@ public interface ICategoryService
 {
     Task<IReadOnlyCollection<CategoryDto>> ListAsync(CancellationToken cancellationToken);
     Task<CategoryDto> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken);
+    Task<CategoryDto> UpdateAsync(Guid categoryId, UpdateCategoryRequest request, CancellationToken cancellationToken);
+    Task ArchiveAsync(Guid categoryId, CancellationToken cancellationToken);
+    Task UnarchiveAsync(Guid categoryId, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<CategoryDto>> ListSubcategoriesAsync(Guid parentCategoryId, CancellationToken cancellationToken);
     Task<CategoryDto> CreateSubcategoryAsync(Guid parentCategoryId, CreateSubcategoryRequest request, CancellationToken cancellationToken);
     Task DeleteSubcategoryAsync(Guid parentCategoryId, Guid subcategoryId, CancellationToken cancellationToken);
@@ -57,6 +60,37 @@ public sealed class CategoryService(
             await categories.AddAsync(category, ct);
             return new CategoryDto(category.Id, category.ParentCategoryId, category.Name, category.Type, category.Color, category.Icon);
         }, cancellationToken);
+
+    public Task<CategoryDto> UpdateAsync(Guid categoryId, UpdateCategoryRequest request, CancellationToken cancellationToken)
+        => unitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            Category category = await categories.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                .SingleOrDefaultAsync(x => x.Id == categoryId && !x.IsArchived, ct)
+                ?? throw new KeyNotFoundException("Category not found.");
+
+            if (!string.IsNullOrWhiteSpace(request.Name))
+            {
+                category.Name = request.Name.Trim();
+            }
+
+            if (request.Color is not null)
+            {
+                category.Color = string.IsNullOrWhiteSpace(request.Color) ? null : request.Color.Trim();
+            }
+
+            if (request.Icon is not null)
+            {
+                category.Icon = string.IsNullOrWhiteSpace(request.Icon) ? null : request.Icon.Trim();
+            }
+
+            return new CategoryDto(category.Id, category.ParentCategoryId, category.Name, category.Type, category.Color, category.Icon);
+        }, cancellationToken);
+
+    public Task ArchiveAsync(Guid categoryId, CancellationToken cancellationToken)
+        => SetArchiveStateAsync(categoryId, true, cancellationToken);
+
+    public Task UnarchiveAsync(Guid categoryId, CancellationToken cancellationToken)
+        => SetArchiveStateAsync(categoryId, false, cancellationToken);
 
     public async Task<IReadOnlyCollection<CategoryDto>> ListSubcategoriesAsync(Guid parentCategoryId, CancellationToken cancellationToken)
     {
@@ -111,5 +145,26 @@ public sealed class CategoryService(
             }
 
             sub.IsArchived = true;
+        }, cancellationToken);
+
+    private Task SetArchiveStateAsync(Guid categoryId, bool archived, CancellationToken cancellationToken)
+        => unitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            Category category = await categories.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                .SingleOrDefaultAsync(x => x.Id == categoryId, ct)
+                ?? throw new KeyNotFoundException("Category not found.");
+
+            category.IsArchived = archived;
+
+            if (category.ParentCategoryId is null)
+            {
+                List<Category> children = await categories.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
+                    .Where(x => x.ParentCategoryId == categoryId)
+                    .ToListAsync(ct);
+                foreach (Category child in children)
+                {
+                    child.IsArchived = archived;
+                }
+            }
         }, cancellationToken);
 }

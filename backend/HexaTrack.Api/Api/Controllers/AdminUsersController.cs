@@ -16,10 +16,22 @@ public sealed class AdminUsersController(ICurrentUser currentUser, IAdminUsersSe
     [HttpGet]
     public Task<AdminUserListResult> List(
         [FromQuery] string? q,
+        [FromQuery] bool? organizationUsersOnly,
+        [FromQuery] bool? individualUsersOnly,
+        [FromQuery] bool? lockedOnly,
+        [FromQuery] bool? superAdminOnly,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
-        => users.ListAsync(q, page, pageSize, cancellationToken);
+        => users.ListAsync(new AdminUserListFilter(q, organizationUsersOnly, individualUsersOnly, lockedOnly, superAdminOnly), page, pageSize, cancellationToken);
+
+    [HttpGet("individual")]
+    public Task<AdminUserListResult> Individual(
+        [FromQuery] string? query,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+        => users.ListAsync(new AdminUserListFilter(query, null, true, null, null), page, pageSize, cancellationToken);
 
     [HttpPost]
     public Task<AdminCreateUserResponse> Create([FromBody] AdminCreateUserRequest body, CancellationToken cancellationToken)

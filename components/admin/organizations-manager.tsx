@@ -30,7 +30,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { hexaTrackApi } from '@/lib/api';
 import { 
   OrganizationListItem, 
-  AdminOrganizationAnalytics 
+  AdminOrganizationAnalytics,
+  OrgPlan,
+  LightBranch,
 } from '@/lib/types';
 
 export default function OrganizationsManager() {
@@ -410,7 +412,7 @@ function CreateOrganizationModal({ onClose, onComplete }: { onClose: () => void;
     ownerName: '',
     ownerEmail: '',
     ownerPassword: '',
-    plan: 'Enterprise',
+    plan: 'Enterprise' as OrgPlan,
     maxBranches: '10',
     maxStaff: '50'
   });
@@ -446,7 +448,7 @@ function CreateOrganizationModal({ onClose, onComplete }: { onClose: () => void;
              <FormInput label="Owner Email" required type="email" value={formData.ownerEmail} onChange={(e:any) => setFormData({...formData, ownerEmail: e.target.value})} placeholder="john@acme.com" />
           </div>
           <FormInput label="Initial Master Password" required type="password" value={formData.ownerPassword} onChange={(e:any) => setFormData({...formData, ownerPassword: e.target.value})} placeholder="••••••••" />
-          <FormSelect label="Platform Licensing" value={formData.plan} onChange={(e:any) => setFormData({...formData, plan: e.target.value})} options={['Enterprise', 'Pro Max', 'Growth', 'Basic']} />
+          <FormSelect label="Platform Licensing" value={formData.plan} onChange={(e:any) => setFormData({...formData, plan: e.target.value as OrgPlan})} options={['Enterprise', 'ProMax', 'Growth', 'Basic']} />
           
           <div className="pt-4 flex items-center gap-3 border-t border-white/[0.05]">
              <button type="button" onClick={onClose} className="flex-1 h-11 rounded-xl border border-white/[0.08] text-white font-bold text-sm hover:bg-white/[0.05]">Cancel</button>
@@ -556,17 +558,52 @@ export function AddOwnerModal({ onClose, onComplete, organizations }: { onClose:
 
 export function AddStaffModal({ onClose, onComplete, organizations }: { onClose: () => void; onComplete: () => void; organizations: OrganizationListItem[] }) {
   const [saving, setSaving] = useState(false);
+  const [branches, setBranches] = useState<LightBranch[]>([]);
+  const [branchLoading, setBranchLoading] = useState(false);
   const [formData, setFormData] = useState({
     organizationId: organizations[0]?.id || '',
+    branchId: '',
     fullName: '',
     email: '',
     department: 'Finance',
     password: '',
   });
 
+  useEffect(() => {
+    if (!formData.organizationId) {
+      setBranches([]);
+      return;
+    }
+
+    let mounted = true;
+    setBranchLoading(true);
+    hexaTrackApi.admin.allBranches(formData.organizationId)
+      .then((items) => {
+        if (!mounted) return;
+        setBranches(items);
+        setFormData((current) => ({
+          ...current,
+          branchId: current.branchId && items.some((branch) => branch.id === current.branchId)
+            ? current.branchId
+            : items[0]?.id ?? '',
+        }));
+      })
+      .catch((err) => {
+        console.error(err);
+        if (mounted) setBranches([]);
+      })
+      .finally(() => {
+        if (mounted) setBranchLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [formData.organizationId]);
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.organizationId) return;
+    if (!formData.organizationId || !formData.branchId) return;
     setSaving(true);
     try {
       await hexaTrackApi.admin.addStaff(formData);
@@ -585,13 +622,19 @@ export function AddStaffModal({ onClose, onComplete, organizations }: { onClose:
           <FormSelect 
             label="Target Entity" 
             value={formData.organizationId}
-            onChange={(e:any) => setFormData({...formData, organizationId: e.target.value})}
+            onChange={(e:any) => setFormData({...formData, organizationId: e.target.value, branchId: ''})}
             options={organizations.map(o => ({ label: o.name, value: o.id }))} 
           />
           <div className="grid grid-cols-2 gap-4">
              <FormInput label="Staff Node Name" required value={formData.fullName} onChange={(e:any) => setFormData({...formData, fullName: e.target.value})} placeholder="Alex Carter" />
              <FormInput label="Email Endpoint" required type="email" value={formData.email} onChange={(e:any) => setFormData({...formData, email: e.target.value})} placeholder="alex.c@comp.com" />
           </div>
+          <FormSelect 
+             label={branchLoading ? 'Loading Branches...' : 'Assigned Branch'} 
+             value={formData.branchId} 
+             onChange={(e:any) => setFormData({...formData, branchId: e.target.value})} 
+             options={branches.length > 0 ? branches.map(branch => ({ label: branch.name, value: branch.id })) : [{ label: 'Create a branch first', value: '' }]} 
+          />
           <FormSelect 
              label="Assigned Department" 
              value={formData.department} 
@@ -600,7 +643,7 @@ export function AddStaffModal({ onClose, onComplete, organizations }: { onClose:
           />
           <FormInput label="Access Password" required type="password" value={formData.password} onChange={(e:any) => setFormData({...formData, password: e.target.value})} placeholder="••••••••" />
           <div className="pt-4">
-             <button type="submit" disabled={saving || !formData.organizationId} className="w-full h-11 rounded-xl bg-indigo-500 text-white font-bold text-sm shadow-lg hover:bg-indigo-600 flex items-center justify-center">
+             <button type="submit" disabled={saving || !formData.organizationId || !formData.branchId} className="w-full h-11 rounded-xl bg-indigo-500 text-white font-bold text-sm shadow-lg hover:bg-indigo-600 flex items-center justify-center disabled:opacity-50">
                 {saving ? <Loader2 size={18} className="animate-spin"/> : 'Finalize Node Deployment'}
              </button>
           </div>

@@ -22,6 +22,34 @@ public sealed class AccountsController(IAccountService accountService) : Control
     public Task<AccountDto> Update(Guid id, UpdateAccountRequest request, CancellationToken cancellationToken)
         => accountService.UpdateAsync(id, request, cancellationToken);
 
+    [HttpPost("{id:guid}/archive")]
+    public async Task<IActionResult> Archive(Guid id, CancellationToken cancellationToken)
+    {
+        await accountService.ArchiveAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/unarchive")]
+    public async Task<IActionResult> Unarchive(Guid id, CancellationToken cancellationToken)
+    {
+        await accountService.UnarchiveAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await accountService.DeleteAsync(id, cancellationToken);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
     [HttpPost("transfer")]
     public Task<TransferDto> Transfer(TransferRequest request, CancellationToken cancellationToken)
         => accountService.TransferAsync(request, cancellationToken);

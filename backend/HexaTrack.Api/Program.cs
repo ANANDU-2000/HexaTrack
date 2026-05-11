@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.PostgreSql;
@@ -10,11 +12,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using HexaTrack.Api.Api;
 using HexaTrack.Api.Api.Middleware;
 using HexaTrack.Api.Application.Security;
 using HexaTrack.Api.Application.Services;
+using HexaTrack.Api.Application.Validators;
 using HexaTrack.Api.Infrastructure;
 using HexaTrack.Api.Infrastructure.Repositories;
 using StackExchange.Redis;
@@ -49,6 +53,8 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+builder.Services.AddValidatorsFromAssemblyContaining<CreateOrganizationRequestValidator>();
+builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddOpenApi();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCors(options =>
@@ -83,7 +89,11 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddDbContext<HexaTrackDbContext>(options =>
-    options.UseNpgsql(postgresConnection, npgsql => npgsql.EnableRetryOnFailure()));
+{
+    options.UseNpgsql(postgresConnection, npgsql => npgsql.EnableRetryOnFailure());
+    options.ConfigureWarnings(warnings =>
+        warnings.Ignore(CoreEventId.PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning));
+});
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 {
@@ -241,6 +251,7 @@ builder.Services.AddScoped<IAdminFeatureFlagsService, AdminFeatureFlagsService>(
 builder.Services.AddScoped<IAdminGlobalSettingsService, AdminGlobalSettingsService>();
 builder.Services.AddScoped<IAdminWorkspacesService, AdminWorkspacesService>();
 builder.Services.AddScoped<IAdminOrganizationsService, AdminOrganizationsService>();
+builder.Services.AddScoped<IAdminRoutesService, AdminRoutesService>();
 builder.Services.AddScoped<IOwnerService, OwnerService>();
 builder.Services.AddScoped<IAdminAnalyticsService, AdminAnalyticsService>();
 builder.Services.AddScoped<IAdminAiUsageService, AdminAiUsageService>();

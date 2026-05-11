@@ -111,7 +111,7 @@ export function AddRecurringSheet({ open, onOpenChange }: { open: boolean; onOpe
   }
 
   return (
-    <BottomSheet labelledBy="add-recurring-title">
+    <BottomSheet open={open} onClose={() => onOpenChange(false)} labelledBy="add-recurring-title">
       <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 pt-3">
         <div>
           <p className="eyebrow">Automation</p>

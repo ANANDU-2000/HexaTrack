@@ -6,10 +6,14 @@ export type SplitMethod = 'Equal' | 'Custom' | 'Percentage';
 export type User = {
   id: string;
   email: string;
+  name?: string;
   displayName: string;
+  isSuperAdmin?: boolean;
   organizationId?: string | null;
   branchId?: string | null;
+  branchName?: string | null;
   organizationRole?: string | null;
+  department?: string | null;
 };
 
 export type WorkspaceType = 'Personal' | 'Business' | 'Family';
@@ -42,6 +46,7 @@ export type InviteAcceptRequest = {
 
 /** Matches API `SubscriptionPlan` (JSON string enum). */
 export type SubscriptionPlan = 'Free' | 'Basic' | 'Pro' | 'ProMax';
+export type OrgPlan = 'Free' | 'Basic' | 'Growth' | 'Pro' | 'ProMax' | 'Enterprise';
 
 export type AdminUserListItem = {
   id: string;
@@ -54,6 +59,8 @@ export type AdminUserListItem = {
   organizationRole?: string | null;
   department?: string | null;
   organizationName?: string | null;
+  branchId?: string | null;
+  branchName?: string | null;
 };
 
 export type AdminUserListResult = {
@@ -191,6 +198,13 @@ export type AdminAnalyticsDashboard = {
   newPayingSubscriptionsByDay: AdminTimeSeriesPoint[];
   tokenEstimatedCostByDay: AdminTokenCostDay[];
   expenseCategoryTotals: AdminExpenseCategoryAgg[];
+  totalSystemIncome30d: number;
+  totalSystemExpense30d: number;
+  totalSystemNet30d: number;
+  totalActiveOrganizations: number;
+  totalSuspendedOrganizations: number;
+  totalIndividualUsers: number;
+  totalOrganizationUsers: number;
 };
 
 export type GlobalSettingDto = {
@@ -264,6 +278,15 @@ export type Transaction = {
   tags: Tag[];
 };
 
+export type UpdateTransactionRequest = {
+  categoryId?: string | null;
+  amount?: number | null;
+  merchant?: string | null;
+  note?: string | null;
+  occurredOn?: string | null;
+  tagIds?: string[] | null;
+};
+
 export type PagedResult<T> = {
   items: T[];
   page: number;
@@ -282,6 +305,47 @@ export type TransactionSearchParams = {
   pageSize?: number;
   type?: TransactionType;
   transfersOnly?: boolean;
+};
+
+export type StaffTask = {
+  id: string;
+  title: string;
+  branchName: string;
+  status: string;
+  due: string;
+};
+
+export type StaffNotification = {
+  id: string;
+  title: string;
+  message: string;
+  severity: string;
+};
+
+export type StaffDashboardDto = {
+  branchId: string;
+  branchName: string;
+  department?: string | null;
+  workspaceId: string;
+  accounts: Account[];
+  categories: Category[];
+  recentTransactions: Transaction[];
+  summary: {
+    income: number;
+    expense: number;
+    net: number;
+    totalBalance: number;
+  };
+  tasks: StaffTask[];
+  notifications: StaffNotification[];
+  recurringReminders: Array<{
+    id: string;
+    type: TransactionType;
+    amount: number;
+    currency: string;
+    note?: string | null;
+    nextRunOn: string;
+  }>;
 };
 
 export type RecurringTransaction = {
@@ -360,6 +424,8 @@ export type UserLightDto = {
   displayName: string;
   department?: string;
   isLocked: boolean;
+  branchId?: string | null;
+  branchName?: string | null;
 };
 
 export type AdminOrganizationDetailsDto = {
@@ -383,13 +449,25 @@ export type AdminOrganizationAnalytics = {
 export type CreateOrganizationRequest = {
   name: string;
   slug?: string;
-  plan: string;
+  plan: OrgPlan;
   currency: string;
   maxBranches: number;
   maxStaff: number;
   ownerName: string;
   ownerEmail: string;
   ownerPassword: string;
+};
+
+export type UpdateOrganizationRequest = {
+  name?: string | null;
+  plan?: OrgPlan | null;
+  maxBranches?: number | null;
+  maxStaff?: number | null;
+  baseCurrency?: string | null;
+};
+
+export type SuspendOrganizationRequest = {
+  reason?: string | null;
 };
 
 export type CreateBranchRequest = {
@@ -400,6 +478,15 @@ export type CreateBranchRequest = {
   timezone?: string;
   address?: string;
   phone?: string;
+};
+
+export type UpdateBranchRequest = {
+  name?: string | null;
+  code?: string | null;
+  currency?: string | null;
+  timezone?: string | null;
+  address?: string | null;
+  phone?: string | null;
 };
 
 export type AddOwnerRequest = {
@@ -416,6 +503,62 @@ export type AddStaffRequest = {
   email: string;
   department?: string;
   password: string;
+};
+
+export type ReassignStaffBranchRequest = {
+  branchId?: string | null;
+};
+
+export type StaffReassignRequest = {
+  branchId?: string | null;
+  department?: string | null;
+};
+
+export type RouteDto = {
+  id: string;
+  organizationId: string;
+  branchId?: string | null;
+  name: string;
+  code?: string | null;
+  description?: string | null;
+  isActive: boolean;
+  assignedStaffCount: number;
+  createdAt: string;
+};
+
+export type CreateRouteRequest = {
+  organizationId: string;
+  branchId?: string | null;
+  name: string;
+  code?: string | null;
+  description?: string | null;
+};
+
+export type UpdateRouteRequest = {
+  name?: string | null;
+  code?: string | null;
+  description?: string | null;
+  isActive?: boolean | null;
+};
+
+export type BranchFinancialSummaryDto = {
+  branchId: string;
+  branchName: string;
+  workspaceId?: string | null;
+  totalIncome: number;
+  totalExpense: number;
+  netBalance: number;
+  transactionCount: number;
+};
+
+export type OrgFinancialSummaryDto = {
+  organizationId: string;
+  organizationName: string;
+  totalIncome: number;
+  totalExpense: number;
+  netBalance: number;
+  transactionCount: number;
+  branches: BranchFinancialSummaryDto[];
 };
 
 export type LightOrganization = {

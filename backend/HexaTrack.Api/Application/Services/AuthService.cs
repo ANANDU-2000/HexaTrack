@@ -196,7 +196,10 @@ public sealed class AuthService(
 
     public async Task<AuthMeResponse> GetMeAsync(Guid userId, CancellationToken cancellationToken)
     {
-        User? user = await users.Query().AsNoTracking().SingleOrDefaultAsync(x => x.Id == userId, cancellationToken);
+        User? user = await users.Query()
+            .AsNoTracking()
+            .Include(x => x.Branch)
+            .SingleOrDefaultAsync(x => x.Id == userId, cancellationToken);
         if (user is null)
         {
             throw new UnauthorizedAccessException("Session is no longer valid.");
@@ -207,7 +210,7 @@ public sealed class AuthService(
             throw new UnauthorizedAccessException("Account locked.");
         }
 
-        return new AuthMeResponse(new UserDto(user.Id, user.Email, user.DisplayName, user.OrganizationId, user.BranchId, user.OrganizationRole), user.IsSuperAdmin);
+        return new AuthMeResponse(new UserDto(user.Id, user.Email, user.DisplayName, user.OrganizationId, user.BranchId, user.OrganizationRole, user.Branch?.Name, user.Department), user.IsSuperAdmin);
     }
 
     public Task<AuthResponse> AcceptWorkspaceInviteAsync(InviteAcceptRequest request, CancellationToken cancellationToken)
@@ -278,7 +281,7 @@ public sealed class AuthService(
             expires: expiresAt.UtcDateTime,
             signingCredentials: credentials);
 
-        return new AuthResponse(new JwtSecurityTokenHandler().WriteToken(token), expiresAt, new UserDto(user.Id, user.Email, user.DisplayName, user.OrganizationId, user.BranchId, user.OrganizationRole));
+        return new AuthResponse(new JwtSecurityTokenHandler().WriteToken(token), expiresAt, new UserDto(user.Id, user.Email, user.DisplayName, user.OrganizationId, user.BranchId, user.OrganizationRole, user.Branch?.Name, user.Department));
     }
 }
 

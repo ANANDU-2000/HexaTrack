@@ -11,7 +11,7 @@ namespace HexaTrack.Api.Application.Services;
 
 public interface IAdminUsersService
 {
-    Task<AdminUserListResult> ListAsync(string? query, int page, int pageSize, CancellationToken cancellationToken);
+    Task<AdminUserListResult> ListAsync(AdminUserListFilter filter, int page, int pageSize, CancellationToken cancellationToken);
     Task<AdminCreateUserResponse> CreateAsync(AdminCreateUserRequest request, Guid actorUserId, CancellationToken cancellationToken);
     Task SetSuperAdminAsync(Guid targetUserId, bool isSuperAdmin, Guid actorUserId, CancellationToken cancellationToken);
     Task DeleteAsync(Guid targetUserId, Guid actorUserId, CancellationToken cancellationToken);
@@ -21,36 +21,71 @@ public interface IAdminUsersService
 
 public sealed class AdminUsersService(HexaTrackDbContext db, IAdminAuditService audit, IUnitOfWork unitOfWork) : IAdminUsersService
 {
-    public async Task<AdminUserListResult> ListAsync(string? query, int page, int pageSize, CancellationToken cancellationToken)
+    public async Task<AdminUserListResult> ListAsync(AdminUserListFilter filter, int page, int pageSize, CancellationToken cancellationToken)
     {
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 100);
         IQueryable<User> q = db.Users.AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(query))
+        if (!string.IsNullOrWhiteSpace(filter.Query))
         {
-            string term = query.Trim().ToLowerInvariant();
-            q = q.Where(x => x.Email.ToLower().Contains(term) || x.DisplayName.ToLower().Contains(term));
+            string term = filter.Query.Trim().ToLowerInvariant();
+            q = q.Where(x =>
+                x.Email.ToLower().Contains(term) ||
+                x.DisplayName.ToLower().Contains(term) ||
+                (x.Department != null && x.Department.ToLower().Contains(term)) ||
+                (x.Branch != null && x.Branch.Name.ToLower().Contains(term)));
+        }
+
+        if (filter.OrganizationUsersOnly == true)
+        {
+            q = q.Where(x => x.OrganizationId != null);
+        }
+
+        if (filter.IndividualUsersOnly == true)
+        {
+            q = q.Where(x => x.OrganizationId == null && !x.IsSuperAdmin);
+        }
+
+        if (filter.LockedOnly == true)
+        {
+            q = q.Where(x => x.IsLocked);
+        }
+
+        if (filter.SuperAdminOnly == true)
+        {
+            q = q.Where(x => x.IsSuperAdmin);
         }
 
         int total = await q.CountAsync(cancellationToken);
-        List<AdminUserListItemDto> items = await q
+        var pageUsers = q
             .OrderByDescending(x => x.CreatedAt)
             .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(u => new AdminUserListItemDto(
+            .Take(pageSize);
+
+        List<AdminUserListItemDto> items = await (
+            from u in pageUsers
+            join s in db.UserSubscriptions.Where(s => s.IsActive)
+                on u.Id equals s.UserId into subs
+            from sub in subs.DefaultIfEmpty()
+            join o in db.Organizations
+                on u.OrganizationId equals o.Id into orgs
+            from org in orgs.DefaultIfEmpty()
+            join b in db.Branches
+                on u.BranchId equals b.Id into branches
+            from branch in branches.DefaultIfEmpty()
+            select new AdminUserListItemDto(
                 u.Id,
                 u.Email,
                 u.DisplayName,
                 u.CreatedAt,
                 u.IsSuperAdmin,
                 u.IsLocked,
-                db.UserSubscriptions
-                    .Where(s => s.UserId == u.Id && s.IsActive)
-                    .Select(s => (SubscriptionPlan?)s.Plan)
-                    .FirstOrDefault(),
+                sub != null ? (SubscriptionPlan?)sub.Plan : null,
                 u.OrganizationRole,
                 u.Department,
-                db.Organizations.Where(o => o.Id == u.OrganizationId).Select(o => o.Name).FirstOrDefault()))
+                org != null ? org.Name : null,
+                u.BranchId,
+                branch != null ? branch.Name : null))
             .ToListAsync(cancellationToken);
         return new AdminUserListResult(items, page, pageSize, total);
     }
@@ -171,9 +206,9 @@ public sealed class AdminUsersService(HexaTrackDbContext db, IAdminAuditService 
         }
 
         string email = user.Email;
-        await RemoveUserRelatedDataAsync(targetUserId, cancellationToken);
-
-        db.Users.Remove(user);
+        user.DeletedAt = DateTimeOffset.UtcNow;
+        user.UpdatedAt = DateTimeOffset.UtcNow;
+        user.IsLocked = true;
         await db.SaveChangesAsync(cancellationToken);
 
         string meta = JsonSerializer.Serialize(new { email });

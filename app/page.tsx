@@ -68,7 +68,7 @@ export default function Home() {
       return;
     }
     if (orgRole === 'staff') {
-      router.replace('/staff');
+      router.replace('/staff/dashboard');
       return;
     }
 

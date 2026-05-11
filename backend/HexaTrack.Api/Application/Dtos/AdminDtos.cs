@@ -13,8 +13,16 @@ public sealed record AdminUserListItemDto(
     SubscriptionPlan? SubscriptionPlan,
     string? OrganizationRole = null,
     string? Department = null,
-    string? OrganizationName = null);
+    string? OrganizationName = null,
+    Guid? BranchId = null,
+    string? BranchName = null);
 public sealed record AdminUserListResult(IReadOnlyCollection<AdminUserListItemDto> Items, int Page, int PageSize, int TotalCount);
+public sealed record AdminUserListFilter(
+    string? Query,
+    bool? OrganizationUsersOnly,
+    bool? IndividualUsersOnly,
+    bool? LockedOnly,
+    bool? SuperAdminOnly);
 public sealed record AdminCreateUserRequest(
     string Email,
     string Password,
@@ -97,12 +105,35 @@ public sealed record AdminAnalyticsDashboardDto(
     IReadOnlyList<AdminTimeSeriesPointDto> TransactionsByDay,
     IReadOnlyList<AdminTimeSeriesPointDto> NewPayingSubscriptionsByDay,
     IReadOnlyList<AdminTokenCostDayDto> TokenEstimatedCostByDay,
-    IReadOnlyList<AdminExpenseCategoryAggDto> ExpenseCategoryTotals);
+    IReadOnlyList<AdminExpenseCategoryAggDto> ExpenseCategoryTotals,
+    decimal TotalSystemIncome30d,
+    decimal TotalSystemExpense30d,
+    decimal TotalSystemNet30d,
+    int TotalActiveOrganizations,
+    int TotalSuspendedOrganizations,
+    int TotalIndividualUsers,
+    int TotalOrganizationUsers);
 
-public sealed record CreateOrganizationRequest(string Name, string? Slug, string? Plan, string? Currency, int MaxBranches, int MaxStaff, string OwnerName, string OwnerEmail, string OwnerPassword);
+public sealed record CreateOrganizationRequest(string Name, string? Slug, OrgPlan? Plan, string? Currency, int MaxBranches, int MaxStaff, string OwnerName, string OwnerEmail, string OwnerPassword);
 public sealed record CreateBranchRequest(Guid OrganizationId, string Name, string? Code, string? Currency, string? Timezone, string? Address, string? Phone);
 public sealed record AddOwnerRequest(Guid OrganizationId, string FullName, string Email, string Password);
 public sealed record AddStaffRequest(Guid OrganizationId, Guid? BranchId, string FullName, string Email, string? Department, string Password);
+public sealed record UpdateOrganizationRequest(string? Name, OrgPlan? Plan, int? MaxBranches, int? MaxStaff, string? BaseCurrency);
+public sealed record SuspendOrganizationRequest(string? Reason);
+public sealed record UpdateBranchRequest(string? Name, string? Code, string? Currency, string? Timezone, string? Address, string? Phone);
+public sealed record ReassignStaffBranchRequest(Guid? BranchId);
+public sealed record CreateRouteRequest(Guid OrganizationId, Guid? BranchId, string Name, string? Code, string? Description);
+public sealed record UpdateRouteRequest(string? Name, string? Code, string? Description, bool? IsActive);
+public sealed record RouteDto(
+    Guid Id,
+    Guid OrganizationId,
+    Guid? BranchId,
+    string Name,
+    string? Code,
+    string? Description,
+    bool IsActive,
+    int AssignedStaffCount,
+    DateTimeOffset CreatedAt);
 public sealed record OrganizationListItemDto(
     Guid Id,
     string Name,
@@ -145,4 +176,24 @@ public sealed record UserLightDto(
     string Email,
     string DisplayName,
     string? Department,
-    bool IsLocked);
+    bool IsLocked,
+    Guid? BranchId = null,
+    string? BranchName = null);
+
+public sealed record OrgFinancialSummaryDto(
+    Guid OrganizationId,
+    string OrganizationName,
+    decimal TotalIncome,
+    decimal TotalExpense,
+    decimal NetBalance,
+    int TransactionCount,
+    IReadOnlyList<BranchFinancialSummaryDto> Branches);
+
+public sealed record BranchFinancialSummaryDto(
+    Guid BranchId,
+    string BranchName,
+    Guid? WorkspaceId,
+    decimal TotalIncome,
+    decimal TotalExpense,
+    decimal NetBalance,
+    int TransactionCount);

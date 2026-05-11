@@ -33,6 +33,14 @@ function formatTokenCount(n: number): string {
   return new Intl.NumberFormat('en-US').format(n);
 }
 
+function formatMoney(n: number): string {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
 function formatAuditWhen(iso: string): string {
   try {
     return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
@@ -297,6 +305,33 @@ export function ControlCenterOverview({
             : null}
         </motion.div>
       )}
+
+      {!err && dashboard ? (
+        <motion.div
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          variants={listMotion}
+          initial="hidden"
+          animate="show"
+        >
+          {[
+            { label: 'Total income (30d)', value: formatMoney(dashboard.totalSystemIncome30d), accent: 'text-[#1FD18B]' },
+            { label: 'Total expense (30d)', value: formatMoney(dashboard.totalSystemExpense30d), accent: 'text-[#FF5C75]' },
+            { label: 'Net cash flow (30d)', value: formatMoney(dashboard.totalSystemNet30d), accent: dashboard.totalSystemNet30d >= 0 ? 'text-[#1FD18B]' : 'text-[#FF5C75]' },
+            { label: 'Active orgs', value: formatTokenCount(dashboard.totalActiveOrganizations), accent: 'text-[#4F8CFF]' },
+            { label: 'Suspended orgs', value: formatTokenCount(dashboard.totalSuspendedOrganizations), accent: 'text-[#FF5C75]' },
+            { label: 'Individual users', value: formatTokenCount(dashboard.totalIndividualUsers), accent: 'text-[#8B9BB4]' },
+          ].map((item) => (
+            <motion.div key={item.label} variants={cardMotion}>
+              <GlassCard bodyClassName="p-5">
+                <p className="text-xs font-medium text-[#8B9BB4]">{item.label}</p>
+                <p className={`mt-2 text-2xl font-semibold tabular-nums tracking-tight ${item.accent}`}>
+                  {item.value}
+                </p>
+              </GlassCard>
+            </motion.div>
+          ))}
+        </motion.div>
+      ) : null}
 
       {!err && dashboardLoading && !dashboard ? <EnterpriseAnalyticsSkeleton /> : null}
       {!err && dashboard ? (

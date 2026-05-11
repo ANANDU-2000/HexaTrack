@@ -17,5 +17,16 @@ public sealed class TagsController(ITagService tagService) : ControllerBase
     [HttpPost]
     public Task<TagDto> Upsert(UpsertTagRequest request, CancellationToken cancellationToken)
         => tagService.UpsertAsync(request, cancellationToken);
+
+    [HttpPut("{id:guid}")]
+    public Task<TagDto> Update(Guid id, UpsertTagRequest request, CancellationToken cancellationToken)
+        => tagService.UpdateAsync(id, request, cancellationToken);
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        await tagService.DeleteAsync(id, cancellationToken);
+        return NoContent();
+    }
 }
 

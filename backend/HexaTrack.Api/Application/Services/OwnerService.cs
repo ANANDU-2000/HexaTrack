@@ -1,3 +1,4 @@
+using HexaTrack.Api.Application.Dtos;
 using HexaTrack.Api.Domain.Entities;
 using HexaTrack.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -60,16 +61,46 @@ public sealed class OwnerService(HexaTrackDbContext db) : IOwnerService
             .ToListAsync(ct);
     }
 
-    public async Task<List<User>> GetStaffAsync(Guid organizationId, CancellationToken ct)
+    public async Task<List<AdminUserListItemDto>> GetStaffAsync(Guid organizationId, Guid? branchId, string? query, CancellationToken ct)
     {
-        return await db.Users
+        var staffQuery = db.Users
             .AsNoTracking()
-            .Where(u => u.OrganizationId == organizationId && u.OrganizationRole == "Staff")
+            .Where(u => u.OrganizationId == organizationId && u.OrganizationRole == "Staff");
+
+        if (branchId.HasValue)
+        {
+            staffQuery = staffQuery.Where(u => u.BranchId == branchId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            string term = query.Trim().ToLowerInvariant();
+            staffQuery = staffQuery.Where(u =>
+                u.DisplayName.ToLower().Contains(term) ||
+                u.Email.ToLower().Contains(term) ||
+                (u.Department != null && u.Department.ToLower().Contains(term)) ||
+                (u.Branch != null && u.Branch.Name.ToLower().Contains(term)));
+        }
+
+        return await staffQuery
             .OrderBy(u => u.DisplayName)
+            .Select(u => new AdminUserListItemDto(
+                u.Id,
+                u.Email,
+                u.DisplayName,
+                u.CreatedAt,
+                u.IsSuperAdmin,
+                u.IsLocked,
+                null,
+                u.OrganizationRole,
+                u.Department,
+                u.Organization != null ? u.Organization.Name : null,
+                u.BranchId,
+                u.Branch != null ? u.Branch.Name : null))
             .ToListAsync(ct);
     }
 
-    public async Task<User> CreateStaffAsync(Guid organizationId, CreateOwnerStaffRequest request, CancellationToken ct)
+    public async Task<AdminUserListItemDto> CreateStaffAsync(Guid organizationId, CreateOwnerStaffRequest request, CancellationToken ct)
     {
         // 1. Verify branch authority & existence within the organization
         var branchValid = await db.Branches.AnyAsync(b => b.Id == request.BranchId && b.OrganizationId == organizationId, ct);
@@ -93,6 +124,65 @@ public sealed class OwnerService(HexaTrackDbContext db) : IOwnerService
 
         db.Users.Add(staff);
         await db.SaveChangesAsync(ct);
-        return staff;
+        string branchName = await db.Branches
+            .Where(b => b.Id == request.BranchId)
+            .Select(b => b.Name)
+            .SingleAsync(ct);
+
+        return new AdminUserListItemDto(
+            staff.Id,
+            staff.Email,
+            staff.DisplayName,
+            staff.CreatedAt,
+            staff.IsSuperAdmin,
+            staff.IsLocked,
+            null,
+            staff.OrganizationRole,
+            staff.Department,
+            null,
+            staff.BranchId,
+            branchName);
+    }
+
+    public Task<List<AdminUserListItemDto>> GetBranchStaffAsync(Guid organizationId, Guid branchId, CancellationToken ct)
+        => GetStaffAsync(organizationId, branchId, null, ct);
+
+    public async Task<AdminUserListItemDto> ReassignStaffAsync(Guid organizationId, Guid userId, StaffReassignRequest request, CancellationToken ct)
+    {
+        User staff = await db.Users
+            .SingleOrDefaultAsync(u => u.Id == userId && u.OrganizationId == organizationId && u.OrganizationRole == "Staff", ct)
+            ?? throw new KeyNotFoundException("Staff member not found.");
+
+        string? branchName = null;
+        if (request.BranchId.HasValue)
+        {
+            branchName = await db.Branches
+                .Where(b => b.Id == request.BranchId.Value && b.OrganizationId == organizationId)
+                .Select(b => b.Name)
+                .SingleOrDefaultAsync(ct)
+                ?? throw new InvalidOperationException("Selected branch does not belong to your organization.");
+        }
+
+        staff.BranchId = request.BranchId;
+        if (!string.IsNullOrWhiteSpace(request.Department))
+        {
+            staff.Department = request.Department.Trim();
+        }
+        staff.UpdatedAt = DateTimeOffset.UtcNow;
+        await db.SaveChangesAsync(ct);
+
+        return new AdminUserListItemDto(
+            staff.Id,
+            staff.Email,
+            staff.DisplayName,
+            staff.CreatedAt,
+            staff.IsSuperAdmin,
+            staff.IsLocked,
+            null,
+            staff.OrganizationRole,
+            staff.Department,
+            null,
+            staff.BranchId,
+            branchName);
     }
 }

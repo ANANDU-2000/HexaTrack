@@ -11,6 +11,7 @@ import {
 import { hexaTrackApi } from '@/lib/api';
 import { AdminOrganizationDetailsDto } from '@/lib/types';
 import { CreateBranchModal, AddOwnerModal, AddStaffModal } from '@/components/admin/organizations-manager';
+import { BranchBadge } from '@/components/branches/branch-badge';
 
 export default function OrganizationDetailPage() {
   const params = useParams();
@@ -353,9 +354,10 @@ function renderStaff(details: AdminOrganizationDetailsDto) {
           <thead className="bg-white/[0.02] text-[11px] font-bold uppercase tracking-widest text-[#8B9BB4] border-b border-white/[0.05]">
              <tr>
                 <th className="px-6 py-4">Identified Vector</th>
-                <th className="px-6 py-4">Department Node</th>
-                <th className="px-6 py-4">Authentication Status</th>
-                <th className="px-6 py-4 text-right">Action</th>
+                <th className="px-6 py-4">Department</th>
+                <th className="px-6 py-4">Assigned Branch</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Actions</th>
              </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.04]">
@@ -374,6 +376,9 @@ function renderStaff(details: AdminOrganizationDetailsDto) {
                      <span className="px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold rounded-md uppercase">{s.department || 'OPERATIONS'}</span>
                   </td>
                   <td className="px-6 py-4">
+                     <BranchBadge name={s.branchName} />
+                  </td>
+                  <td className="px-6 py-4">
                      {s.isLocked ? (
                        <span className="flex items-center gap-1.5 text-xs text-red-400 font-bold"><Lock size={12} /> Terminated</span>
                      ) : (
@@ -381,7 +386,10 @@ function renderStaff(details: AdminOrganizationDetailsDto) {
                      )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                     <button className="h-8 px-3 bg-white/[0.05] hover:bg-red-500/10 text-[#8B9BB4] hover:text-red-400 text-xs font-bold rounded-lg border border-transparent hover:border-red-500/20 transition-all opacity-0 group-hover:opacity-100">Suspend</button>
+                     <div className="flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                       <button className="h-8 px-3 bg-[#4F8CFF]/10 hover:bg-[#4F8CFF]/15 text-[#4F8CFF] text-xs font-bold rounded-lg border border-[#4F8CFF]/20 transition-all">Change Branch</button>
+                       <button className="h-8 px-3 bg-white/[0.05] hover:bg-red-500/10 text-[#8B9BB4] hover:text-red-400 text-xs font-bold rounded-lg border border-transparent hover:border-red-500/20 transition-all">Suspend</button>
+                     </div>
                   </td>
                </tr>
              ))}

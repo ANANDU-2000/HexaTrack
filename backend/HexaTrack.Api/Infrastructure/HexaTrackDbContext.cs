@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using HexaTrack.Api.Domain.Entities;
+using DomainRoute = HexaTrack.Api.Domain.Entities.Route;
 
 namespace HexaTrack.Api.Infrastructure;
 
@@ -10,6 +11,7 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
     public DbSet<WorkspaceMember> WorkspaceMembers => Set<WorkspaceMember>();
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Branch> Branches => Set<Branch>();
+    public DbSet<DomainRoute> Routes => Set<DomainRoute>();
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Tag> Tags => Set<Tag>();
@@ -38,6 +40,7 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
 
         modelBuilder.Entity<User>(entity =>
         {
+            entity.HasQueryFilter(x => x.DeletedAt == null);
             entity.HasIndex(x => x.Email).IsUnique();
             entity.HasIndex(x => x.GoogleSubject).IsUnique().HasFilter("\"GoogleSubject\" IS NOT NULL");
             entity.Property(x => x.Email).HasMaxLength(320);
@@ -54,16 +57,22 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
                 .WithMany(x => x.Staff)
                 .HasForeignKey(x => x.BranchId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(x => x.Route)
+                .WithMany(x => x.AssignedStaff)
+                .HasForeignKey(x => x.RouteId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Organization>(entity =>
         {
+            entity.HasQueryFilter(x => x.DeletedAt == null);
             entity.Property(x => x.Name).HasMaxLength(150);
             entity.Property(x => x.Slug).HasMaxLength(100);
-            entity.Property(x => x.Plan).HasMaxLength(50);
-            entity.Property(x => x.Status).HasMaxLength(50);
             entity.Property(x => x.BaseCurrency).HasMaxLength(3);
+            entity.Property(x => x.SuspendReason).HasMaxLength(500);
             entity.HasIndex(x => x.Slug).IsUnique().HasFilter("\"Slug\" IS NOT NULL");
+            entity.HasIndex(x => new { x.Plan, x.IsActive });
         });
 
         modelBuilder.Entity<Branch>(entity =>
@@ -82,6 +91,25 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
                 .WithMany()
                 .HasForeignKey(x => x.WorkspaceId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<DomainRoute>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(150);
+            entity.Property(x => x.Code).HasMaxLength(50);
+            entity.Property(x => x.Description).HasMaxLength(500);
+            entity.HasOne(x => x.Organization)
+                .WithMany()
+                .HasForeignKey(x => x.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Branch)
+                .WithMany()
+                .HasForeignKey(x => x.BranchId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(x => new { x.OrganizationId, x.Code })
+                .IsUnique()
+                .HasFilter("\"Code\" IS NOT NULL");
+            entity.HasIndex(x => new { x.OrganizationId, x.IsActive });
         });
 
         modelBuilder.Entity<Workspace>(entity =>
@@ -111,6 +139,7 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
 
         modelBuilder.Entity<Account>(entity =>
         {
+            entity.HasQueryFilter(x => x.DeletedAt == null);
             entity.HasIndex(x => new { x.UserId, x.Type });
             entity.HasIndex(x => new { x.WorkspaceId, x.Name }).IsUnique().HasFilter("\"IsArchived\" = false");
             entity.Property(x => x.Balance).HasPrecision(18, 2);
@@ -124,7 +153,9 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
 
         modelBuilder.Entity<Category>(entity =>
         {
+            entity.HasQueryFilter(x => x.DeletedAt == null);
             entity.HasIndex(x => new { x.WorkspaceId, x.Type, x.ParentCategoryId });
+            entity.HasIndex(x => new { x.WorkspaceId, x.UserId });
             entity.HasIndex(x => new { x.WorkspaceId, x.Name, x.ParentCategoryId }).IsUnique().HasFilter("\"IsArchived\" = false");
             entity.Property(x => x.Name).HasMaxLength(120);
             entity.Property(x => x.Color).HasMaxLength(32);
@@ -136,6 +167,10 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
             entity.HasOne(x => x.Workspace)
                 .WithMany()
                 .HasForeignKey(x => x.WorkspaceId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -151,6 +186,7 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
 
         modelBuilder.Entity<Transaction>(entity =>
         {
+            entity.HasQueryFilter(x => x.DeletedAt == null);
             entity.HasIndex(x => new { x.UserId, x.OccurredOn });
             entity.HasIndex(x => new { x.WorkspaceId, x.OccurredOn });
             entity.HasIndex(x => new { x.UserId, x.CategoryId, x.OccurredOn });

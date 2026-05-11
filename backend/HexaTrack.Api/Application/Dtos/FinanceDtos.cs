@@ -10,6 +10,7 @@ public sealed record TransferDto(Guid Id, Guid FromAccountId, Guid ToAccountId, 
 
 public sealed record CategoryDto(Guid Id, Guid? ParentCategoryId, string Name, TransactionType Type, string? Color, string? Icon);
 public sealed record CreateCategoryRequest(string Name, TransactionType Type, Guid? ParentCategoryId, string? Color, string? Icon);
+public sealed record UpdateCategoryRequest(string? Name, string? Color, string? Icon);
 public sealed record CreateSubcategoryRequest(string Name, string? Color, string? Icon);
 
 public sealed record TagDto(Guid Id, string Name);
@@ -29,6 +30,8 @@ public sealed record TransactionSearchRequest(
     bool TransfersOnly = false);
 public sealed record TransactionDto(Guid Id, Guid AccountId, Guid CategoryId, TransactionType Type, decimal Amount, string Currency, string? Merchant, string? Note, DateOnly OccurredOn, IReadOnlyCollection<TagDto> Tags);
 public sealed record CreateTransactionRequest(Guid AccountId, Guid CategoryId, TransactionType Type, decimal Amount, string Currency, string? Merchant, string? Note, DateOnly OccurredOn, IReadOnlyCollection<Guid>? TagIds, string? IdempotencyKey);
+public sealed record UpdateTransactionRequest(Guid? CategoryId, decimal? Amount, string? Merchant, string? Note, DateOnly? OccurredOn, IReadOnlyCollection<Guid>? TagIds);
+public sealed record BulkDeleteTransactionsRequest(IReadOnlyList<Guid> TransactionIds);
 
 public sealed record RecurringTransactionDto(Guid Id, Guid AccountId, Guid CategoryId, TransactionType Type, RecurrenceFrequency Frequency, decimal Amount, string Currency, string? Note, DateOnly NextRunOn, DateOnly? EndsOn, bool IsActive);
 public sealed record CreateRecurringTransactionRequest(Guid AccountId, Guid CategoryId, TransactionType Type, RecurrenceFrequency Frequency, decimal Amount, string Currency, string? Note, DateOnly NextRunOn, DateOnly? EndsOn);
