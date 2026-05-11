@@ -1,3 +1,8 @@
+'use client';
+
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import React from 'react';
+
 type AppScreenProps = {
   children: React.ReactNode;
   className?: string;
@@ -8,23 +13,74 @@ export function AppScreen({ children, className = '' }: AppScreenProps) {
 }
 
 type BottomSheetProps = {
+  open: boolean;
+  onClose: () => void;
   children: React.ReactNode;
   labelledBy: string;
 };
 
-export function BottomSheet({ children, labelledBy }: BottomSheetProps) {
+export function BottomSheet({ open, onClose, children, labelledBy }: BottomSheetProps) {
+  
+  // Handle the swipe down velocity threshold
+  function handleDragEnd(event: any, info: PanInfo) {
+    const threshold = 120;
+    const velocityThreshold = 500;
+    if (info.offset.y > threshold || info.velocity.y > velocityThreshold) {
+      onClose();
+    }
+  }
+
   return (
-    <div
-      className="sheet-backdrop fixed inset-0 flex h-[100dvh] items-end justify-center overflow-hidden bg-black/50 px-0 pt-6 backdrop-blur-sm sm:px-4 lg:items-center lg:py-8"
-      style={{ zIndex: 100 }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={labelledBy}
-    >
-      <div className="sheet-panel flex max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-t-[28px] border border-white/[0.06] bg-[#121A22] shadow-2xl sm:rounded-[28px] lg:max-h-[calc(100dvh-4rem)]">
-        <div className="mx-auto mt-3 h-1.5 w-10 shrink-0 rounded-full bg-white/15" />
-        {children}
-      </div>
-    </div>
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[99] bg-black/60 backdrop-blur-sm"
+            aria-hidden="true"
+          />
+
+          {/* Panel Container */}
+          <div 
+            className="fixed inset-0 z-[100] flex items-end justify-center overflow-hidden pointer-events-none pt-12 sm:items-center sm:pt-0"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={labelledBy}
+          >
+            <motion.div
+              drag="y"
+              dragConstraints={{ top: 0 }}
+              dragElastic={0.1}
+              onDragEnd={handleDragEnd}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ 
+                type: 'spring', 
+                damping: 32, 
+                stiffness: 400,
+                mass: 0.8 
+              }}
+              className="pointer-events-auto relative flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-t-[32px] border border-white/[0.08] bg-[#121A22] shadow-[0_-12px_40px_rgba(0,0,0,0.4)] sm:rounded-[32px]"
+            >
+              {/* Visual Drag Handle */}
+              <div className="absolute top-0 left-0 right-0 flex justify-center pt-3 pb-1 shrink-0 cursor-grab active:cursor-grabbing z-20">
+                 <div className="h-1.5 w-12 rounded-full bg-white/20" />
+              </div>
+              
+              {/* Component Payload */}
+              <div className="flex flex-col flex-1 overflow-hidden pt-4">
+                 {children}
+              </div>
+            </motion.div>
+          </div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

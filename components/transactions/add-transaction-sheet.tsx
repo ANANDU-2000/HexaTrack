@@ -62,7 +62,6 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
     });
   }, [open, parentCategoryId, subcategories]);
 
-  if (!open) return null;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -119,8 +118,8 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
   }
 
   return (
-    <BottomSheet labelledBy="add-transaction-title">
-      <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 pt-3">
+    <BottomSheet open={open} onClose={() => onOpenChange(false)} labelledBy="add-transaction-title">
+      <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 pt-3 mt-2">
         <div>
           <p className="eyebrow">HexaTrack entry</p>
           <h2 id="add-transaction-title" className="text-xl font-bold text-[#F5F7FA]">
