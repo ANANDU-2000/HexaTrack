@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { AuthPanel } from '@/components/auth/auth-panel';
 import { AnimatePresence } from '@/components/ui/animate-presence';
@@ -49,8 +50,28 @@ export default function Home() {
     hydrateWorkspace();
   }, [hydrate, hydrateWorkspace]);
 
+  const router = useRouter();
+
   useEffect(() => {
     if (!user) return;
+    
+    // Handle explicit administrative overrides
+    const isSuperAdmin = useAuthStore.getState().isSuperAdmin;
+    if (isSuperAdmin) {
+      router.replace('/admin');
+      return;
+    }
+
+    const orgRole = user.organizationRole?.toLowerCase();
+    if (orgRole === 'owner') {
+      router.replace('/owner');
+      return;
+    }
+    if (orgRole === 'staff') {
+      router.replace('/staff');
+      return;
+    }
+
     void (async () => {
       try {
         await ensureActiveWorkspace();
@@ -59,7 +80,7 @@ export default function Home() {
         setFinanceError(e instanceof Error ? e.message : 'Unable to load your workspace. Try signing in again.');
       }
     })();
-  }, [ensureActiveWorkspace, loadWorkspace, setFinanceError, user]);
+  }, [ensureActiveWorkspace, loadWorkspace, setFinanceError, user, router]);
 
   useEffect(() => {
     if (error) {

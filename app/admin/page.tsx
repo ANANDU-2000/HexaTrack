@@ -50,6 +50,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { AdminCommandPalette, type AdminCommandItem } from '@/components/admin/admin-command-palette';
 import { ControlCenterOverview } from '@/components/admin/control-center-overview';
 import { CreateUserModal } from '@/components/admin/create-user-modal';
+import OrganizationsManager from '@/components/admin/organizations-manager';
 import { BrandMark } from '@/components/ui/brand';
 
 type AdminSection = 'users' | 'workspaces' | 'organizations' | 'transactions' | 'flags' | 'audit' | 'ai' | 'analytics' | 'settings' | 'subscriptions' | 'notifications' | 'security';
@@ -848,6 +849,8 @@ export default function AdminPage() {
                 />
               )}
 
+              {section === 'organizations' && <OrganizationsManager />}
+
               {section === 'users' && (
                 <div className="space-y-6">
                   <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -903,7 +906,8 @@ export default function AdminPage() {
                           <thead>
                             <tr className="border-b border-white/[0.06] bg-white/[0.02]">
                               <th className="px-6 py-4 font-medium text-[#8B9BB4]">Email / Name</th>
-                              <th className="px-6 py-4 font-medium text-[#8B9BB4]">Role</th>
+                              <th className="px-6 py-4 font-medium text-[#8B9BB4]">Corporation</th>
+                              <th className="px-6 py-4 font-medium text-[#8B9BB4]">Platform Role</th>
                               <th className="px-6 py-4 font-medium text-[#8B9BB4]">Subscription</th>
                               <th className="px-6 py-4 font-medium text-[#8B9BB4]">Status</th>
                               <th className="px-6 py-4 text-right font-medium text-[#8B9BB4]">Actions</th>
@@ -920,13 +924,31 @@ export default function AdminPage() {
                                     <div className="text-xs text-[#8B9BB4]">{row.displayName || '—'}</div>
                                   </td>
                                   <td className="px-6 py-4">
+                                    {row.organizationName ? (
+                                      <div className="flex flex-col gap-0.5">
+                                         <div className="font-medium text-[#F5F7FA] flex items-center gap-1.5">
+                                            <Building2 className="h-3 w-3 opacity-50" />
+                                            {row.organizationName}
+                                         </div>
+                                         <div className="flex items-center gap-2">
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${row.organizationRole === 'Owner' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                                              {row.organizationRole?.toUpperCase() || 'USER'}
+                                            </span>
+                                            {row.department && <span className="text-[10px] text-[#8B9BB4] font-medium">/ {row.department}</span>}
+                                         </div>
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs italic text-[#8B9BB4]/60">Standalone</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4">
                                     {row.isSuperAdmin ? (
-                                      <span className="inline-flex rounded-full bg-[#4F8CFF]/20 px-2.5 py-0.5 text-xs font-medium text-[#4F8CFF]">
+                                      <span className="inline-flex rounded-full bg-[#4F8CFF]/20 px-2.5 py-0.5 text-xs font-medium text-[#4F8CFF] border border-[#4F8CFF]/30">
                                         SuperAdmin
                                       </span>
                                     ) : (
                                       <span className="inline-flex rounded-full bg-white/[0.06] px-2.5 py-0.5 text-xs font-medium text-[#8B9BB4]">
-                                        User
+                                        Client User
                                       </span>
                                     )}
                                   </td>
@@ -1439,7 +1461,7 @@ export default function AdminPage() {
               </div>
             </div>
           )}
-          {['organizations', 'transactions', 'subscriptions', 'notifications', 'security'].includes(section) && (
+          {['transactions', 'subscriptions', 'notifications', 'security'].includes(section) && (
             <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
               <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[#121A22] border border-white/[0.06] text-[#8B9BB4] shadow-xl mb-6">
                  {(() => {

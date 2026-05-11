@@ -207,7 +207,7 @@ public sealed class AuthService(
             throw new UnauthorizedAccessException("Account locked.");
         }
 
-        return new AuthMeResponse(new UserDto(user.Id, user.Email, user.DisplayName), user.IsSuperAdmin);
+        return new AuthMeResponse(new UserDto(user.Id, user.Email, user.DisplayName, user.OrganizationId, user.BranchId, user.OrganizationRole), user.IsSuperAdmin);
     }
 
     public Task<AuthResponse> AcceptWorkspaceInviteAsync(InviteAcceptRequest request, CancellationToken cancellationToken)
@@ -266,6 +266,10 @@ public sealed class AuthService(
         {
             claims.Add(new Claim(ClaimTypes.Role, "SuperAdmin"));
         }
+        if (user.OrganizationId.HasValue)
+        {
+            claims.Add(new Claim(HexaTrackClaims.OrganizationId, user.OrganizationId.Value.ToString()));
+        }
 
         var token = new JwtSecurityToken(
             issuer: options.Issuer,
@@ -274,7 +278,7 @@ public sealed class AuthService(
             expires: expiresAt.UtcDateTime,
             signingCredentials: credentials);
 
-        return new AuthResponse(new JwtSecurityTokenHandler().WriteToken(token), expiresAt, new UserDto(user.Id, user.Email, user.DisplayName));
+        return new AuthResponse(new JwtSecurityTokenHandler().WriteToken(token), expiresAt, new UserDto(user.Id, user.Email, user.DisplayName, user.OrganizationId, user.BranchId, user.OrganizationRole));
     }
 }
 

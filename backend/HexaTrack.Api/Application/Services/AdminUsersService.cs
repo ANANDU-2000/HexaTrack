@@ -47,7 +47,10 @@ public sealed class AdminUsersService(HexaTrackDbContext db, IAdminAuditService 
                 db.UserSubscriptions
                     .Where(s => s.UserId == u.Id && s.IsActive)
                     .Select(s => (SubscriptionPlan?)s.Plan)
-                    .FirstOrDefault()))
+                    .FirstOrDefault(),
+                u.OrganizationRole,
+                u.Department,
+                db.Organizations.Where(o => o.Id == u.OrganizationId).Select(o => o.Name).FirstOrDefault()))
             .ToListAsync(cancellationToken);
         return new AdminUserListResult(items, page, pageSize, total);
     }
@@ -64,15 +67,20 @@ public sealed class AdminUsersService(HexaTrackDbContext db, IAdminAuditService 
             }
 
             string workspaceName = request.WorkspaceName.Trim();
+            string fullName = (request.FullName ?? request.WorkspaceName).Trim();
             string currency = request.Currency.Trim().ToUpperInvariant();
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
             var user = new User
             {
                 Email = email,
-                DisplayName = workspaceName,
+                DisplayName = fullName,
                 PasswordHash = passwordHash,
                 IsSuperAdmin = request.IsSuperAdmin,
+                OrganizationId = request.OrganizationId,
+                BranchId = request.BranchId,
+                OrganizationRole = request.OrganizationRole,
+                Department = request.Department,
             };
 
             db.Users.Add(user);

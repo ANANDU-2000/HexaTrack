@@ -353,6 +353,39 @@ export const hexaTrackApi = {
         method: 'PUT',
         body: { value },
       }),
+    organizations: (query?: string, page = 1, pageSize = 20) => {
+      const p = new URLSearchParams();
+      if (query) p.set('query', query);
+      p.set('page', String(page));
+      p.set('pageSize', String(pageSize));
+      return apiRequest<AdminOrganizationListResult>(`/api/admin/organizations?${p.toString()}`);
+    },
+    organizationAnalytics: () =>
+      apiRequest<AdminOrganizationAnalytics>('/api/admin/organizations/analytics'),
+    allOrganizations: () =>
+      apiRequest<LightOrganization[]>('/api/admin/organizations/all'),
+    allBranches: (organizationId?: string) =>
+      apiRequest<LightBranch[]>(`/api/admin/organizations/branches${organizationId ? `?organizationId=${organizationId}` : ''}`),
+    createOrganization: (payload: CreateOrganizationRequest) =>
+      apiRequest<any>('/api/admin/organizations', {
+        method: 'POST',
+        body: payload,
+      }),
+    createBranch: (payload: CreateBranchRequest) =>
+      apiRequest<any>('/api/admin/organizations/branch', {
+        method: 'POST',
+        body: payload,
+      }),
+    addOwner: (payload: AddOwnerRequest) =>
+      apiRequest<any>('/api/admin/organizations/owner', {
+        method: 'POST',
+        body: payload,
+      }),
+    addStaff: (payload: AddStaffRequest) =>
+      apiRequest<any>('/api/admin/organizations/staff', {
+        method: 'POST',
+        body: payload,
+      }),
   },
   workspaces: {
     list: () => apiRequest<Workspace[]>('/api/workspaces'),
@@ -363,5 +396,13 @@ export const hexaTrackApi = {
         method: 'POST',
         body: payload,
       }),
+    owner: {
+      overview: () =>
+        apiRequest<OrganizationOverviewDto>('/api/owner/overview'),
+      listBranches: () =>
+        apiRequest<LightBranch[]>('/api/owner/branches'),
+      listStaff: () =>
+        apiRequest<AdminUserListItem[]>('/api/owner/staff'),
+    },
   },
 };

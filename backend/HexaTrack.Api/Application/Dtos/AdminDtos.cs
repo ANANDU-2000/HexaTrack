@@ -10,16 +10,24 @@ public sealed record AdminUserListItemDto(
     DateTimeOffset CreatedAt,
     bool IsSuperAdmin,
     bool IsLocked,
-    SubscriptionPlan? SubscriptionPlan);
+    SubscriptionPlan? SubscriptionPlan,
+    string? OrganizationRole = null,
+    string? Department = null,
+    string? OrganizationName = null);
 public sealed record AdminUserListResult(IReadOnlyCollection<AdminUserListItemDto> Items, int Page, int PageSize, int TotalCount);
 public sealed record AdminCreateUserRequest(
     string Email,
     string Password,
+    string FullName,
     string WorkspaceName,
     WorkspaceType WorkspaceType,
     string Currency,
     bool IsSuperAdmin,
-    WorkspaceRole? InitialWorkspaceRole);
+    WorkspaceRole? InitialWorkspaceRole,
+    Guid? OrganizationId = null,
+    Guid? BranchId = null,
+    string? OrganizationRole = null,
+    string? Department = null);
 public sealed record AdminCreateUserResponse(Guid Id, string Email, string DisplayName, bool IsSuperAdmin);
 public sealed record SetSuperAdminRequest(bool IsSuperAdmin);
 public sealed record SetUserLockedRequest(bool Locked);
@@ -90,3 +98,27 @@ public sealed record AdminAnalyticsDashboardDto(
     IReadOnlyList<AdminTimeSeriesPointDto> NewPayingSubscriptionsByDay,
     IReadOnlyList<AdminTokenCostDayDto> TokenEstimatedCostByDay,
     IReadOnlyList<AdminExpenseCategoryAggDto> ExpenseCategoryTotals);
+
+public sealed record CreateOrganizationRequest(string Name, string? Slug, string? Plan, string? Currency, int MaxBranches, int MaxStaff, string OwnerName, string OwnerEmail, string OwnerPassword);
+public sealed record CreateBranchRequest(Guid OrganizationId, string Name, string? Code, string? Currency, string? Timezone, string? Address, string? Phone);
+public sealed record AddOwnerRequest(Guid OrganizationId, string FullName, string Email, string Password);
+public sealed record AddStaffRequest(Guid OrganizationId, Guid? BranchId, string FullName, string Email, string? Department, string Password);
+public sealed record OrganizationListItemDto(
+    Guid Id,
+    string Name,
+    string? Slug,
+    string Plan,
+    string Status,
+    DateTimeOffset CreatedAt,
+    int BranchCount,
+    int OwnerCount,
+    int StaffCount,
+    decimal EstimatedMrr);
+public sealed record AdminOrganizationListResult(IReadOnlyList<OrganizationListItemDto> Items, int Page, int PageSize, int TotalCount);
+public sealed record AdminOrganizationAnalyticsOverview(
+    int TotalOrganizations,
+    int TotalOwners,
+    int TotalStaff,
+    int ActiveBranches,
+    decimal TotalMrr);
+

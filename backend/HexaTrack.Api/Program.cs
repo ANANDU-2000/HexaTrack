@@ -240,6 +240,8 @@ builder.Services.AddScoped<IAdminUsersService, AdminUsersService>();
 builder.Services.AddScoped<IAdminFeatureFlagsService, AdminFeatureFlagsService>();
 builder.Services.AddScoped<IAdminGlobalSettingsService, AdminGlobalSettingsService>();
 builder.Services.AddScoped<IAdminWorkspacesService, AdminWorkspacesService>();
+builder.Services.AddScoped<IAdminOrganizationsService, AdminOrganizationsService>();
+builder.Services.AddScoped<IOwnerService, OwnerService>();
 builder.Services.AddScoped<IAdminAnalyticsService, AdminAnalyticsService>();
 builder.Services.AddScoped<IAdminAiUsageService, AdminAiUsageService>();
 builder.Services.AddScoped<IWorkspaceInviteService, WorkspaceInviteService>();

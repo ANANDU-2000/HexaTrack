@@ -4,5 +4,11 @@ public sealed record RegisterRequest(string Email, string Password, string Displ
 public sealed record LoginRequest(string Email, string Password);
 public sealed record GoogleLoginRequest(string IdToken);
 public sealed record AuthResponse(string AccessToken, DateTimeOffset ExpiresAt, UserDto User);
-public sealed record UserDto(Guid Id, string Email, string DisplayName);
+public sealed record UserDto(
+    Guid Id, 
+    string Email, 
+    string DisplayName, 
+    Guid? OrganizationId = null, 
+    Guid? BranchId = null, 
+    string? OrganizationRole = null);
 

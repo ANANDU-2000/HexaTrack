@@ -7,6 +7,9 @@ export type User = {
   id: string;
   email: string;
   displayName: string;
+  organizationId?: string | null;
+  branchId?: string | null;
+  organizationRole?: string | null;
 };
 
 export type WorkspaceType = 'Personal' | 'Business' | 'Family';
@@ -48,6 +51,9 @@ export type AdminUserListItem = {
   isSuperAdmin: boolean;
   isLocked: boolean;
   subscriptionPlan: SubscriptionPlan | null;
+  organizationRole?: string | null;
+  department?: string | null;
+  organizationName?: string | null;
 };
 
 export type AdminUserListResult = {
@@ -60,12 +66,17 @@ export type AdminUserListResult = {
 export type AdminCreateUserRequest = {
   email: string;
   password: string;
+  fullName: string;
   workspaceName: string;
   workspaceType: WorkspaceType;
   currency: 'USD' | 'INR' | 'EUR' | 'AED';
   isSuperAdmin: boolean;
   /** Workspace membership for the seeded default workspace (API default: Owner). */
-  initialWorkspaceRole?: 'Owner' | 'Member' | 'Viewer';
+  initialWorkspaceRole?: 'Owner' | 'Member' | 'Viewer' | null;
+  organizationId?: string | null;
+  branchId?: string | null;
+  organizationRole?: string | null;
+  department?: string | null;
 };
 
 export type AdminCreateUserResponse = {
@@ -312,3 +323,95 @@ export type DashboardSummary = {
   recurringDueSoon: RecurringTransaction[];
   insightLine: string;
 };
+
+export type OrganizationListItem = {
+  id: string;
+  name: string;
+  slug: string | null;
+  plan: string;
+  status: string;
+  createdAt: string;
+  branchCount: number;
+  ownerCount: number;
+  staffCount: number;
+  estimatedMrr: number;
+};
+
+export type AdminOrganizationListResult = {
+  items: OrganizationListItem[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+};
+
+export type AdminOrganizationAnalytics = {
+  totalOrganizations: number;
+  totalOwners: number;
+  totalStaff: number;
+  activeBranches: number;
+  totalMrr: number;
+};
+
+export type CreateOrganizationRequest = {
+  name: string;
+  slug?: string;
+  plan: string;
+  currency: string;
+  maxBranches: number;
+  maxStaff: number;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPassword: string;
+};
+
+export type CreateBranchRequest = {
+  organizationId: string;
+  name: string;
+  code?: string;
+  currency?: string;
+  timezone?: string;
+  address?: string;
+  phone?: string;
+};
+
+export type AddOwnerRequest = {
+  organizationId: string;
+  fullName: string;
+  email: string;
+  password: string;
+};
+
+export type AddStaffRequest = {
+  organizationId: string;
+  branchId?: string;
+  fullName: string;
+  email: string;
+  department?: string;
+  password: string;
+};
+
+export type LightOrganization = {
+  id: string;
+  name: string;
+};
+
+export type LightBranch = {
+  id: string;
+  name: string;
+  organizationId: string;
+};
+
+export type BranchStatDto = {
+  name: string;
+  volume: number;
+  percentage: number;
+};
+
+export type OrganizationOverviewDto = {
+  name: string;
+  branchCount: number;
+  staffCount: number;
+  totalFlow: number;
+  branchVelocity: BranchStatDto[];
+};
+

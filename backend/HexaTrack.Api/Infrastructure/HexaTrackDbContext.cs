@@ -8,6 +8,8 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
     public DbSet<User> Users => Set<User>();
     public DbSet<Workspace> Workspaces => Set<Workspace>();
     public DbSet<WorkspaceMember> WorkspaceMembers => Set<WorkspaceMember>();
+    public DbSet<Organization> Organizations => Set<Organization>();
+    public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Tag> Tags => Set<Tag>();
@@ -38,6 +40,46 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
             entity.HasIndex(x => x.GoogleSubject).IsUnique().HasFilter("\"GoogleSubject\" IS NOT NULL");
             entity.Property(x => x.Email).HasMaxLength(320);
             entity.Property(x => x.DisplayName).HasMaxLength(160);
+            entity.Property(x => x.OrganizationRole).HasMaxLength(50);
+            entity.Property(x => x.Department).HasMaxLength(100);
+            
+            entity.HasOne(x => x.Organization)
+                .WithMany(x => x.Members)
+                .HasForeignKey(x => x.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(x => x.Branch)
+                .WithMany(x => x.Staff)
+                .HasForeignKey(x => x.BranchId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Organization>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(150);
+            entity.Property(x => x.Slug).HasMaxLength(100);
+            entity.Property(x => x.Plan).HasMaxLength(50);
+            entity.Property(x => x.Status).HasMaxLength(50);
+            entity.Property(x => x.BaseCurrency).HasMaxLength(3);
+            entity.HasIndex(x => x.Slug).IsUnique().HasFilter("\"Slug\" IS NOT NULL");
+        });
+
+        modelBuilder.Entity<Branch>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(150);
+            entity.Property(x => x.Code).HasMaxLength(50);
+            entity.Property(x => x.Currency).HasMaxLength(3);
+            entity.Property(x => x.Timezone).HasMaxLength(50);
+            entity.Property(x => x.Address).HasMaxLength(300);
+            entity.Property(x => x.Phone).HasMaxLength(50);
+            entity.HasOne(x => x.Organization)
+                .WithMany(x => x.Branches)
+                .HasForeignKey(x => x.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Workspace)
+                .WithMany()
+                .HasForeignKey(x => x.WorkspaceId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Workspace>(entity =>
