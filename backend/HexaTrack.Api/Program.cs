@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Hangfire;
+using Hangfire.Common;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -265,10 +266,12 @@ app.UseAuthorization();
 app.UseRateLimiter();
 app.MapControllers();
 
-RecurringJob.AddOrUpdate<IRecurringTransactionService>(
+IRecurringJobManager recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+recurringJobManager.AddOrUpdate(
     "HexaTrack-recurring-transactions",
-    service => service.ProcessDueAsync(CancellationToken.None),
-    Cron.Hourly);
+    Job.FromExpression<IRecurringTransactionService>(service => service.ProcessDueAsync(CancellationToken.None)),
+    Cron.Hourly(),
+    new RecurringJobOptions());
 
 app.Run();
 
