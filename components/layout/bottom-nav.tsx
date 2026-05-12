@@ -1,13 +1,13 @@
 'use client';
 
-import { BarChart3, History, Home, Plus, Settings } from 'lucide-react';
+import { History, Home, Plus, Settings, Wallet } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { ScreenKey } from '@/components/layout/app-shell';
 
 const tabs = [
   { key: 'dashboard' as const, label: 'Home', icon: Home },
+  { key: 'wallets' as const, label: 'Wallets', icon: Wallet },
   { key: 'history' as const, label: 'History', icon: History },
-  { key: 'reports' as const, label: 'Reports', icon: BarChart3 },
   { key: 'settings' as const, label: 'Settings', icon: Settings },
 ];
 

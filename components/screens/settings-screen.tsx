@@ -47,161 +47,133 @@ export function SettingsScreen() {
   };
 
   return (
-    <AppScreen className="pb-20">
-      <header className="mb-6">
-        <p className="text-[11px] font-bold tracking-[0.2em] text-[#4F8CFF] uppercase">Preferences</p>
-        <h1 className="text-3xl font-bold text-[#F9FAFB] tracking-tight">Settings</h1>
+    <div className="pb-24 space-y-8 animate-in fade-in duration-500">
+      <header>
+        <p className="font-label-mono text-[10px] text-secondary tracking-[0.2em] uppercase font-bold mb-2">Preferences</p>
+        <h1 className="font-display-lg text-3xl md:text-5xl font-bold text-[#F5F7FA] tracking-tight">System Configuration</h1>
       </header>
 
-      <div className="space-y-5">
-        {/* Profile Summary (Sticky Top Concept) */}
-        <div className="bg-[#111827] border border-white/[0.06] rounded-[28px] p-5 flex items-center gap-4 shadow-sm">
-          <div className="h-12 w-12 rounded-2xl bg-[#4F8CFF]/10 flex items-center justify-center text-[#4F8CFF]">
-             <BrandMark compact tone="dark" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="font-bold text-[#F9FAFB] tracking-tight text-lg">HexaTrack User</h2>
-            <p className="text-xs text-[#9CA3AF] font-medium">Enterprise Tier Active</p>
-          </div>
-        </div>
-
-        {/* Core Engine Settings */}
-        <div className="bg-[#111827] border border-white/[0.06] rounded-[28px] overflow-hidden shadow-sm divide-y divide-white/[0.03]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <div className="lg:col-span-8 space-y-6">
           
-          <AccordionItem 
-            id="intelligence"
-            title="Intelligence Engine"
-            icon={Sparkles}
-            isExpanded={expandedId === 'intelligence'}
-            onToggle={() => toggleSection('intelligence')}
-          >
-            <div className="space-y-3 pb-2">
-              <p className="text-xs text-[#9CA3AF] leading-relaxed">AI-driven spending analysis, categorization vectors, and pattern recognition.</p>
-              <ToggleRow label="Enable Prediction" enabled={true} onToggle={() => {}} />
-              <ToggleRow label="Auto-categorize" enabled={true} onToggle={() => {}} />
+          {/* Profile Quick Banner */}
+          <div className="glass-card rounded-3xl p-6 flex items-center gap-5 border border-primary/10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-2xl rounded-full" />
+            <div className="w-16 h-16 rounded-2xl bg-surface-container-high border border-white/5 flex items-center justify-center text-primary shadow-sm relative z-10">
+               <BrandMark compact tone="dark" />
             </div>
-          </AccordionItem>
-
-          <AccordionItem 
-            id="security"
-            title="Vault Security"
-            icon={ShieldCheck}
-            isExpanded={expandedId === 'security'}
-            onToggle={() => toggleSection('security')}
-          >
-             <div className="space-y-3 pb-2">
-                <div className="text-xs text-[#9CA3AF] space-y-1.5">
-                  <div className="flex justify-between bg-[#0B1015] p-3 rounded-xl"><span>Trusted Token</span><span className="text-[#F9FAFB] font-mono">Active</span></div>
-                  <div className="flex justify-between bg-[#0B1015] p-3 rounded-xl"><span>Session Exp</span><span className="text-[#F9FAFB]">60m</span></div>
-                </div>
-             </div>
-          </AccordionItem>
-
-          <AccordionItem 
-            id="biometric"
-            title="Biometric Access"
-            icon={Fingerprint}
-            isExpanded={expandedId === 'biometric'}
-            onToggle={() => toggleSection('biometric')}
-          >
-             <div className="pb-2">
-               <ToggleRow label="Face ID Unlock" enabled={true} onToggle={() => {}} />
-             </div>
-          </AccordionItem>
-        </div>
-
-        {/* Interface & Notifications */}
-        <div className="bg-[#111827] border border-white/[0.06] rounded-[28px] overflow-hidden shadow-sm divide-y divide-white/[0.03]">
-           <AccordionItem 
-            id="notifications"
-            title="Alert Pipelines"
-            icon={Bell}
-            isExpanded={expandedId === 'notifications'}
-            onToggle={() => toggleSection('notifications')}
-          >
-            <div className="space-y-3 pb-2">
-              <ToggleRow label="Recurring Invoices" enabled={true} onToggle={() => {}} />
-              <ToggleRow label="Budget Caps" enabled={true} onToggle={() => {}} />
+            <div className="flex-grow min-w-0 z-10">
+               <h2 className="text-lg font-bold text-[#F5F7FA] tracking-tight">Enterprise Node</h2>
+               <p className="text-sm text-on-surface-variant font-medium opacity-70 mt-0.5">Authentication Status: Confirmed</p>
             </div>
-          </AccordionItem>
+          </div>
 
-          <AccordionItem 
-            id="appearance"
-            title="Appearance Theme"
-            icon={Palette}
-            isExpanded={expandedId === 'appearance'}
-            onToggle={() => toggleSection('appearance')}
-          >
-             <div className="pb-2 pt-1">
-               <div className="grid grid-cols-3 gap-2 bg-[#0B1015] p-1.5 rounded-2xl border border-white/[0.05]">
-                 <button className="flex flex-col items-center gap-1.5 py-3 rounded-xl text-xs font-bold text-[#9CA3AF]"><Sun size={16}/> Light</button>
-                 <button className="flex flex-col items-center gap-1.5 py-3 rounded-xl text-xs font-bold bg-[#111827] text-[#4F8CFF] shadow-sm"><Moon size={16}/> Dark</button>
-                 <button className="flex flex-col items-center gap-1.5 py-3 rounded-xl text-xs font-bold text-[#9CA3AF]"><Globe2 size={16}/> Auto</button>
-               </div>
-             </div>
-          </AccordionItem>
-        </div>
-
-        {/* Localization & Control */}
-        <div className="bg-[#111827] border border-white/[0.06] rounded-[28px] overflow-hidden shadow-sm divide-y divide-white/[0.03]">
-           <AccordionItem 
-            id="currency"
-            title="Monetary Unit"
-            icon={CircleDollarSign}
-            isExpanded={expandedId === 'currency'}
-            onToggle={() => toggleSection('currency')}
-          >
-             <div className="bg-[#0B1015] p-3 rounded-xl flex items-center justify-between text-sm text-[#F9FAFB] font-semibold mb-2">
-               <span>Base Display</span>
-               <span className="text-[#4F8CFF]">USD ($)</span>
-             </div>
-          </AccordionItem>
-
-          <AccordionItem 
-            id="categories"
-            title="Category Taxonomy"
-            icon={Layers}
-            isExpanded={expandedId === 'categories'}
-            onToggle={() => toggleSection('categories')}
-          >
-             <div className="pb-2">
-                <CategoriesSettingsPanel />
-             </div>
-          </AccordionItem>
-        </div>
-
-        {/* Session Controls */}
-        <div className="bg-[#111827] border border-white/[0.06] rounded-[28px] overflow-hidden shadow-sm divide-y divide-white/[0.03]">
-           <AccordionItem 
-            id="about"
-            title="About Ecosystem"
-            icon={Info}
-            isExpanded={expandedId === 'about'}
-            onToggle={() => toggleSection('about')}
-          >
-             <div className="text-xs text-[#9CA3AF] pb-2 pt-1 space-y-2">
-               <p>HexaTrack Core Version 1.2.0</p>
-               <p>Build Hash: STABLE_PREMIUM_PROD</p>
-             </div>
-          </AccordionItem>
-
-          <button 
-            onClick={logout}
-            className="w-full flex items-center justify-between px-5 py-5 hover:bg-[#FF5C75]/5 transition-colors group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-xl bg-[#FF5C75]/10 flex items-center justify-center text-[#FF5C75]">
-                <LogOut size={18} />
+          {/* Core Settings Container */}
+          <div className="glass-card rounded-3xl overflow-hidden divide-y divide-white/[0.03] shadow-md">
+            <AccordionItem 
+              id="intelligence"
+              title="Intelligence Matrix"
+              icon={Sparkles}
+              isExpanded={expandedId === 'intelligence'}
+              onToggle={() => toggleSection('intelligence')}
+            >
+              <div className="space-y-3 pb-2">
+                <p className="text-xs text-on-surface-variant leading-relaxed opacity-80 font-medium">Enforce model-driven dynamic analysis across audit trail vectors.</p>
+                <ToggleRow label="AI Prediction Nodes" enabled={true} onToggle={() => {}} />
+                <ToggleRow label="Adaptive Auto-Categorization" enabled={true} onToggle={() => {}} />
               </div>
-              <span className="text-[15px] font-bold text-[#FF5C75]">Initialize Logout</span>
-            </div>
-          </button>
+            </AccordionItem>
+
+            <AccordionItem 
+              id="security"
+              title="Vault Custody"
+              icon={ShieldCheck}
+              isExpanded={expandedId === 'security'}
+              onToggle={() => toggleSection('security')}
+            >
+               <div className="space-y-2 pb-2">
+                  <div className="flex justify-between bg-surface-container-lowest p-3.5 rounded-2xl border border-white/5 text-xs font-medium">
+                     <span className="text-on-surface-variant">Node Token</span>
+                     <span className="text-[#F5F7FA] font-label-mono font-bold tracking-wider uppercase text-[10px]">Active SSL</span>
+                  </div>
+                  <div className="flex justify-between bg-surface-container-lowest p-3.5 rounded-2xl border border-white/5 text-xs font-medium">
+                     <span className="text-on-surface-variant">Auto-Lock Interval</span>
+                     <span className="text-secondary font-bold">15 MINS</span>
+                  </div>
+               </div>
+            </AccordionItem>
+
+            <AccordionItem 
+              id="categories"
+              title="Ledger Taxonomy"
+              icon={Layers}
+              isExpanded={expandedId === 'categories'}
+              onToggle={() => toggleSection('categories')}
+            >
+               <div className="pb-2">
+                  <CategoriesSettingsPanel />
+               </div>
+            </AccordionItem>
+          </div>
+
+        </div>
+
+        <div className="lg:col-span-4 space-y-6">
+          
+          {/* Sidebar Preferences */}
+          <div className="glass-card rounded-3xl overflow-hidden divide-y divide-white/[0.03]">
+             <AccordionItem 
+              id="appearance"
+              title="Visual Canvas"
+              icon={Palette}
+              isExpanded={expandedId === 'appearance'}
+              onToggle={() => toggleSection('appearance')}
+            >
+               <div className="pb-2">
+                 <div className="grid grid-cols-3 gap-2 bg-surface-container-lowest p-1 rounded-2xl border border-white/5">
+                   <button className="flex flex-col items-center gap-1.5 py-3 rounded-xl text-[10px] font-bold font-label-mono tracking-widest text-on-surface-variant hover:bg-white/5 transition-colors"><Sun size={14}/> LIGHT</button>
+                   <button className="flex flex-col items-center gap-1.5 py-3 rounded-xl text-[10px] font-bold font-label-mono tracking-widest bg-secondary-container text-on-secondary-container shadow-sm"><Moon size={14}/> DARK</button>
+                   <button className="flex flex-col items-center gap-1.5 py-3 rounded-xl text-[10px] font-bold font-label-mono tracking-widest text-on-surface-variant hover:bg-white/5 transition-colors"><Globe2 size={14}/> AUTO</button>
+                 </div>
+               </div>
+            </AccordionItem>
+
+            <AccordionItem 
+              id="notifications"
+              title="Event Relays"
+              icon={Bell}
+              isExpanded={expandedId === 'notifications'}
+              onToggle={() => toggleSection('notifications')}
+            >
+              <div className="space-y-3 pb-2">
+                <ToggleRow label="Push Confirmations" enabled={true} onToggle={() => {}} />
+                <ToggleRow label="E-mail Invoices" enabled={false} onToggle={() => {}} />
+              </div>
+            </AccordionItem>
+          </div>
+
+          <div className="glass-card rounded-3xl overflow-hidden relative">
+             <button 
+              onClick={logout}
+              className="w-full flex items-center justify-between px-6 py-6 bg-rose-500/5 hover:bg-rose-500/10 transition-colors group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 group-hover:scale-105 transition-transform border border-rose-500/10">
+                  <LogOut size={18} />
+                </div>
+                <span className="text-sm font-bold text-rose-400">Terminate Session</span>
+              </div>
+            </button>
+          </div>
+
         </div>
 
       </div>
-    </AppScreen>
+    </div>
   );
 }
+
 
 type AccordionItemProps = {
   id: string;

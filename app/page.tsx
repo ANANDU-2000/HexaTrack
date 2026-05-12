@@ -17,7 +17,7 @@ import { useWorkspaceStore } from '@/store/workspace-store';
 
 import { LandingPage } from '@/components/marketing/landing-page';
 
-const GroupExpensesScreen = dynamic(() => import('@/components/screens/group-expenses-screen').then((module) => module.GroupExpensesScreen), { loading: () => <ScreenSkeleton /> });
+const WalletsScreen = dynamic(() => import('@/components/screens/wallets-screen').then((module) => module.WalletsScreen), { loading: () => <ScreenSkeleton /> });
 const HistoryScreen = dynamic(() => import('@/components/screens/history-screen').then((module) => module.HistoryScreen), { loading: () => <ScreenSkeleton /> });
 const RecurringScreen = dynamic(() => import('@/components/screens/recurring-screen').then((module) => module.RecurringScreen), { loading: () => <ScreenSkeleton /> });
 const ReportsScreen = dynamic(() => import('@/components/screens/reports-screen').then((module) => module.ReportsScreen), { loading: () => <ScreenSkeleton /> });
@@ -102,8 +102,8 @@ export default function Home() {
         return <ReportsScreen />;
       case 'recurring':
         return <RecurringScreen />;
-      case 'groups':
-        return <GroupExpensesScreen />;
+      case 'wallets':
+        return <WalletsScreen />;
       case 'settings':
         return <SettingsScreen />;
     }

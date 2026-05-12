@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Account Settings - HexaTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Hanken+Grotesk:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#afc6ff",
+                        "on-surface-variant": "#c2c6d6",
+                        "error": "#ffb4ab",
+                        "on-tertiary-container": "#432100",
+                        "on-secondary-fixed-variant": "#414274",
+                        "on-primary-fixed-variant": "#004398",
+                        "surface-bright": "#373941",
+                        "primary-container": "#528dff",
+                        "primary": "#afc6ff",
+                        "inverse-surface": "#e1e2ec",
+                        "on-secondary": "#2a2b5c",
+                        "on-tertiary-fixed-variant": "#6d3a00",
+                        "on-secondary-fixed": "#151546",
+                        "on-primary-fixed": "#001a43",
+                        "surface-dim": "#11131a",
+                        "tertiary-fixed": "#ffdcc2",
+                        "secondary-fixed": "#e1dfff",
+                        "tertiary-fixed-dim": "#ffb77b",
+                        "on-primary-container": "#00275f",
+                        "surface-container-low": "#191b22",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#e1e2ec",
+                        "inverse-primary": "#0059c6",
+                        "surface": "#11131a",
+                        "on-secondary-container": "#b3b3ed",
+                        "primary-fixed": "#d9e2ff",
+                        "outline-variant": "#424753",
+                        "secondary-fixed-dim": "#c1c1fc",
+                        "background": "#11131a",
+                        "tertiary-container": "#d87802",
+                        "on-primary": "#002d6c",
+                        "secondary": "#c1c1fc",
+                        "tertiary": "#ffb77b",
+                        "surface-container-lowest": "#0b0e15",
+                        "on-error": "#690005",
+                        "surface-variant": "#32353c",
+                        "primary-fixed-dim": "#afc6ff",
+                        "outline": "#8c909f",
+                        "error-container": "#93000a",
+                        "surface-container": "#1d1f27",
+                        "surface-container-highest": "#32353c",
+                        "on-surface": "#e1e2ec",
+                        "on-tertiary-fixed": "#2e1500",
+                        "inverse-on-surface": "#2e3038",
+                        "on-tertiary": "#4d2700",
+                        "surface-container-high": "#272a31",
+                        "secondary-container": "#434476"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-padding": "24px",
+                        "stack-gap": "16px",
+                        "margin-main": "20px",
+                        "gutter-bento": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Manrope"],
+                        "label-caps": ["Hanken Grotesk"],
+                        "body-md": ["Manrope"],
+                        "headline-lg": ["Manrope"],
+                        "display-amount": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "amount-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "display-amount": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "amount-md": ["18px", {"lineHeight": "24px", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .liquid-glass {
+            background-color: rgba(15, 22, 35, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(66, 71, 83, 0.3);
+        }
+        .bento-card {
+            background-color: #111827;
+            border: 1px solid rgba(66, 71, 83, 0.3);
+        }
+        .text-glow-blue {
+            text-shadow: 0 0 20px rgba(79, 140, 255, 0.5);
+        }
+        /* Custom Toggle Switch Styles */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #528dff;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #528dff;
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(100%);
+            border-color: white;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#0b0d11] text-on-surface font-body-md min-h-screen selection:bg-primary-container selection:text-on-primary-container pb-[100px]">
+<!-- TopAppBar -->
+<header class="bg-background/80 dark:bg-background/80 backdrop-blur-xl docked full-width top-0 z-50 border-b border-outline-variant/20 sticky">
+<div class="flex justify-between items-center w-full px-margin-main h-16">
+<button class="text-on-surface hover:bg-surface-container-high transition-colors p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="text-headline-md font-headline-md font-extrabold text-primary tracking-tight">Account Settings</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</div>
+</header>
+<main class="px-margin-main py-section-padding space-y-stack-gap">
+<!-- Profile Section (Liquid Glass) -->
+<section class="liquid-glass rounded-xl p-5 flex items-center justify-between">
+<div class="flex items-center space-x-4">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/50 relative">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A cinematic, high-contrast portrait of a professional man in his late 30s, styled for a premium finance app profile picture. He is wearing a dark, tailored suit against an OLED-black background with subtle, deep blue and lavender rim lighting. The mood is authoritative yet modern, fitting the Obsidian Finance aesthetic of deep blacks and glowing accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYK5yjfKjjrLcUoA98VltTH3s3nKEXevKZbgX1GLRRwDrMnQIFUeqwQ3ZPwslV9cyU0C2fcdOJoiucC4rjd82z5rpUiASWIQwSY-PXq_MeIzGxcBmJPNsMEKb4j3NociT_TuijN5iHiwQ0lokRMXCjQQcF5C20tuuHWqlJj0v6EhCXtEXB5eS6DnnkMzkQ03uHkgOHWyfh8YKuC_DgqHJKt6rEWVV4ae5FBjsc8yy50DguP4VBiM-oVApM5fAyIBeHuW171JYQmNWa"/>
+</div>
+<div>
+<h2 class="text-headline-md font-headline-md text-on-surface">Alexander Wright</h2>
+<p class="text-body-md font-body-md text-secondary">Owner</p>
+</div>
+</div>
+<button class="text-primary hover:bg-surface-container-high p-2 rounded-lg transition-colors border border-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+</section>
+<!-- Account Details (Bento List) -->
+<section class="space-y-3">
+<h3 class="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider pl-2">Account Details</h3>
+<div class="bento-card rounded-xl overflow-hidden divide-y divide-outline-variant/30">
+<a class="flex items-center justify-between p-4 hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-outline" data-icon="mail">mail</span>
+<div>
+<p class="text-body-md font-body-md text-on-surface">Email Address</p>
+<p class="text-body-md font-body-md text-on-surface-variant text-sm">alex.w@hexatrack.io</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-4 hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-outline" data-icon="phone_iphone">phone_iphone</span>
+<div>
+<p class="text-body-md font-body-md text-on-surface">Phone Number</p>
+<p class="text-body-md font-body-md text-on-surface-variant text-sm">+1 (555) 019-2834</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-4 hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-outline" data-icon="lock">lock</span>
+<p class="text-body-md font-body-md text-on-surface">Password</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</section>
+<!-- Security & Privacy -->
+<section class="space-y-3">
+<h3 class="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider pl-2">Security &amp; Privacy</h3>
+<div class="bento-card rounded-xl overflow-hidden divide-y divide-outline-variant/30">
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-outline" data-icon="fingerprint">fingerprint</span>
+<p class="text-body-md font-body-md text-on-surface">Biometric Login</p>
+</div>
+<!-- Toggle -->
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-300 focus:outline-none focus:ring-0 focus:border-transparent checked:translate-x-6 checked:bg-white checked:border-white" id="toggle-bio" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer transition-colors duration-300 border border-outline-variant/50" for="toggle-bio"></label>
+</div>
+</div>
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-outline" data-icon="verified_user">verified_user</span>
+<p class="text-body-md font-body-md text-on-surface">Two-Factor Auth</p>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-300 focus:outline-none focus:ring-0 focus:border-transparent checked:translate-x-6 checked:bg-white checked:border-white" id="toggle-2fa" name="toggle2" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer transition-colors duration-300 border border-outline-variant/50" for="toggle-2fa"></label>
+</div>
+</div>
+</div>
+</section>
+<!-- Notification Preferences -->
+<section class="space-y-3">
+<h3 class="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider pl-2">Notification Preferences</h3>
+<div class="bento-card rounded-xl overflow-hidden divide-y divide-outline-variant/30">
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-outline" data-icon="notifications_active">notifications_active</span>
+<p class="text-body-md font-body-md text-on-surface">Push Notifications</p>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-300 focus:outline-none focus:ring-0 focus:border-transparent checked:translate-x-6 checked:bg-white checked:border-white" id="toggle-push" name="toggle3" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer transition-colors duration-300 border border-outline-variant/50" for="toggle-push"></label>
+</div>
+</div>
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-outline" data-icon="mark_email_read">mark_email_read</span>
+<p class="text-body-md font-body-md text-on-surface">Email Reports</p>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-300 focus:outline-none focus:ring-0 focus:border-transparent checked:translate-x-6 checked:bg-white checked:border-white" id="toggle-email" name="toggle4" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer transition-colors duration-300 border border-outline-variant/50" for="toggle-email"></label>
+</div>
+</div>
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-primary" data-icon="tips_and_updates">tips_and_updates</span>
+<p class="text-body-md font-body-md text-primary">AI Insights Alerts</p>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-300 focus:outline-none focus:ring-0 focus:border-transparent checked:translate-x-6 checked:bg-white checked:border-white" id="toggle-ai" name="toggle5" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer transition-colors duration-300 border border-outline-variant/50" for="toggle-ai"></label>
+</div>
+</div>
+</div>
+</section>
+<!-- Preferences -->
+<section class="space-y-3">
+<h3 class="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider pl-2">Preferences</h3>
+<div class="bento-card rounded-xl overflow-hidden divide-y divide-outline-variant/30">
+<a class="flex items-center justify-between p-4 hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-outline" data-icon="currency_rupee">currency_rupee</span>
+<p class="text-body-md font-body-md text-on-surface">Currency</p>
+</div>
+<div class="flex items-center space-x-2">
+<span class="text-body-md font-body-md text-secondary">INR / ₹</span>
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<a class="flex items-center justify-between p-4 hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-outline" data-icon="language">language</span>
+<p class="text-body-md font-body-md text-on-surface">Language</p>
+</div>
+<div class="flex items-center space-x-2">
+<span class="text-body-md font-body-md text-secondary">English</span>
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<a class="flex items-center justify-between p-4 hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-outline" data-icon="dark_mode">dark_mode</span>
+<p class="text-body-md font-body-md text-on-surface">Theme</p>
+</div>
+<div class="flex items-center space-x-2">
+<span class="text-body-md font-body-md text-secondary">OLED Dark</span>
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="space-y-3 pt-4">
+<div class="bento-card rounded-xl overflow-hidden border-[#ffb4ab]/30 divide-y divide-[#ffb4ab]/20">
+<button class="w-full flex items-center justify-center space-x-2 p-4 text-[#ffb4ab] hover:bg-[#ffb4ab]/10 transition-colors">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="text-body-md font-body-md font-semibold">Logout</span>
+</button>
+<button class="w-full flex items-center justify-center space-x-2 p-4 text-[#ffb4ab] hover:bg-[#ffb4ab]/10 transition-colors">
+<span class="material-symbols-outlined" data-icon="delete_forever">delete_forever</span>
+<span class="text-body-md font-body-md font-semibold">Delete Account</span>
+</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container/60 dark:bg-surface-container/60 backdrop-blur-[24px] fixed bottom-0 w-full rounded-t-xl z-50 border-t border-outline-variant/30 shadow-lg md:hidden">
+<div class="fixed bottom-0 left-0 w-full h-[84px] flex justify-around items-center px-margin-main pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-bright/20 rounded-lg p-2 transition-colors" href="#">
+<span class="material-symbols-outlined size-6" data-icon="home">home</span>
+<span class="text-label-caps font-label-caps mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-bright/20 rounded-lg p-2 transition-colors" href="#">
+<span class="material-symbols-outlined size-6" data-icon="analytics">analytics</span>
+<span class="text-label-caps font-label-caps mt-1">Analytics</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-bright/20 rounded-lg p-2 transition-colors" href="#">
+<span class="material-symbols-outlined size-6" data-icon="receipt_long">receipt_long</span>
+<span class="text-label-caps font-label-caps mt-1">Activity</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined size-6" data-icon="person" data-weight="fill" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-label-caps font-label-caps mt-1">Profile</span>
+</a>
+</div>
+</nav>
+</body></html>

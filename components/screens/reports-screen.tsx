@@ -1,31 +1,23 @@
 'use client';
 
 import { 
-  ArrowDownLeft, 
-  ArrowUpRight, 
-  BarChart3, 
-  Download, 
-  FileSpreadsheet, 
-  FileText, 
   Loader2, 
-  PieChart, 
-  RefreshCw, 
-  TrendingUp 
+  TrendingUp,
+  Bitcoin,
+  Coins,
+  BarChart2
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { 
   Area, 
   AreaChart, 
-  Bar, 
-  BarChart, 
   Cell, 
   Pie, 
   PieChart as RePieChart, 
   ResponsiveContainer, 
   Tooltip, 
   XAxis, 
-  YAxis, 
-  CartesianGrid
+  YAxis
 } from 'recharts';
 import { ApiError, hexaTrackApi } from '@/lib/api';
 import type { ReportSummary } from '@/lib/types';
@@ -66,7 +58,6 @@ export function ReportsScreen() {
   const [report, setReport] = useState<ReportSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
   const { from, to } = useMemo(() => periodRange(period), [period]);
 
@@ -79,7 +70,7 @@ export function ReportsScreen() {
         const data = await hexaTrackApi.reportSummary(from, to);
         if (!cancelled) setReport(data);
       } catch (err) {
-        if (!cancelled) setError(err instanceof ApiError ? err.message : 'Unable to load reports.');
+        if (!cancelled) setError(err instanceof ApiError ? err.message : 'Unable to load analytics.');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -90,18 +81,15 @@ export function ReportsScreen() {
 
   const activeReport = report ?? emptyReport;
 
-  // Prepare Data for Rich Charts
   const cashflowData = useMemo(() => {
     return activeReport.cashflow.map(item => ({
-      period: new Date(item.period).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-      income: item.income,
-      expense: item.expense,
-      net: item.income - item.expense
+      period: new Date(item.period).toLocaleDateString('en-US', { month: 'short' }),
+      val: item.income - item.expense
     }));
   }, [activeReport.cashflow]);
 
   const pieData = useMemo(() => {
-    return activeReport.spendingByCategory.slice(0, 6).map(item => ({
+    return activeReport.spendingByCategory.slice(0, 3).map(item => ({
       name: item.categoryName,
       value: item.amount
     }));
@@ -111,266 +99,249 @@ export function ReportsScreen() {
     activeReport.spendingByCategory.reduce((acc, curr) => acc + curr.amount, 0), 
   [activeReport.spendingByCategory]);
 
-  const handleRetry = () => {
-    setError(null);
-    setReport(null);
-    setLoading(true);
-    hexaTrackApi.reportSummary(from, to).then(setReport).catch(e => setError(e instanceof ApiError ? e.message : 'Failed')).finally(() => setLoading(false));
-  };
-
-  const periodLabels: { key: Period; label: string }[] = [
-    { key: 'week', label: 'Week' },
-    { key: 'month', label: 'Month' },
-    { key: 'year', label: 'Year' },
-    { key: 'all', label: 'All Data' },
-  ];
+  if (loading && !report) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="animate-spin text-[#c1c1fc]" size={32} />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 pb-12 animate-in fade-in duration-500">
+    <div className="space-y-8 pb-24 animate-in fade-in duration-500">
       
-      {/* Header with Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Heading Block */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <p className="text-[11px] font-bold tracking-[0.2em] text-[#4F8CFF] uppercase">Intelligence Center</p>
-          <h1 className="text-3xl font-bold text-[#F9FAFB] tracking-tight">Reports</h1>
+          <p className="font-label-mono text-[10px] text-secondary tracking-[0.2em] uppercase font-bold mb-2">Portfolio Intelligence</p>
+          <h2 className="font-display-lg text-3xl md:text-5xl text-[#F5F7FA] font-bold tracking-tight">Wealth Analytics</h2>
         </div>
         
-        <div className="relative">
-          <button 
-            onClick={() => setExportMenuOpen(!exportMenuOpen)}
-            className="h-11 px-5 inline-flex items-center gap-2.5 bg-[#111827] border border-white/[0.05] hover:bg-white/[0.04] text-[#F9FAFB] text-sm font-semibold rounded-2xl shadow-sm transition-all"
-          >
-            <Download size={16} />
-            Export Insights
-          </button>
-
-          {exportMenuOpen && (
-            <>
-              <div className="fixed inset-0 z-20" onClick={() => setExportMenuOpen(false)} />
-              <div className="absolute right-0 top-full mt-2 w-48 bg-[#111827] border border-white/[0.08] rounded-2xl shadow-xl p-2 z-30 animate-in slide-in-from-top-2 duration-150">
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-[#F9FAFB] hover:bg-white/[0.05] rounded-xl transition-colors text-left">
-                  <FileText size={16} className="text-[#4F8CFF]" /> PDF Document
-                </button>
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-[#F9FAFB] hover:bg-white/[0.05] rounded-xl transition-colors text-left">
-                  <FileSpreadsheet size={16} className="text-[#22C55E]" /> Excel Sheet
-                </button>
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-[#F9FAFB] hover:bg-white/[0.05] rounded-xl transition-colors text-left">
-                  <BarChart3 size={16} className="text-[#F59E0B]" /> CSV Matrix
-                </button>
-              </div>
-            </>
-          )}
+        <div className="flex p-1 bg-black/20 rounded-full border border-white/[0.03] shadow-inner">
+          {periodLabels.slice(0, 3).map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setPeriod(key)}
+              className={`px-5 py-2 text-[11px] font-bold font-label-mono tracking-widest rounded-full transition-all ${
+                period === key 
+                  ? 'bg-secondary-container text-on-secondary-container shadow-sm' 
+                  : 'text-on-surface-variant opacity-70 hover:opacity-100'
+              }`}
+            >
+              {label.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Range Selector */}
-      <div className="flex p-1 gap-1 bg-[#111827] rounded-2xl border border-white/[0.05] shadow-sm max-w-md">
-        {periodLabels.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setPeriod(key)}
-            className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${
-              period === key ? 'bg-[#4F8CFF] text-white shadow-md shadow-[#4F8CFF]/20' : 'text-[#9CA3AF] hover:text-[#F9FAFB]'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {/* BENTO GRID BASE */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-gutter">
+        
+        {/* 1. GROWTH PROJECTION AREA CHART [md:col-span-8] */}
+        <div className="md:col-span-8 glass-card rounded-3xl p-6 md:p-8 flex flex-col relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/5 blur-[80px] rounded-full pointer-events-none" />
 
-      {/* Error State */}
-      {error && (
-        <div className="rounded-2xl border border-[#EF4444]/20 bg-[#EF4444]/5 p-4 flex items-center justify-between">
-          <p className="text-sm font-medium text-[#EF4444]">{error}</p>
-          <button onClick={handleRetry} className="text-xs font-bold text-[#F9FAFB] underline">Try Again</button>
-        </div>
-      )}
-
-      {loading && !report ? (
-        <div className="space-y-6">
-           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-             {[1,2,3].map(i => <div key={i} className="h-32 rounded-3xl bg-[#111827] animate-pulse" />)}
-           </div>
-           <div className="h-80 rounded-3xl bg-[#111827] animate-pulse" />
-        </div>
-      ) : null}
-
-      {report && (
-        <div className="space-y-6 animate-in fade-in duration-700">
-          
-          {/* High Level Metrics */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <MetricCard 
-              icon={<TrendingUp size={20} />}
-              label="Net Position"
-              value={money(activeReport.net)}
-              subtext="Real-time equity flow"
-              color="#4F8CFF"
-            />
-            <MetricCard 
-              icon={<ArrowDownLeft size={20} />}
-              label="Liquidity Inflow"
-              value={money(activeReport.income)}
-              subtext="Total gross income"
-              color="#22C55E"
-            />
-            <MetricCard 
-              icon={<ArrowUpRight size={20} />}
-              label="Total Debits"
-              value={money(activeReport.expense)}
-              subtext="All combined overhead"
-              color="#EF4444"
-            />
+          <div className="flex justify-between items-start mb-8 z-10">
+            <div>
+              <h3 className="font-headline-md text-headline-md text-[#F5F7FA] font-bold">Asset Velocity</h3>
+              <p className="text-body-sm text-on-surface-variant opacity-70">Predictive trend analysis via ledger dynamics</p>
+            </div>
+            <div className="text-right">
+              <p className="font-headline-md text-headline-md text-secondary font-bold">
+                {activeReport.net >= 0 ? '+' : ''}{money(activeReport.net)}
+              </p>
+              <p className="font-label-mono text-[10px] text-secondary/80 font-bold tracking-wide mt-1">NET CHANGE</p>
+            </div>
           </div>
 
-          {/* Core Analytics Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Cash Flow Visualized (Span 2) */}
-            <div className="lg:col-span-2 bg-[#111827] border border-white/[0.05] rounded-[32px] p-6 md:p-8">
-              <div className="mb-8">
-                <h3 className="text-lg font-bold text-[#F9FAFB]">Capital Flow Dynamics</h3>
-                <p className="text-sm text-[#9CA3AF] mt-1">Performance assessment by operational cycle</p>
-              </div>
-              
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={cashflowData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22C55E" stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor="#22C55E" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" strokeOpacity={0.03} vertical={false} />
-                    <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 11, fontWeight: 500}} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 11}} />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#0B1015', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px' }}
-                      itemStyle={{ fontSize: '13px', fontWeight: 600 }}
-                      labelStyle={{ color: '#9CA3AF', marginBottom: '4px', fontSize: '12px' }}
-                    />
-                    <Area type="monotone" dataKey="income" stroke="#22C55E" strokeWidth={2.5} fillOpacity={1} fill="url(#colorIncome)" name="Inflow" />
-                    <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={2.5} fillOpacity={1} fill="url(#colorExpense)" name="Outflow" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+          <div className="flex-1 w-full min-h-[280px] z-10">
+             <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={cashflowData.length > 0 ? cashflowData : fallbackProjectionData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#4b8eff" stopOpacity={0.4}/>
+                      <stop offset="100%" stopColor="#4b8eff" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="period" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fontSize: 10, fill: '#9CA3AF', fontWeight: 600, letterSpacing: '0.05em'}} 
+                    dy={10}
+                  />
+                  <YAxis hide domain={['dataMin - 500', 'dataMax + 500']} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#131316', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                    itemStyle={{ color: '#adc6ff' }}
+                    formatter={(value: any) => money(Number(value))}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="val" 
+                    stroke="#4b8eff" 
+                    strokeWidth={3} 
+                    fillOpacity={1} 
+                    fill="url(#growthGrad)" 
+                    className="chart-glow"
+                    animationDuration={1500}
+                  />
+                </AreaChart>
+             </ResponsiveContainer>
+          </div>
+        </div>
 
-            {/* Category Composition */}
-            <div className="bg-[#111827] border border-white/[0.05] rounded-[32px] p-6 md:p-8 flex flex-col">
-              <div>
-                <h3 className="text-lg font-bold text-[#F9FAFB]">Category Distribution</h3>
-                <p className="text-sm text-[#9CA3AF] mt-1">Weighted allocation profile</p>
-              </div>
-
-              <div className="flex-1 relative min-h-[220px] flex items-center justify-center">
-                {pieData.length > 0 ? (
-                  <>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RePieChart>
-                        <Pie
-                          data={pieData}
-                          innerRadius={70}
-                          outerRadius={90}
-                          paddingAngle={4}
-                          dataKey="value"
-                          stroke="none"
-                        >
-                          {pieData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                           contentStyle={{ backgroundColor: '#0B1015', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: '#fff' }}
-                        />
-                      </RePieChart>
-                    </ResponsiveContainer>
-                    <div className="absolute flex flex-col items-center">
-                       <span className="text-xs font-bold text-[#9CA3AF] uppercase tracking-wider">Total</span>
-                       <span className="text-xl font-bold text-[#F9FAFB] mt-0.5">{money(totalSpend)}</span>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-[#9CA3AF] text-center">No expenditure logged.</p>
-                )}
-              </div>
-
-              <div className="mt-4 space-y-3">
-                {pieData.map((item, index) => (
-                  <div key={item.name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} />
-                      <span className="text-xs font-medium text-[#F9FAFB]">{item.name}</span>
-                    </div>
-                    <span className="text-xs font-bold text-[#9CA3AF]">{percent((item.value / Math.max(totalSpend, 1)) * 100)}</span>
+        {/* 2. BREAKDOWN RING CHART [md:col-span-4] */}
+        <div className="md:col-span-4 glass-card rounded-3xl p-6 md:p-8 flex flex-col relative overflow-hidden">
+           <h3 className="font-headline-md text-headline-md text-[#F5F7FA] font-bold mb-6">Spend Ratio</h3>
+           
+           <div className="flex-1 flex items-center justify-center min-h-[180px] relative">
+              {pieData.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RePieChart>
+                      <Pie
+                        data={pieData}
+                        innerRadius={60}
+                        outerRadius={85}
+                        paddingAngle={6}
+                        dataKey="value"
+                        stroke="none"
+                        animationBegin={200}
+                      >
+                        {pieData.map((e, i) => (
+                           <Cell key={`slice-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} className="hover:opacity-80" />
+                        ))}
+                      </Pie>
+                    </RePieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                     <span className="font-label-mono text-2xl font-bold text-[#F5F7FA]">{percent((pieData[0]?.value / Math.max(1, totalSpend)) * 100)}</span>
+                     <span className="text-[9px] font-bold text-on-surface-variant tracking-widest uppercase opacity-60">Main Target</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
+                </>
+              ) : (
+                <div className="text-center opacity-50 text-sm italic">No classification data</div>
+              )}
+           </div>
 
-          {/* Comprehensive Spend Bars */}
-          <div className="bg-[#111827] border border-white/[0.05] rounded-[32px] p-6 md:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-              <div>
-                <h3 className="text-lg font-bold text-[#F9FAFB]">Comparative Overhead</h3>
-                <p className="text-sm text-[#9CA3AF] mt-1">Analysis of dominant categorical volumes</p>
-              </div>
-            </div>
-
-            {activeReport.spendingByCategory.length > 0 ? (
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={activeReport.spendingByCategory.slice(0, 10)} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff" strokeOpacity={0.02} horizontal={true} vertical={false} />
-                    <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 11}} />
-                    <YAxis type="category" dataKey="categoryName" axisLine={false} tickLine={false} tick={{fill: '#F9FAFB', fontSize: 12, fontWeight: 600}} />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#0B1015', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}
-                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                    />
-                    <Bar dataKey="amount" name="Spend" radius={[0, 8, 8, 0]} barSize={24}>
-                       {activeReport.spendingByCategory.slice(0, 10).map((e, i) => (
-                          <Cell key={`bar-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                       ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="h-[150px] flex items-center justify-center text-sm text-[#9CA3AF]">
-                Awaiting fiscal activity inputs.
-              </div>
-            )}
-          </div>
-
+           <div className="mt-6 space-y-3">
+              {pieData.map((item, i) => (
+                 <div key={item.name} className="flex justify-between items-center group">
+                    <div className="flex items-center gap-2">
+                       <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
+                       <span className="text-body-sm font-medium text-on-surface group-hover:text-[#F5F7FA] transition-colors">{item.name}</span>
+                    </div>
+                    <span className="font-label-mono text-xs font-bold text-on-surface-variant">{money(item.value)}</span>
+                 </div>
+              ))}
+           </div>
         </div>
-      )}
+
+        {/* 3. AI INSIGHT BANNER [md:col-span-12] */}
+        <div className="md:col-span-12 glass-card rounded-3xl p-6 border-l-4 border-l-secondary flex flex-col md:flex-row items-center gap-6 shadow-lg">
+          <div className="w-16 h-16 rounded-2xl bg-secondary-container/20 flex items-center justify-center shrink-0 shadow-inner border border-secondary/10">
+             <TrendingUp size={28} className="text-secondary" />
+          </div>
+          <div className="flex-grow text-center md:text-left">
+             <h4 className="text-lg font-bold text-[#F5F7FA] mb-1">Smart Optimization Potential</h4>
+             <p className="text-sm text-on-surface-variant opacity-80 max-w-2xl">
+                Current outflow velocity across top 3 verticals is 12% below forecasted parameters. HexaTrack AI confirms surplus liquidity is viable for reinvestment strategy or expansion capital.
+             </p>
+          </div>
+          <button className="bg-secondary-container text-on-secondary-container px-8 py-3 rounded-full font-bold text-sm active:scale-95 transition-all shrink-0 shadow-md shadow-secondary/20 whitespace-nowrap hover:opacity-90">
+             Execute Strategy
+          </button>
+        </div>
+
+        {/* 4. ACTIVITY HEATMAP GRID [md:col-span-7] */}
+        <div className="md:col-span-7 glass-card rounded-3xl p-6 md:p-8 relative">
+           <div className="flex justify-between items-center mb-6">
+             <h3 className="font-headline-md text-headline-md text-[#F5F7FA] font-bold">Transaction Heatmap</h3>
+             <div className="flex items-center gap-2">
+                <span className="text-[10px] text-on-surface-variant opacity-60 uppercase font-bold">Idle</span>
+                <div className="flex gap-1">
+                   <div className="w-3 h-3 rounded-sm bg-secondary-container opacity-10"></div>
+                   <div className="w-3 h-3 rounded-sm bg-secondary-container opacity-40"></div>
+                   <div className="w-3 h-3 rounded-sm bg-secondary-container opacity-70"></div>
+                   <div className="w-3 h-3 rounded-sm bg-secondary-container opacity-100"></div>
+                </div>
+                <span className="text-[10px] text-on-surface-variant opacity-60 uppercase font-bold">Peak</span>
+             </div>
+           </div>
+
+           <div className="grid grid-cols-12 gap-2 sm:gap-2.5">
+              {/* High Fidelity fake heatmap generator based on fixed map size */}
+              {heatmapValues.map((val, i) => (
+                 <div 
+                   key={i}
+                   className={`aspect-square rounded-md bg-secondary transition-all duration-500 hover:scale-110 cursor-pointer`}
+                   style={{ opacity: val }}
+                   title={`Intensity ${Math.round(val*100)}%`}
+                 />
+              ))}
+           </div>
+        </div>
+
+        {/* 5. REAL-TIME PULSE [md:col-span-5] */}
+        <div className="md:col-span-5 glass-card rounded-3xl p-6 md:p-8 flex flex-col">
+           <h3 className="font-headline-md text-headline-md text-[#F5F7FA] font-bold mb-6 flex items-center gap-2">
+             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+             Global Pulse
+           </h3>
+           
+           <div className="flex flex-col space-y-4 flex-1 justify-center">
+              {marketPulse.map(ticker => (
+                 <div key={ticker.sym} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition-all group">
+                    <div className="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-[#F5F7FA] group-hover:text-primary group-hover:scale-105 transition-all border border-white/[0.02]">
+                       {ticker.icon}
+                    </div>
+                    <div className="flex-grow min-w-0">
+                       <p className="font-bold text-[#F5F7FA] text-base">{ticker.sym}</p>
+                       <p className="text-xs text-on-surface-variant opacity-60 truncate">{ticker.name}</p>
+                    </div>
+                    <div className="text-right">
+                       <p className="font-label-mono font-bold text-sm text-[#F5F7FA]">{ticker.val}</p>
+                       <p className={`font-label-mono text-[10px] font-bold ${ticker.positive ? 'text-emerald-400' : 'text-rose-400'}`}>
+                         {ticker.positive ? '+' : ''}{ticker.change}%
+                       </p>
+                    </div>
+                 </div>
+              ))}
+           </div>
+        </div>
+
+      </div>
     </div>
   );
 }
 
-function MetricCard({ icon, label, value, subtext, color }: { icon: React.ReactNode, label: string, value: string, subtext: string, color: string }) {
-  return (
-    <div className="bg-[#111827] border border-white/[0.05] rounded-[32px] p-6 flex flex-col relative overflow-hidden group">
-      <div 
-        className="absolute top-0 right-0 w-24 h-24 opacity-5 rounded-bl-full pointer-events-none transition-all group-hover:scale-110 duration-500"
-        style={{ backgroundColor: color }}
-      />
-      <div 
-        className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
-        style={{ backgroundColor: `${color}15`, color: color }}
-      >
-        {icon}
-      </div>
-      <span className="text-xs font-bold tracking-wide text-[#9CA3AF] uppercase">{label}</span>
-      <span className="text-2xl font-bold text-[#F9FAFB] mt-1 tracking-tight">{value}</span>
-      <span className="text-[11px] font-medium text-[#9CA3AF]/60 mt-2 uppercase tracking-wider">{subtext}</span>
-    </div>
-  );
-}
+const periodLabels: { key: Period; label: string }[] = [
+  { key: 'week', label: 'Weekly' },
+  { key: 'month', label: 'Monthly' },
+  { key: 'year', label: 'Yearly' },
+  { key: 'all', label: 'Global' },
+];
+
+const fallbackProjectionData = [
+  { period: 'Jan', val: 4500 },
+  { period: 'Feb', val: 4800 },
+  { period: 'Mar', val: 5200 },
+  { period: 'Apr', val: 5100 },
+  { period: 'May', val: 5900 },
+  { period: 'Jun', val: 6800 },
+];
+
+const heatmapValues = [
+  0.1, 0.3, 0.1, 0.6, 0.2, 0.8, 0.4, 0.1, 0.5, 0.2, 0.1, 0.3,
+  0.2, 0.4, 0.8, 0.1, 0.9, 0.3, 0.1, 0.6, 0.2, 0.5, 0.3, 0.1,
+  0.1, 0.2, 0.3, 0.5, 0.1, 0.2, 0.7, 0.4, 0.1, 0.8, 0.2, 0.4,
+  0.3, 0.1, 0.6, 0.2, 0.4, 0.9, 0.1, 0.3, 0.5, 0.1, 0.2, 0.1,
+];
+
+const marketPulse = [
+  { sym: 'NVDA', name: 'Nvidia Corp', val: '$1,148.25', change: 3.4, positive: true, icon: <BarChart2 size={20} /> },
+  { sym: 'BTC', name: 'Bitcoin Index', val: '$68,240', change: -1.2, positive: false, icon: <Bitcoin size={20} /> },
+  { sym: 'XAU', name: 'Gold Spot', val: '$2,342.15', change: 0.8, positive: true, icon: <Coins size={20} /> },
+];
+

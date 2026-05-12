@@ -1,16 +1,16 @@
-import { BarChart3, Clock3, History, Home, Plus, Settings, UsersRound, LogOut } from 'lucide-react';
+import { BarChart3, Clock3, History, Home, Plus, Settings, Wallet, LogOut } from 'lucide-react';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { BrandMark } from '@/components/ui/brand';
 import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher';
 import { useAuthStore } from '@/store/auth-store';
 
-export type ScreenKey = 'dashboard' | 'transaction' | 'history' | 'reports' | 'recurring' | 'groups' | 'settings';
+export type ScreenKey = 'dashboard' | 'transaction' | 'history' | 'reports' | 'recurring' | 'wallets' | 'settings';
 
 const primaryNav = [
   { key: 'dashboard' as const, label: 'Home', icon: Home },
+  { key: 'wallets' as const, label: 'Wallets', icon: Wallet },
   { key: 'history' as const, label: 'History', icon: History },
   { key: 'reports' as const, label: 'Reports', icon: BarChart3 },
-  { key: 'groups' as const, label: 'Groups', icon: UsersRound },
   { key: 'settings' as const, label: 'Settings', icon: Settings },
 ];
 
@@ -28,37 +28,35 @@ export function AppShell({ activeScreen, children, onAddTransaction, onNavigate,
   const logout = useAuthStore((s) => s.logout);
 
   return (
-    <div className="app-viewport-min mx-auto flex w-full max-w-6xl flex-col bg-[#0B1015] lg:flex-row">
-      <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-white/[0.06] bg-[#121A22] px-5 py-6 lg:flex lg:flex-col">
-        <div>
+    <div className="app-viewport-min mx-auto flex w-full max-w-[1440px] flex-col bg-background lg:flex-row relative">
+      {/* Desktop Edge Glow */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#1a1b4b] blur-[120px] opacity-30 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" />
+
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-white/[0.04] bg-surface-container-lowest/30 px-5 py-8 backdrop-blur-md lg:flex lg:flex-col z-10">
+        <div className="px-2 mb-8">
           <BrandMark tone="dark" />
-          <div className="mt-4">
-            <WorkspaceSwitcher />
-          </div>
-          <p className="mt-2 text-xs text-[#8B9BB4]">{transactionCount} tracked entries</p>
         </div>
 
-        <button className="primary-button mt-7 w-full" onClick={onAddTransaction} type="button">
-          <Plus size={18} />
-          Add transaction
-        </button>
+        <div className="px-2 mb-6">
+           <WorkspaceSwitcher />
+        </div>
 
-        <nav className="mt-7 space-y-1">
+        <nav className="space-y-1">
           {[...primaryNav, ...secondaryNav.filter((item) => item.key === 'recurring')].map((item) => {
             const Icon = item.icon;
             const active = activeScreen === item.key;
             return (
               <button
                 key={item.key}
-                className={`flex w-full items-center gap-3 rounded-[18px] px-3 py-3 text-sm font-medium transition ${
+                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 group ${
                   active
-                    ? 'bg-[#4F8CFF]/15 text-[#F5F7FA]'
-                    : 'text-[#8B9BB4] hover:bg-white/[0.04] hover:text-[#F5F7FA]'
+                    ? 'bg-secondary-container text-on-secondary-container shadow-md shadow-secondary/10'
+                    : 'text-on-surface-variant hover:bg-white/[0.04] hover:text-on-surface'
                 }`}
                 onClick={() => onNavigate(item.key)}
                 type="button"
               >
-                <Icon size={18} className={active ? 'text-[#4F8CFF]' : undefined} />
+                <Icon size={18} className={active ? 'text-on-secondary-container' : 'text-on-surface-variant opacity-60 group-hover:opacity-100 transition-opacity'} />
                 {item.label}
               </button>
             );
@@ -68,7 +66,7 @@ export function AppShell({ activeScreen, children, onAddTransaction, onNavigate,
         <div className="flex-1" />
 
         <button
-          className="mt-auto flex w-full items-center gap-3 rounded-[18px] border border-white/[0.04] bg-[#0B1015] px-3 py-3.5 text-sm font-semibold text-[#FF5C75] transition hover:bg-[#FF5C75]/10 active:scale-[0.98]"
+          className="mt-auto flex w-full items-center gap-3 rounded-2xl border border-white/[0.04] bg-surface-container-high px-4 py-3.5 text-sm font-semibold text-error transition-all hover:bg-error/10 active:scale-[0.98]"
           onClick={logout}
           type="button"
         >
@@ -77,7 +75,8 @@ export function AppShell({ activeScreen, children, onAddTransaction, onNavigate,
         </button>
       </aside>
 
-      <main className="mobile-page-bottom min-w-0 flex-1 px-4 pt-[max(env(safe-area-inset-top),1rem)] sm:px-6 lg:px-8 lg:pb-10 lg:pt-7">
+      <main className="mobile-page-bottom min-w-0 flex-1 px-4 pt-[max(env(safe-area-inset-top),1rem)] sm:px-6 lg:px-0 lg:pb-10 lg:pt-0 relative z-0 overflow-hidden">
+
         {activeScreen !== 'dashboard' && (
           <header className="mb-5 flex flex-col gap-3 lg:hidden">
             <div className="flex items-center justify-between gap-3">
