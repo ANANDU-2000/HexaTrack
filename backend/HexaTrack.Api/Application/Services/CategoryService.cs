@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using HexaTrack.Api.Application.Dtos;
+using HexaTrack.Api.Domain;
 using HexaTrack.Api.Application.Security;
 using HexaTrack.Api.Domain.Entities;
 using HexaTrack.Api.Infrastructure;
@@ -11,6 +12,7 @@ namespace HexaTrack.Api.Application.Services;
 public interface ICategoryService
 {
     Task<IReadOnlyCollection<CategoryDto>> ListAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<CategoryDto>> ListAvailableAsync(Guid? branchId, TransactionType? type, CancellationToken cancellationToken);
     Task<CategoryDto> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken);
     Task<CategoryDto> UpdateAsync(Guid categoryId, UpdateCategoryRequest request, CancellationToken cancellationToken);
     Task ArchiveAsync(Guid categoryId, CancellationToken cancellationToken);
@@ -21,6 +23,7 @@ public interface ICategoryService
 }
 
 public sealed class CategoryService(
+    HexaTrackDbContext db,
     IUserScopedRepository<Category> categories,
     IUserScopedRepository<DomainTransaction> transactions,
     ICurrentUser currentUser,
@@ -33,6 +36,44 @@ public sealed class CategoryService(
             .OrderBy(x => x.Type).ThenBy(x => x.ParentCategoryId).ThenBy(x => x.Name)
             .Select(x => new CategoryDto(x.Id, x.ParentCategoryId, x.Name, x.Type, x.Color, x.Icon))
             .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyCollection<CategoryDto>> ListAvailableAsync(Guid? branchId, TransactionType? type, CancellationToken cancellationToken)
+    {
+        Guid workspaceId;
+
+        if (branchId.HasValue)
+        {
+            var branch = await db.Branches.AsNoTracking()
+                .SingleOrDefaultAsync(b => b.Id == branchId.Value, cancellationToken);
+            if (branch == null) return Array.Empty<CategoryDto>();
+            if (!branch.WorkspaceId.HasValue) return Array.Empty<CategoryDto>();
+            
+            workspaceId = branch.WorkspaceId.Value;
+
+            if (currentUser.OrganizationId.HasValue && branch.OrganizationId != currentUser.OrganizationId.Value)
+            {
+                throw new UnauthorizedAccessException("You do not have access to this branch context.");
+            }
+        }
+        else
+        {
+            workspaceId = currentWorkspace.WorkspaceId;
+        }
+
+        var q = db.Categories.AsNoTracking()
+            .Where(x => x.WorkspaceId == workspaceId && !x.IsArchived);
+
+        if (type.HasValue)
+        {
+            q = q.Where(x => x.Type == type.Value);
+        }
+
+        return await q.OrderBy(x => x.Type)
+            .ThenBy(x => x.ParentCategoryId)
+            .ThenBy(x => x.Name)
+            .Select(x => new CategoryDto(x.Id, x.ParentCategoryId, x.Name, x.Type, x.Color, x.Icon))
+            .ToListAsync(cancellationToken);
+    }
 
     public Task<CategoryDto> CreateAsync(CreateCategoryRequest request, CancellationToken cancellationToken)
         => unitOfWork.ExecuteInTransactionAsync(async ct =>

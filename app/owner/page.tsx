@@ -10,7 +10,7 @@ import { BrandMark } from '@/components/ui/brand';
 import { 
   LayoutDashboard, Users, Settings, LogOut, Bell, Search, 
   Building2, Network, Briefcase, TrendingUp, CreditCard, History, 
-  PieChart, RefreshCcw, DollarSign, Wallet, Plus, ShieldAlert, ArrowUpRight
+  PieChart, RefreshCcw, DollarSign, Wallet, Plus, ShieldAlert, ArrowUpRight, Tag
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -121,6 +121,7 @@ export default function OwnerDashboard() {
             <NavItem active={false} onClick={() => router.push('/owner/income')} icon={DollarSign} label="Income" />
             <NavItem active={false} onClick={() => router.push('/owner/expenses')} icon={ArrowUpRight} label="Expenses" />
             <NavItem active={false} onClick={() => router.push('/owner/accounts')} icon={Wallet} label="Accounts" />
+            <NavItem active={false} onClick={() => router.push('/owner/categories')} icon={Tag} label="Categories" />
             <NavItem active={activeTab === 'transactions'} onClick={() => router.push('/owner/transactions')} icon={CreditCard} label="Transactions" />
             <NavItem active={activeTab === 'reports'} onClick={() => router.push('/owner/analytics')} icon={PieChart} label="Financial Analytics" />
             <NavItem active={activeTab === 'recurring'} onClick={() => setActiveTab('recurring')} icon={RefreshCcw} label="Recurring Ledger" />

@@ -1,5 +1,8 @@
 'use client';
 
+import { AccountSelector, CategorySelector, PaymentMethodSelector } from '@/components/finance/finance-selectors';
+import { useQueryClient } from '@tanstack/react-query';
+
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -265,20 +268,52 @@ export function BranchIdentityBadge({ branchName, department }: { branchName?: s
   return <div className="flex flex-wrap gap-2"><span className="inline-flex items-center gap-1.5 rounded-full border border-[#4F8CFF]/25 bg-[#4F8CFF]/10 px-3 py-1.5 text-xs font-bold text-[#4F8CFF]"><Building2 className="h-3.5 w-3.5" />{branchName || 'Branch pending'}</span><span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.04] px-3 py-1.5 text-xs font-bold text-[#8B9BB4]"><Briefcase className="h-3.5 w-3.5" />{department || 'Operations'}</span></div>;
 }
 
+
+
 function StaffTransactionModal({ type, dashboard, onClose, onSaved }: { type: EntryType; dashboard: StaffDashboardDto; onClose: () => void; onSaved: () => void }) {
-  const accounts = dashboard.accounts;
-  const categories = dashboard.categories.filter((category) => category.type === type && !category.parentCategoryId);
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ amount: '', accountId: accounts[0]?.id ?? '', categoryId: categories[0]?.id ?? '', merchant: '', note: '', occurredOn: new Date().toISOString().slice(0, 10), receiptName: '', recurring: false });
+  const [form, setForm] = useState({
+    amount: '',
+    accountId: '',
+    categoryId: '',
+    merchant: '', // used as general string holder
+    note: '',
+    occurredOn: new Date().toISOString().slice(0, 10),
+    receiptName: '',
+    recurring: false
+  });
+
+  const isValid = form.amount && Number(form.amount) > 0 && form.accountId && form.categoryId;
 
   async function save() {
+    if (!isValid) return;
     setSaving(true);
-    const payload = { accountId: form.accountId, categoryId: form.categoryId, type, amount: Number(form.amount), currency: accounts.find((account) => account.id === form.accountId)?.currency ?? 'USD', merchant: form.merchant || undefined, note: form.note || undefined, occurredOn: form.occurredOn, tagIds: [], idempotencyKey: crypto.randomUUID() };
+    const payload = {
+      accountId: form.accountId,
+      categoryId: form.categoryId,
+      type,
+      amount: Number(form.amount),
+      currency: 'USD', // Fallback fallback, ideal case lookup but selector provides id
+      merchant: form.merchant || undefined,
+      note: form.note || undefined,
+      occurredOn: form.occurredOn,
+      tagIds: [],
+      idempotencyKey: crypto.randomUUID()
+    };
     try {
       if (type === 'Income') await hexaTrackApi.staff.createIncome(payload);
       else await hexaTrackApi.staff.createExpense(payload);
+      
+      // Invalidate TanStack cache queries to ensure data consistency
+      await queryClient.invalidateQueries({ queryKey: ['accounts', 'available'] });
+      await queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      
       onSaved();
       onClose();
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : 'Submission failed.');
     } finally {
       setSaving(false);
     }
@@ -288,18 +323,92 @@ function StaffTransactionModal({ type, dashboard, onClose, onSaved }: { type: En
     <div className="fixed inset-0 z-[999] flex items-end justify-center bg-black/70 backdrop-blur-sm md:items-center md:p-4">
       <div className="absolute inset-0" onClick={onClose} />
       <div className="relative w-full max-w-xl rounded-t-[32px] border border-white/[0.08] bg-[#0B1015] p-6 md:rounded-[32px]">
-        <div className="mb-5 flex items-center justify-between"><h2 className="text-xl font-black">Add {type}</h2><button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[0.05]"><X className="h-5 w-5" /></button></div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <InputField label="Amount"><input className="input-finance" type="number" min="0.01" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></InputField>
-          <InputField label="Account"><select className="input-finance" value={form.accountId} onChange={(e) => setForm({ ...form, accountId: e.target.value })}>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select></InputField>
-          <InputField label="Category"><select className="input-finance" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></InputField>
-          <InputField label={type === 'Expense' ? 'Merchant' : 'Payment method'}><input className="input-finance" value={form.merchant} onChange={(e) => setForm({ ...form, merchant: e.target.value })} /></InputField>
-          <InputField label="Date"><input className="input-finance" type="date" value={form.occurredOn} onChange={(e) => setForm({ ...form, occurredOn: e.target.value })} /></InputField>
-          <label className="flex h-12 items-center gap-3 rounded-xl border border-white/[0.06] bg-[#121A22] px-4 text-sm font-bold text-[#8B9BB4]"><input type="checkbox" checked={form.recurring} onChange={(e) => setForm({ ...form, recurring: e.target.checked })} /> Recurring</label>
-          {type === 'Expense' ? <InputField label="Receipt"><input className="input-finance" type="file" accept="image/*,.pdf" onChange={(e) => setForm({ ...form, receiptName: e.target.files?.[0]?.name ?? '' })} />{form.receiptName ? <p className="mt-1 text-xs text-[#8B9BB4]">Preview ready: {form.receiptName}</p> : null}</InputField> : null}
-          <InputField label="Notes"><input className="input-finance" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} /></InputField>
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-xl font-black">Add {type}</h2>
+          <button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[0.05]">
+            <X className="h-5 w-5" />
+          </button>
         </div>
-        <button disabled={saving || !form.amount || !form.accountId || !form.categoryId} onClick={save} className="mt-6 h-12 w-full rounded-[18px] bg-[#4F8CFF] font-bold text-white disabled:opacity-50">{saving ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : `Save ${type}`}</button>
+        <div className="grid gap-4 md:grid-cols-2">
+          <InputField label="Amount">
+            <input 
+              className="input-finance w-full" 
+              type="number" 
+              min="0.01" 
+              step="0.01" 
+              placeholder="0.00"
+              value={form.amount} 
+              onChange={(e) => setForm({ ...form, amount: e.target.value })} 
+            />
+          </InputField>
+          <InputField label="Account">
+            <AccountSelector 
+              value={form.accountId} 
+              onChange={(val) => setForm({ ...form, accountId: val })} 
+            />
+          </InputField>
+          <InputField label="Category">
+            <CategorySelector 
+              type={type} 
+              value={form.categoryId} 
+              onChange={(val) => setForm({ ...form, categoryId: val })} 
+            />
+          </InputField>
+          <InputField label={type === 'Expense' ? 'Merchant' : 'Payment Method'}>
+            {type === 'Expense' ? (
+              <input 
+                className="input-finance w-full" 
+                placeholder="Enter merchant..." 
+                value={form.merchant} 
+                onChange={(e) => setForm({ ...form, merchant: e.target.value })} 
+              />
+            ) : (
+              <PaymentMethodSelector 
+                value={form.merchant} 
+                onChange={(val) => setForm({ ...form, merchant: val })} 
+              />
+            )}
+          </InputField>
+          <InputField label="Date">
+            <input 
+              className="input-finance w-full" 
+              type="date" 
+              value={form.occurredOn} 
+              onChange={(e) => setForm({ ...form, occurredOn: e.target.value })} 
+            />
+          </InputField>
+          <div className="flex h-12 items-center">
+             <label className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-[#121A22] px-4 h-full w-full text-sm font-bold text-[#8B9BB4]">
+               <input type="checkbox" checked={form.recurring} onChange={(e) => setForm({ ...form, recurring: e.target.checked })} /> 
+               Recurring
+             </label>
+          </div>
+          {type === 'Expense' ? (
+            <InputField label="Receipt">
+              <input 
+                className="input-finance w-full text-xs" 
+                type="file" 
+                accept="image/*,.pdf" 
+                onChange={(e) => setForm({ ...form, receiptName: e.target.files?.[0]?.name ?? '' })} 
+              />
+            </InputField>
+          ) : null}
+          <InputField label="Notes">
+            <input 
+              className="input-finance w-full" 
+              placeholder="Transaction notes..." 
+              value={form.note} 
+              onChange={(e) => setForm({ ...form, note: e.target.value })} 
+            />
+          </InputField>
+        </div>
+        <button 
+          disabled={saving || !isValid} 
+          onClick={save} 
+          className={`mt-6 h-12 w-full rounded-[18px] font-bold text-white transition-all ${isValid ? 'bg-[#4F8CFF] shadow-lg shadow-blue-500/20 hover:bg-blue-600' : 'bg-white/[0.08] text-[#8B9BB4] cursor-not-allowed opacity-60'}`}
+        >
+          {saving ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : `Record ${type}`}
+        </button>
       </div>
     </div>
   );

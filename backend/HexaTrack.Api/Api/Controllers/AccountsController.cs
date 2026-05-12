@@ -14,6 +14,10 @@ public sealed class AccountsController(IAccountService accountService) : Control
     public Task<IReadOnlyCollection<AccountDto>> List(CancellationToken cancellationToken)
         => accountService.ListAsync(cancellationToken);
 
+    [HttpGet("available")]
+    public Task<IReadOnlyCollection<AccountDto>> Available([FromQuery] Guid? branchId, CancellationToken cancellationToken)
+        => accountService.ListAvailableAsync(branchId, cancellationToken);
+
     [HttpPost]
     public Task<AccountDto> Create(CreateAccountRequest request, CancellationToken cancellationToken)
         => accountService.CreateAsync(request, cancellationToken);

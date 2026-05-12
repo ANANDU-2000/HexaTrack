@@ -10,6 +10,7 @@ namespace HexaTrack.Api.Application.Services;
 public interface IAccountService
 {
     Task<IReadOnlyCollection<AccountDto>> ListAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<AccountDto>> ListAvailableAsync(Guid? branchId, CancellationToken cancellationToken);
     Task<AccountDto> CreateAsync(CreateAccountRequest request, CancellationToken cancellationToken);
     Task<AccountDto> UpdateAsync(Guid id, UpdateAccountRequest request, CancellationToken cancellationToken);
     Task ArchiveAsync(Guid id, CancellationToken cancellationToken);
@@ -26,6 +27,37 @@ public sealed class AccountService(HexaTrackDbContext db, IUserScopedRepository<
             .OrderBy(x => x.Type).ThenBy(x => x.Name)
             .Select(x => new AccountDto(x.Id, x.Name, x.Type, x.Currency, x.Balance))
             .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyCollection<AccountDto>> ListAvailableAsync(Guid? branchId, CancellationToken cancellationToken)
+    {
+        Guid workspaceId;
+
+        if (branchId.HasValue)
+        {
+            var branch = await db.Branches.AsNoTracking()
+                .SingleOrDefaultAsync(b => b.Id == branchId.Value, cancellationToken);
+            if (branch == null) return Array.Empty<AccountDto>();
+            if (!branch.WorkspaceId.HasValue) return Array.Empty<AccountDto>();
+            
+            workspaceId = branch.WorkspaceId.Value;
+
+            // Simple Auth Check: Does the user belong to the branch's organization?
+            if (currentUser.OrganizationId.HasValue && branch.OrganizationId != currentUser.OrganizationId.Value)
+            {
+                throw new UnauthorizedAccessException("You do not have access to this branch.");
+            }
+        }
+        else
+        {
+            workspaceId = currentWorkspace.WorkspaceId;
+        }
+
+        return await db.Accounts.AsNoTracking()
+            .Where(x => x.WorkspaceId == workspaceId && !x.IsArchived)
+            .OrderBy(x => x.Type).ThenBy(x => x.Name)
+            .Select(x => new AccountDto(x.Id, x.Name, x.Type, x.Currency, x.Balance))
+            .ToListAsync(cancellationToken);
+    }
 
     public Task<AccountDto> CreateAsync(CreateAccountRequest request, CancellationToken cancellationToken)
         => unitOfWork.ExecuteInTransactionAsync(async ct =>

@@ -12,6 +12,7 @@ import { hexaTrackApi } from '@/lib/api';
 import { AdminOrganizationDetailsDto } from '@/lib/types';
 import { CreateBranchModal, AddOwnerModal, AddStaffModal } from '@/components/admin/organizations-manager';
 import { BranchBadge } from '@/components/branches/branch-badge';
+import { OrganizationNavigationHeader } from '@/components/ui/navigation';
 
 export default function OrganizationDetailPage() {
   const params = useParams();
@@ -73,36 +74,28 @@ export default function OrganizationDetailPage() {
   return (
     <div className="min-h-screen bg-[#0B1015] pb-20">
       {/* Top Persistent Header */}
-      <header className="sticky top-0 z-30 bg-[#0B1015]/80 backdrop-blur-md border-b border-white/[0.04] px-6 py-3.5 flex items-center justify-between">
-         <div className="flex items-center gap-4">
-           <button onClick={() => router.push('/admin/dashboard')} className="w-9 h-9 flex items-center justify-center border border-white/[0.08] rounded-xl text-[#8B9BB4] hover:text-white hover:bg-white/[0.05] transition-all">
-             <ChevronLeft size={18} />
-           </button>
-           <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-lg">
-               {details.info.name.charAt(0)}
-             </div>
-             <div>
-               <div className="font-bold text-white text-sm leading-tight">{details.info.name}</div>
-               <div className="text-[10px] text-[#8B9BB4] uppercase tracking-wider font-bold flex items-center gap-1">
-                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Operational Matrix
-               </div>
-             </div>
-           </div>
-         </div>
-
-         <div className="flex items-center gap-2">
-           <button onClick={() => setActiveModal('branch')} className="h-9 px-3.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-xs font-bold text-white hover:bg-white/[0.08] flex items-center gap-2 transition-all">
-             <GitBranch size={13} /> + Branch
-           </button>
-           <button onClick={() => setActiveModal('owner')} className="h-9 px-3.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-xs font-bold text-white hover:bg-white/[0.08] flex items-center gap-2 transition-all">
-             <ShieldCheck size={13} /> + Owner
-           </button>
-           <button onClick={() => setActiveModal('staff')} className="h-9 px-4 bg-[#4F8CFF] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all">
-             <Plus size={14} /> Add Staff
-           </button>
-         </div>
-      </header>
+      <OrganizationNavigationHeader
+        title={details.info.name}
+        iconLetter={details.info.name.charAt(0)}
+        fallbackHref="/admin/organizations"
+        breadcrumbs={[
+          { label: 'Registry', href: '/admin/organizations' },
+          { label: details.info.name, href: `/admin/organizations/${details.info.id}` }
+        ]}
+        actions={
+          <>
+            <button onClick={() => setActiveModal('branch')} className="h-9 px-3.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-xs font-bold text-white hover:bg-white/[0.08] flex items-center gap-2 transition-all whitespace-nowrap">
+              <GitBranch size={13} /> + Branch
+            </button>
+            <button onClick={() => setActiveModal('owner')} className="h-9 px-3.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-xs font-bold text-white hover:bg-white/[0.08] flex items-center gap-2 transition-all whitespace-nowrap">
+              <ShieldCheck size={13} /> + Owner
+            </button>
+            <button onClick={() => setActiveModal('staff')} className="h-9 px-4 bg-[#4F8CFF] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all whitespace-nowrap">
+              <Plus size={14} /> Add Staff
+            </button>
+          </>
+        }
+      />
 
       <main className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Profile Block */}

@@ -11,8 +11,11 @@ namespace HexaTrack.Api.Api.Controllers;
 public sealed class CategoriesController(ICategoryService categoryService) : ControllerBase
 {
     [HttpGet]
-    public Task<IReadOnlyCollection<CategoryDto>> List(CancellationToken cancellationToken)
-        => categoryService.ListAsync(cancellationToken);
+    public Task<IReadOnlyCollection<CategoryDto>> List(
+        [FromQuery] Guid? branchId,
+        [FromQuery] HexaTrack.Api.Domain.TransactionType? type,
+        CancellationToken cancellationToken)
+        => categoryService.ListAvailableAsync(branchId, type, cancellationToken);
 
     [HttpPost]
     public Task<CategoryDto> Create(CreateCategoryRequest request, CancellationToken cancellationToken)

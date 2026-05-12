@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   AlertCircle,
@@ -146,7 +146,7 @@ function TableSkeleton() {
   );
 }
 
-export default function AdminPage() {
+function AdminDashboardContent() {
   const hydrate = useAuthStore((s) => s.hydrate);
   const hydrated = useAuthStore((s) => s.hydrated);
   const user = useAuthStore((s) => s.user);
@@ -154,6 +154,23 @@ export default function AdminPage() {
   const logout = useAuthStore((s) => s.logout);
 
   const [section, setSection] = useState<AdminSection>('analytics');
+  const searchParams = useSearchParams();
+
+  // Sync Section from URL Params
+  useEffect(() => {
+    const requestedSection = searchParams.get('section') as AdminSection | null;
+    if (requestedSection && ['analytics','workspaces','organizations','users','transactions','subscriptions','ai','notifications','security','audit','flags','settings'].includes(requestedSection)) {
+      setSection(requestedSection);
+    }
+  }, [searchParams]);
+
+  // Provide state sync helper that updates URL for persistence
+  const updateSection = (nextSection: AdminSection) => {
+    setSection(nextSection);
+    // Push state without reload to keep URL persistent for browser back button support
+    window.history.pushState(null, '', `/admin?section=${nextSection}`);
+  };
+
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -220,56 +237,56 @@ export default function AdminPage() {
         label: 'Users',
         keywords: ['accounts', 'people', 'members'],
         icon: Users,
-        onSelect: () => setSection('users'),
+        onSelect: () => updateSection('users'),
       },
       {
         id: 'go-workspaces',
         label: 'Workspaces',
         keywords: ['orgs', 'teams'],
         icon: Globe,
-        onSelect: () => setSection('workspaces'),
+        onSelect: () => updateSection('workspaces'),
       },
       {
         id: 'go-orgs',
         label: 'Organizations',
         keywords: ['companies', 'groups'],
         icon: Building2,
-        onSelect: () => setSection('organizations'),
+        onSelect: () => updateSection('organizations'),
       },
       {
         id: 'go-tx',
         label: 'Transactions',
         keywords: ['monitoring', 'ledger', 'audits'],
         icon: Activity,
-        onSelect: () => setSection('transactions'),
+        onSelect: () => updateSection('transactions'),
       },
       {
         id: 'go-sub',
         label: 'Subscriptions',
         keywords: ['billing', 'plans'],
         icon: CreditCard,
-        onSelect: () => setSection('subscriptions'),
+        onSelect: () => updateSection('subscriptions'),
       },
       {
         id: 'go-flags',
         label: 'Feature flags',
         keywords: ['toggles', 'features'],
         icon: Flag,
-        onSelect: () => setSection('flags'),
+        onSelect: () => updateSection('flags'),
       },
       {
         id: 'go-audit',
         label: 'Audit log',
         keywords: ['security', 'events', 'activity'],
         icon: ClipboardList,
-        onSelect: () => setSection('audit'),
+        onSelect: () => updateSection('audit'),
       },
       {
         id: 'go-ai',
         label: 'AI usage',
         keywords: ['tokens', 'claude', 'usage', 'zap'],
         icon: Zap,
-        onSelect: () => setSection('ai'),
+        onSelect: () => updateSection('ai'),
       },
       {
         id: 'go-analytics',
@@ -277,28 +294,28 @@ export default function AdminPage() {
         hint: 'Metrics, charts, audit feed',
         keywords: ['home', 'analytics'],
         icon: BarChart3,
-        onSelect: () => setSection('analytics'),
+        onSelect: () => updateSection('analytics'),
       },
       {
         id: 'go-notes',
         label: 'Notifications',
         keywords: ['alerts', 'inbox'],
         icon: Bell,
-        onSelect: () => setSection('notifications'),
+        onSelect: () => updateSection('notifications'),
       },
       {
         id: 'go-sec',
         label: 'Security',
         keywords: ['vault', 'access'],
         icon: Shield,
-        onSelect: () => setSection('security'),
+        onSelect: () => updateSection('security'),
       },
       {
         id: 'go-settings',
         label: 'Platform settings',
         keywords: ['config', 'global'],
         icon: Settings,
-        onSelect: () => setSection('settings'),
+        onSelect: () => updateSection('settings'),
       },
       {
         id: 'create-user',
@@ -307,7 +324,7 @@ export default function AdminPage() {
         keywords: ['add', 'invite', 'new'],
         icon: UserPlus,
         onSelect: () => {
-          setSection('users');
+          updateSection('users');
           setCreateUserOpen(true);
         },
       },
@@ -753,7 +770,7 @@ export default function AdminPage() {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setSection(item.id)}
+                onClick={() => updateSection(item.id)}
                 className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                   active
                     ? 'bg-[#4F8CFF]/10 text-[#4F8CFF]'
@@ -843,7 +860,7 @@ export default function AdminPage() {
                   chartDays={chartDays}
                   onChartDaysChange={setChartDays}
                   onRetry={() => void loadOverviewSection()}
-                  onOpenAudit={() => setSection('audit')}
+                  onOpenAudit={() => updateSection('audit')}
                   lastRefreshedAt={overviewRefreshedAt}
                   onRefresh={() => void loadOverviewSection()}
                 />
@@ -1666,5 +1683,20 @@ function AdminAuthPortal() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0B1015] grid place-items-center">
+        <div className="flex items-center gap-3 text-[#8B9BB4]">
+          <Loader2 className="animate-spin h-5 w-5 text-[#4F8CFF]" />
+          <span className="text-sm font-medium">Loading Secure Layer...</span>
+        </div>
+      </div>
+    }>
+      <AdminDashboardContent />
+    </Suspense>
   );
 }

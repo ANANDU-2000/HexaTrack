@@ -125,7 +125,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
     try {
       const { from, to } = monthToDateRange();
       const [nextAccounts, nextCategories, nextTags, nextRecurring, nextTransactions, dash] = await Promise.all([
-        hexaTrackApi.accounts(),
+        hexaTrackApi.accounts.list(),
         hexaTrackApi.categories.list(),
         hexaTrackApi.tags.list(),
         hexaTrackApi.recurring.list(),
@@ -199,7 +199,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
       const { from, to } = monthToDateRange();
       const [dash, nextAccounts] = await Promise.all([
         hexaTrackApi.dashboard.summary(from, to),
-        hexaTrackApi.accounts(),
+        hexaTrackApi.accounts.list(),
       ]);
 
       set((state) => {

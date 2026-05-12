@@ -243,7 +243,11 @@ export const hexaTrackApi = {
         body: payload,
       }),
   },
-  accounts: () => apiRequest<Account[]>('/api/accounts'),
+  accounts: {
+    list: () => apiRequest<Account[]>('/api/accounts'),
+    available: (branchId?: string) =>
+      apiRequest<Account[]>(`/api/accounts/available${branchId ? `?branchId=${branchId}` : ''}`),
+  },
   createAccount: (payload: { name: string; type: Account['type']; currency: string; openingBalance: number }) =>
     apiRequest<Account>('/api/accounts', { method: 'POST', body: payload }),
   transfer: (payload: TransferRequest) =>
@@ -252,7 +256,13 @@ export const hexaTrackApi = {
       body: payload,
     }),
   categories: {
-    list: () => apiRequest<Category[]>('/api/categories'),
+    list: (params?: { branchId?: string; type?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.branchId) q.set('branchId', params.branchId);
+      if (params?.type) q.set('type', params.type);
+      const qs = q.toString();
+      return apiRequest<Category[]>(`/api/categories${qs ? `?${qs}` : ''}`);
+    },
     create: (payload: {
       name: string;
       type: Category['type'];

@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { AccountSelector, CategorySelector, PaymentMethodSelector } from '@/components/finance/finance-selectors';
+import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -29,7 +31,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { useFinanceStore } from '@/store/finance-store';
 import { useWorkspaceStore } from '@/store/workspace-store';
 
-type FinanceKind = 'income' | 'expenses' | 'accounts' | 'transactions' | 'analytics' | 'ledger';
+type FinanceKind = 'income' | 'expenses' | 'accounts' | 'transactions' | 'analytics' | 'ledger' | 'categories';
 type TxFormType = Extract<TransactionType, 'Income' | 'Expense'>;
 
 const incomeDefaults = ['Sales', 'Services', 'Investments', 'Transfers', 'Refunds', 'Other'];
@@ -47,6 +49,7 @@ function titleFor(kind: FinanceKind) {
     transactions: 'Transactions',
     analytics: 'Financial Analytics',
     ledger: 'Global Ledger',
+    categories: 'Category Management',
   }[kind];
 }
 
@@ -73,6 +76,11 @@ export function FinancialAnalyticsPage() {
 export function GlobalLedgerPage() {
   return <OwnerFinanceShell kind="ledger" />;
 }
+
+export function CategoryManagementPage() {
+  return <OwnerFinanceShell kind="categories" />;
+}
+
 
 function OwnerFinanceShell({ kind }: { kind: FinanceKind }) {
   const router = useRouter();
@@ -143,7 +151,109 @@ function renderModule(kind: FinanceKind, openQuick: (type: TxFormType | null) =>
   if (kind === 'accounts') return <AccountsModule onQuick={() => openQuick('Income')} />;
   if (kind === 'transactions') return <TransactionsModule onAdd={() => openQuick('Income')} />;
   if (kind === 'analytics') return <AnalyticsModule />;
+  if (kind === 'categories') return <CategoriesModule />;
   return <LedgerModule />;
+}
+
+function CategoriesModule() {
+  const categories = useFinanceStore((state) => state.categories);
+  const loadWorkspace = useFinanceStore((state) => state.loadWorkspace);
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="space-y-5">
+       <div className="flex justify-between items-center">
+          <p className="text-sm font-semibold text-[#8B9BB4]">Organize transactions with hierarchy and colors.</p>
+          <button onClick={() => setOpen(true)} className="h-11 rounded-[18px] bg-[#4F8CFF] px-5 text-sm font-bold text-white">
+             <Plus className="mr-2 inline h-4 w-4" /> Create Category
+          </button>
+       </div>
+       {categories.length === 0 ? (
+         <EmptyState title="No categories defined yet." action="Start by creating one." />
+       ) : (
+         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+           {categories.filter(c => !c.parentCategoryId).map((cat) => (
+             <div key={cat.id} className="rounded-3xl border border-white/[0.06] bg-[#121A22] p-6">
+                <div className="flex justify-between items-start">
+                   <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{backgroundColor: `${cat.color || '#4F8CFF'}20`, color: cat.color || '#4F8CFF'}}>
+                         <TagIcon className="h-5 w-5" />
+                      </div>
+                      <div>
+                         <h3 className="font-black">{cat.name}</h3>
+                         <p className="text-xs font-bold text-[#8B9BB4] uppercase tracking-widest mt-0.5">{cat.type}</p>
+                      </div>
+                   </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                   {categories.filter(sub => sub.parentCategoryId === cat.id).map(sub => (
+                     <div key={sub.id} className="text-sm px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex justify-between items-center">
+                        <span>{sub.name}</span>
+                     </div>
+                   ))}
+                </div>
+             </div>
+           ))}
+         </div>
+       )}
+       {open && <CategoryModal onClose={() => setOpen(false)} onSaved={() => { setOpen(false); loadWorkspace(); }} />}
+    </div>
+  );
+}
+
+import { Tag as TagIcon } from 'lucide-react';
+
+function CategoryModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState({ name: '', type: 'Expense' as Category['type'], color: '#4F8CFF', parentCategoryId: '' });
+  const [saving, setSaving] = useState(false);
+  const parentOptions = useFinanceStore((state) => state.categories.filter(c => !c.parentCategoryId));
+
+  async function save() {
+    setSaving(true);
+    try {
+      await hexaTrackApi.categories.create({
+        name: form.name,
+        type: form.type,
+        parentCategoryId: form.parentCategoryId || null,
+        color: form.color,
+      });
+      onSaved();
+    } catch(e) {
+       alert(e instanceof Error ? e.message : 'Failed to create category.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[999] grid place-items-end bg-black/70 p-0 backdrop-blur-sm md:place-items-center md:p-4">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-t-[32px] border border-white/[0.08] bg-[#0B1015] p-6 md:rounded-[32px]">
+        <div className="flex justify-between items-center mb-5"><h2 className="text-xl font-black">Create Category</h2><button onClick={onClose}><X className="h-5 w-5" /></button></div>
+        <div className="space-y-4">
+          <Field label="Category Name"><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-finance w-full" placeholder="e.g. Marketing" /></Field>
+          <Field label="Type">
+             <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as Category['type'] })} className="input-finance w-full">
+               <option value="Expense">Expense</option>
+               <option value="Income">Income</option>
+             </select>
+          </Field>
+          <Field label="Parent Category (Optional)">
+             <select value={form.parentCategoryId} onChange={(e) => setForm({ ...form, parentCategoryId: e.target.value })} className="input-finance w-full">
+               <option value="">-- None (Top Level) --</option>
+               {parentOptions.filter(p => p.type === form.type).map(p => (
+                 <option key={p.id} value={p.id}>{p.name}</option>
+               ))}
+             </select>
+          </Field>
+          <Field label="Pick Color">
+             <input type="color" value={form.color} onChange={e => setForm({...form, color: e.target.value})} className="w-full h-10 rounded-xl bg-transparent border-0" />
+          </Field>
+        </div>
+        <button disabled={saving || !form.name} onClick={save} className="mt-6 h-12 w-full rounded-[18px] bg-[#4F8CFF] font-bold text-white disabled:opacity-50">{saving ? 'Saving...' : 'Create category'}</button>
+      </div>
+    </div>
+  );
 }
 
 function IncomeExpenseModule({ type, onAdd }: { type: TxFormType; onAdd: () => void }) {
@@ -269,28 +379,26 @@ function AnalyticsModule() {
 }
 
 export function QuickTransactionModal({ type, onClose }: { type: TxFormType; onClose: () => void }) {
-  const accounts = useFinanceStore((state) => state.accounts);
-  const categories = useFinanceStore((state) => state.categories.filter((category) => category.type === type && !category.parentCategoryId));
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const addTransaction = useFinanceStore((state) => state.addTransaction);
   const loadWorkspace = useFinanceStore((state) => state.loadWorkspace);
+  const queryClient = useQueryClient();
+  
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     amount: '',
-    accountId: accounts[0]?.id ?? '',
-    categoryId: categories[0]?.id ?? '',
+    accountId: '',
+    categoryId: '',
     merchant: '',
     note: '',
     occurredOn: today(),
     recurring: false,
   });
 
-  useEffect(() => {
-    if (categories.length === 0) {
-      void ensureDefaultCategories(type, categories).then(() => loadWorkspace());
-    }
-  }, [categories, loadWorkspace, type]);
+  const isValid = form.amount && Number(form.amount) > 0 && form.accountId && form.categoryId;
 
   async function save(addAnother = false) {
+    if (!isValid) return;
     setSaving(true);
     try {
       await addTransaction({
@@ -298,17 +406,24 @@ export function QuickTransactionModal({ type, onClose }: { type: TxFormType; onC
         categoryId: form.categoryId,
         type,
         amount: Number(form.amount),
-        currency: accounts.find((account) => account.id === form.accountId)?.currency ?? 'USD',
+        currency: 'USD', // Auto Lookup later if needed
         merchant: form.merchant || undefined,
         note: form.note || undefined,
         occurredOn: form.occurredOn,
       });
-      await loadWorkspace();
+      
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['accounts'] }),
+        loadWorkspace()
+      ]);
+
       if (addAnother) {
         setForm((current) => ({ ...current, amount: '', merchant: '', note: '' }));
       } else {
         onClose();
       }
+    } catch (err) {
+       alert(err instanceof Error ? err.message : 'Submission failed.');
     } finally {
       setSaving(false);
     }
@@ -326,18 +441,52 @@ export function QuickTransactionModal({ type, onClose }: { type: TxFormType; onC
           <button type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[0.05]"><X className="h-5 w-5" /></button>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Amount"><input required value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} type="number" min="0.01" step="0.01" className="input-finance" /></Field>
-          <Field label="Account"><select value={form.accountId} onChange={(e) => setForm({ ...form, accountId: e.target.value })} className="input-finance">{accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></Field>
-          <Field label="Category"><select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} className="input-finance">{categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
-          <Field label={type === 'Income' ? 'Payment method' : 'Merchant'}><input value={form.merchant} onChange={(e) => setForm({ ...form, merchant: e.target.value })} className="input-finance" /></Field>
-          <Field label="Date"><input type="date" value={form.occurredOn} onChange={(e) => setForm({ ...form, occurredOn: e.target.value })} className="input-finance" /></Field>
-          <label className="flex h-12 items-center gap-3 rounded-xl border border-white/[0.06] bg-[#121A22] px-4 text-sm font-bold text-[#8B9BB4]"><input type="checkbox" checked={form.recurring} onChange={(e) => setForm({ ...form, recurring: e.target.checked })} /> Recurring</label>
+          <Field label="Amount"><input required value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} type="number" min="0.01" step="0.01" className="input-finance w-full" /></Field>
+          <Field label="Account">
+            <AccountSelector 
+              value={form.accountId} 
+              onChange={(val) => setForm({ ...form, accountId: val })} 
+            />
+          </Field>
+          <Field label="Category">
+            <CategorySelector 
+              type={type} 
+              value={form.categoryId} 
+              onChange={(val) => setForm({ ...form, categoryId: val })} 
+            />
+          </Field>
+          <Field label={type === 'Income' ? 'Payment method' : 'Merchant'}>
+             {type === 'Income' ? (
+               <PaymentMethodSelector value={form.merchant} onChange={(val) => setForm({ ...form, merchant: val })} />
+             ) : (
+               <input value={form.merchant} onChange={(e) => setForm({ ...form, merchant: e.target.value })} className="input-finance w-full" />
+             )}
+          </Field>
+          <Field label="Date"><input type="date" value={form.occurredOn} onChange={(e) => setForm({ ...form, occurredOn: e.target.value })} className="input-finance w-full" /></Field>
+          <div className="flex h-12 items-center">
+            <label className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-[#121A22] px-4 w-full h-full text-sm font-bold text-[#8B9BB4]">
+              <input type="checkbox" checked={form.recurring} onChange={(e) => setForm({ ...form, recurring: e.target.checked })} /> 
+              Recurring
+            </label>
+          </div>
           {type === 'Expense' ? <ReceiptUpload /> : null}
-          <Field label="Description"><input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className="input-finance" /></Field>
+          <Field label="Description"><input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className="input-finance w-full" /></Field>
         </div>
         <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2">
-          <button disabled={saving || !form.amount || !form.accountId || !form.categoryId} onClick={() => save(false)} className="h-12 rounded-[18px] bg-[#4F8CFF] font-bold text-white disabled:opacity-50">{saving ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : `Save ${type}`}</button>
-          <button disabled={saving || !form.amount || !form.accountId || !form.categoryId} onClick={() => save(true)} className="h-12 rounded-[18px] border border-white/[0.08] font-bold text-[#F5F7FA] disabled:opacity-50">Save & Add Another</button>
+          <button 
+             disabled={saving || !isValid} 
+             onClick={() => save(false)} 
+             className={`h-12 rounded-[18px] font-bold text-white transition-all ${isValid ? 'bg-[#4F8CFF] hover:bg-blue-600' : 'bg-white/[0.08] opacity-50 cursor-not-allowed'}`}
+          >
+            {saving ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : `Record ${type}`}
+          </button>
+          <button 
+             disabled={saving || !isValid} 
+             onClick={() => save(true)} 
+             className={`h-12 rounded-[18px] border border-white/[0.08] font-bold text-[#F5F7FA] hover:bg-white/[0.05] transition-all disabled:opacity-50`}
+          >
+             Save & Add Another
+          </button>
         </div>
       </div>
     </div>
