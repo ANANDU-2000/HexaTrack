@@ -3,7 +3,7 @@
 import { AccountSelector, CategorySelector, PaymentMethodSelector } from '@/components/finance/finance-selectors';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowDownLeft,
@@ -37,14 +37,14 @@ type StaffView = 'dashboard' | 'transactions' | 'tasks' | 'reports' | 'notificat
 type EntryType = Extract<TransactionType, 'Income' | 'Expense'>;
 
 const navItems: Array<{ view: StaffView; label: string; icon: LucideIcon; href: string }> = [
-  { view: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/staff/dashboard' },
-  { view: 'transactions', label: 'Transactions', icon: CreditCard, href: '/staff/transactions' },
-  { view: 'expenses', label: 'Expenses', icon: ArrowUpRight, href: '/staff/expenses' },
-  { view: 'income', label: 'Income', icon: ArrowDownLeft, href: '/staff/income' },
-  { view: 'tasks', label: 'Tasks', icon: CheckCircle2, href: '/staff/tasks' },
-  { view: 'reports', label: 'Reports', icon: FileText, href: '/staff/reports' },
-  { view: 'notifications', label: 'Notifications', icon: Bell, href: '/staff/notifications' },
-  { view: 'profile', label: 'Profile', icon: UserCircle, href: '/staff/profile' },
+  { view: 'dashboard', label: 'Overview', icon: LayoutDashboard, href: '/staff/dashboard' },
+  { view: 'transactions', label: 'Ledger Feed', icon: CreditCard, href: '/staff/transactions' },
+  { view: 'expenses', label: 'Outflows', icon: ArrowUpRight, href: '/staff/expenses' },
+  { view: 'income', label: 'Inflows', icon: ArrowDownLeft, href: '/staff/income' },
+  { view: 'tasks', label: 'Queue', icon: CheckCircle2, href: '/staff/tasks' },
+  { view: 'reports', label: 'Telemetry', icon: FileText, href: '/staff/reports' },
+  { view: 'notifications', label: 'Signals', icon: Bell, href: '/staff/notifications' },
+  { view: 'profile', label: 'Signature', icon: UserCircle, href: '/staff/profile' },
 ];
 
 export function StaffWorkspace({ view }: { view: StaffView }) {
@@ -84,33 +84,41 @@ export function StaffWorkspace({ view }: { view: StaffView }) {
   }, [hydrated, user?.organizationRole]);
 
   if (!hydrated || !user) {
-    return <div className="grid min-h-screen place-items-center bg-[#0B1015] text-xs font-black uppercase tracking-widest text-[#8B9BB4]">Authorizing staff workspace</div>;
+    return (
+      <div className="grid min-h-screen place-items-center bg-[#0B1020] font-sans text-[10px] font-black uppercase tracking-widest text-cyan select-none animate-pulse">
+         Authorizing operational channel...
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1015] text-[#F5F7FA] xl:flex">
+    <div className="min-h-screen bg-[#0B1020] text-on-surface xl:flex font-sans selection:bg-cyan/30">
       <StaffSidebar active={view} onNavigate={(href) => router.push(href)} onLogout={() => { logout(); router.replace('/'); }} />
-      <main className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#0B1015]/85 px-4 py-4 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3">
+      <main className="min-w-0 flex-1 pb-20 xl:pb-0">
+        <header className="sticky top-0 z-30 border-b border-white/[0.04] bg-[#0B1020]/80 px-container-margin py-4.5 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
               <BrandMark tone="dark" />
               <BranchIdentityBadge branchName={dashboard?.branchName ?? user.branchName} department={dashboard?.department ?? user.department} />
             </div>
             <StaffQuickActions onExpense={() => setModalType('Expense')} onIncome={() => setModalType('Income')} />
           </div>
-          <div className="mt-4 flex gap-2 overflow-x-auto xl:hidden">
+          <div className="mt-4 flex gap-2 overflow-x-auto xl:hidden no-scrollbar pb-1">
             {navItems.map((item) => (
-              <button key={item.view} onClick={() => router.push(item.href)} className={`shrink-0 rounded-full px-3 py-2 text-xs font-bold ${view === item.view ? 'bg-[#4F8CFF] text-white' : 'border border-white/[0.06] text-[#8B9BB4]'}`}>
+              <button 
+                key={item.view} 
+                onClick={() => router.push(item.href)} 
+                className={`shrink-0 rounded-full px-4 py-2 text-[10px] font-black font-label-caps tracking-widest uppercase border transition-all ${view === item.view ? 'bg-cyan border-white/[0.1] text-black shadow-[0_0_12px_#06B6D4]' : 'border-white/[0.05] bg-[#111827]/50 text-on-surface-variant'}`}
+              >
                 {item.label}
               </button>
             ))}
           </div>
         </header>
 
-        <section className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
+        <section className="mx-auto max-w-7xl space-y-8 p-container-margin md:p-8 animate-in fade-in duration-500">
           {error ? <ErrorCard message={error} onRetry={load} /> : null}
-          {loading ? <StaffSkeleton /> : dashboard ? renderView(view, dashboard, transactions, setTransactions, setModalType) : <EmptyState title="Staff branch is not ready." action="Ask your owner to assign a branch workspace." />}
+          {loading ? <StaffSkeleton /> : dashboard ? renderView(view, dashboard, transactions, setTransactions, setModalType) : <EmptyState title="Node workspace not provisioned." action="Pending direct assignment from master owner." />}
         </section>
       </main>
       {modalType && dashboard ? <StaffTransactionModal type={modalType} dashboard={dashboard} onClose={() => setModalType(null)} onSaved={load} /> : null}
@@ -120,24 +128,31 @@ export function StaffWorkspace({ view }: { view: StaffView }) {
 
 function StaffSidebar({ active, onNavigate, onLogout }: { active: StaffView; onNavigate: (href: string) => void; onLogout: () => void }) {
   return (
-    <aside className="hidden h-screen w-[264px] shrink-0 flex-col border-r border-white/[0.06] bg-[#0B1015] p-4 xl:flex">
-      <div className="mb-6 flex h-12 items-center gap-3 px-2">
+    <aside className="hidden h-screen w-[270px] shrink-0 flex-col border-r border-white/[0.04] bg-[#111827]/40 p-5 backdrop-blur-md xl:flex relative">
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan/20 to-transparent" />
+      <div className="mb-8 mt-2 flex h-12 items-center gap-3 px-3">
         <BrandMark tone="dark" />
-        <span className="rounded bg-[#4F8CFF]/10 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-[#4F8CFF]">Staff</span>
+        <span className="rounded-full border border-cyan/20 bg-[#111827] px-3 py-1 text-[9px] font-black font-label-caps tracking-widest uppercase text-cyan shadow-[0_0_8px_rgba(6,182,212,0.15)]">Staff</span>
       </div>
-      <nav className="flex-1 space-y-1">
+      <nav className="flex-1 space-y-1.5">
         {navItems.map((item) => {
           const Icon = item.icon;
+          const isCurrent = active === item.view;
           return (
-            <button key={item.view} onClick={() => onNavigate(item.href)} className={`flex h-11 w-full items-center gap-3 rounded-xl px-4 text-sm font-bold transition ${active === item.view ? 'bg-[#4F8CFF]/10 text-[#4F8CFF]' : 'text-[#8B9BB4] hover:bg-white/[0.04] hover:text-white'}`}>
-              <Icon className="h-4 w-4" />
-              {item.label}
+            <button 
+              key={item.view} 
+              onClick={() => onNavigate(item.href)} 
+              className={`flex h-[46px] w-full items-center gap-3.5 rounded-[18px] px-4 text-xs font-bold transition-all duration-200 relative group ${isCurrent ? 'text-cyan font-black bg-[#111827] border border-white/[0.04] shadow-sm' : 'text-on-surface-variant hover:bg-[#111827]/40 hover:text-on-surface'}`}
+            >
+              {isCurrent && <div className="absolute left-2 w-1 h-4 rounded-full bg-cyan shadow-[0_0_6px_#06B6D4]" />}
+              <Icon className={`h-4 w-4 flex-shrink-0 ${isCurrent ? 'text-cyan animate-pulse ml-1.5' : 'group-hover:scale-105 transition-transform'}`} />
+              <span className={isCurrent ? 'ml-1 tracking-wide' : 'tracking-wide'}>{item.label}</span>
             </button>
           );
         })}
       </nav>
-      <button onClick={onLogout} className="flex h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.06] text-xs font-black uppercase tracking-widest text-[#8B9BB4] hover:border-[#FF5C75]/25 hover:bg-[#FF5C75]/10 hover:text-[#FF5C75]">
-        <LogOut className="h-4 w-4" /> Sign out
+      <button onClick={onLogout} className="flex h-[48px] items-center justify-center gap-2.5 rounded-full border border-white/[0.04] bg-[#111827]/20 text-[10px] font-black font-label-caps tracking-widest uppercase text-on-surface-variant hover:border-danger/30 hover:bg-danger/5 hover:text-danger active:scale-95 transition-all mt-4 select-none shadow-inner">
+        <LogOut className="h-3.5 w-3.5" /> Disconnect Link
       </button>
     </aside>
   );
@@ -162,17 +177,21 @@ function renderView(
 
 export function StaffDashboard({ dashboard, transactions, setModalType }: { dashboard: StaffDashboardDto; transactions: Transaction[]; setModalType: (type: EntryType) => void }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <StaffWelcomeHero dashboard={dashboard} />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <MetricCard label="Income" value={money(dashboard.summary.income)} icon={ArrowDownLeft} tone="success" />
-        <MetricCard label="Expenses" value={money(dashboard.summary.expense)} icon={ArrowUpRight} tone="expense" />
-        <MetricCard label="Net" value={money(dashboard.summary.net)} icon={Wallet} tone="primary" />
-        <MetricCard label="Pending tasks" value={String(dashboard.tasks.length)} icon={Inbox} tone="primary" />
+        <MetricCard label="Consolidated Inflow" value={money(dashboard.summary.income)} icon={ArrowDownLeft} tone="success" />
+        <MetricCard label="Operational Outflow" value={money(dashboard.summary.expense)} icon={ArrowUpRight} tone="expense" />
+        <MetricCard label="Active Delta" value={money(dashboard.summary.net)} icon={Wallet} tone="primary" />
+        <MetricCard label="Queued Tasks" value={String(dashboard.tasks.length)} icon={Inbox} tone="cyan" />
       </div>
       <StaffQuickActions onExpense={() => setModalType('Expense')} onIncome={() => setModalType('Income')} compact />
-      {transactions.length === 0 ? <EmptyState title="Start managing branch finances." action="Add Transaction" onAction={() => setModalType('Expense')} /> : <TransactionList transactions={transactions.slice(0, 8)} categories={dashboard.categories} accounts={dashboard.accounts} />}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {transactions.length === 0 ? (
+         <EmptyState title="Operational tracking idle." action="Record node activity." onAction={() => setModalType('Expense')} />
+      ) : (
+         <TransactionList transactions={transactions.slice(0, 8)} categories={dashboard.categories} accounts={dashboard.accounts} />
+      )}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <StaffTaskPanel tasks={dashboard.tasks.slice(0, 3)} />
         <StaffNotificationCenter notifications={dashboard.notifications.slice(0, 3)} />
       </div>
@@ -183,13 +202,18 @@ export function StaffDashboard({ dashboard, transactions, setModalType }: { dash
 export function StaffWelcomeHero({ dashboard }: { dashboard: StaffDashboardDto }) {
   const user = useAuthStore((state) => state.user);
   return (
-    <section className="overflow-hidden rounded-3xl border border-white/[0.06] bg-[#121A22] p-6">
-      <p className="text-[11px] font-black uppercase tracking-widest text-[#4F8CFF]">Active branch workspace</p>
-      <h1 className="mt-2 text-3xl font-black tracking-tight md:text-4xl">Welcome back, {user?.displayName}.</h1>
-      <p className="mt-2 text-sm font-semibold text-[#8B9BB4]">{dashboard.department || 'Operations'} Department • {dashboard.branchName}</p>
-      <div className="mt-5 flex flex-wrap gap-2">
-        <span className="rounded-full border border-[#4F8CFF]/25 bg-[#4F8CFF]/10 px-3 py-1.5 text-xs font-bold text-[#4F8CFF]">STAFF</span>
-        <span className="rounded-full border border-[#1FD18B]/20 bg-[#1FD18B]/10 px-3 py-1.5 text-xs font-bold text-[#1FD18B]">Active session</span>
+    <section className="overflow-hidden rounded-[28px] border border-white/[0.05] bg-[#111827]/40 p-6 md:p-7 relative shadow-lg">
+      <div className="absolute -top-10 -right-10 w-36 h-36 bg-cyan/5 blur-3xl rounded-full pointer-events-none" />
+      
+      <div className="flex items-center gap-2 mb-2 relative z-10">
+         <p className="font-label-caps text-[10px] text-cyan tracking-widest uppercase font-black">Synchronous Interface Active</p>
+         <div className="w-1.5 h-1.5 rounded-full bg-cyan shadow-[0_0_8px_#06B6D4]" />
+      </div>
+      <h1 className="mt-1 font-headline text-3xl font-extrabold tracking-tight md:text-4xl text-on-surface relative z-10">Greetings, {user?.displayName}.</h1>
+      <p className="mt-2 text-[11px] text-on-surface-variant font-semibold font-sans tracking-wide opacity-80 relative z-10 uppercase tracking-widest font-label-caps">{dashboard.department || 'Operations'} Cluster · {dashboard.branchName}</p>
+      <div className="mt-6 flex flex-wrap gap-2.5 relative z-10">
+        <span className="rounded-lg border border-white/[0.05] bg-[#111827] px-3 py-1 text-[9px] font-black font-label-caps tracking-wider uppercase text-cyan shadow-inner">AUTHORIZED OPERATOR</span>
+        <span className="rounded-lg border border-emerald/20 bg-emerald/5 px-3 py-1 text-[9px] font-black font-label-caps tracking-wider uppercase text-emerald select-none">LIVE SUBSYSTEM</span>
       </div>
     </section>
   );
@@ -197,17 +221,25 @@ export function StaffWelcomeHero({ dashboard }: { dashboard: StaffDashboardDto }
 
 export function StaffQuickActions({ onExpense, onIncome, compact = false }: { onExpense: () => void; onIncome: () => void; compact?: boolean }) {
   return (
-    <div className={`grid gap-3 ${compact ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-2 md:flex'}`}>
-      <QuickButton label="Add Expense" icon={ArrowUpRight} onClick={onExpense} />
-      <QuickButton label="Add Income" icon={ArrowDownLeft} onClick={onIncome} />
-      <QuickButton label="Upload Receipt" icon={Receipt} onClick={onExpense} />
-      <QuickButton label="Create Transaction" icon={Plus} onClick={onExpense} />
+    <div className={`grid gap-3 relative z-10 ${compact ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-2 md:flex md:items-center'}`}>
+      <QuickButton label="Record Outflow" icon={ArrowUpRight} onClick={onExpense} customClass="bg-indigo" />
+      <QuickButton label="Record Inflow" icon={ArrowDownLeft} onClick={onIncome} customClass="bg-[#111827] border border-white/[0.05] hover:border-cyan/30 text-cyan" />
+      <QuickButton label="Scan Receipt" icon={Receipt} onClick={onExpense} customClass="bg-[#111827] border border-white/[0.04] text-on-surface-variant" />
+      <QuickButton label="Fast Ingest" icon={Plus} onClick={onExpense} customClass="bg-[#111827] border border-white/[0.04] text-on-surface-variant" />
     </div>
   );
 }
 
-function QuickButton({ label, icon: Icon, onClick }: { label: string; icon: LucideIcon; onClick: () => void }) {
-  return <button onClick={onClick} className="h-11 rounded-[18px] bg-[#4F8CFF] px-4 text-sm font-bold text-white active:scale-95"><Icon className="mr-2 inline h-4 w-4" />{label}</button>;
+function QuickButton({ label, icon: Icon, onClick, customClass = 'bg-cyan text-black' }: { label: string; icon: LucideIcon; onClick: () => void; customClass?: string }) {
+  return (
+    <button 
+      onClick={onClick} 
+      className={`h-[46px] rounded-full px-4.5 text-[10px] font-black font-label-caps tracking-widest uppercase flex items-center justify-center select-none active:scale-[0.98] hover:brightness-110 transition-all shadow-sm whitespace-nowrap ${customClass}`}
+    >
+      <Icon className="mr-2 flex-shrink-0 h-3.5 w-3.5" />
+      {label}
+    </button>
+  );
 }
 
 export function StaffTransactionFeed({ transactions, categories, accounts, onRefresh }: { transactions: Transaction[]; categories: Category[]; accounts: Account[]; onRefresh: (transactions: Transaction[]) => void }) {
@@ -226,49 +258,160 @@ export function StaffTransactionFeed({ transactions, categories, accounts, onRef
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 md:flex-row">
-        <label className="flex h-12 flex-1 items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#121A22] px-4">
-          <Search className="h-4 w-4 text-[#8B9BB4]" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search merchant, notes, category, account" className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#8B9BB4]" />
-        </label>
-        <select value={type} onChange={(event) => setType(event.target.value as 'All' | TransactionType)} className="h-12 rounded-2xl border border-white/[0.06] bg-[#121A22] px-4 text-sm font-bold">
-          {['All', 'Income', 'Expense', 'Transfer'].map((item) => <option key={item}>{item}</option>)}
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col gap-3.5 md:flex-row">
+        <div className="flex h-13 flex-1 items-center gap-3 rounded-[20px] border border-white/[0.05] bg-[#111827]/60 focus-within:border-cyan/30 transition-all px-4 shadow-inner">
+          <Search className="h-4 w-4 text-cyan flex-shrink-0" />
+          <input 
+            value={query} 
+            onChange={(event) => setQuery(event.target.value)} 
+            placeholder="Search merchant, logs, categories, nodes..." 
+            className="flex-1 bg-transparent text-xs outline-none placeholder:text-on-surface-variant/60 font-medium" 
+          />
+        </div>
+        <select 
+          value={type} 
+          onChange={(event) => setType(event.target.value as 'All' | TransactionType)} 
+          className="h-13 rounded-[20px] border border-white/[0.05] bg-[#111827]/60 px-4 text-[10px] font-black tracking-widest font-label-caps uppercase text-cyan focus:border-cyan/30 cursor-pointer outline-none shadow-inner"
+        >
+          {['All', 'Income', 'Expense', 'Transfer'].map((item) => <option key={item} className="bg-[#111827] text-on-surface">{item === 'All' ? 'All Types' : item}</option>)}
         </select>
-        <button onClick={refresh} className="h-12 rounded-2xl border border-white/[0.06] px-4 text-sm font-bold"><RefreshCw className="mr-2 inline h-4 w-4" />Refresh</button>
+        <button 
+          onClick={refresh} 
+          className="h-13 rounded-[20px] border border-white/[0.05] hover:border-cyan/20 transition-all px-5 text-[10px] font-black tracking-widest font-label-caps uppercase flex items-center justify-center text-on-surface hover:text-cyan bg-[#111827]/40 active:scale-95 shadow-sm"
+        >
+          <RefreshCw className="mr-2 h-3.5 w-3.5" />Synchronize
+        </button>
       </div>
-      {filtered.length === 0 ? <EmptyState title="Start managing branch finances." action="Add Transaction" /> : <TransactionList transactions={filtered} categories={categories} accounts={accounts} />}
+      {filtered.length === 0 ? (
+         <EmptyState title="Filtered log stream is empty." action="No transactions aligned to current parameters." />
+      ) : (
+         <TransactionList transactions={filtered} categories={categories} accounts={accounts} />
+      )}
     </div>
   );
 }
 
 function TypeView({ type, dashboard, transactions, onAdd }: { type: EntryType; dashboard: StaffDashboardDto; transactions: Transaction[]; onAdd: () => void }) {
   const rows = transactions.filter((transaction) => transaction.type === type);
-  return <div className="space-y-5"><MetricCard label={type} value={money(rows.reduce((sum, item) => sum + item.amount, 0))} icon={type === 'Income' ? ArrowDownLeft : ArrowUpRight} tone={type === 'Income' ? 'success' : 'expense'} />{rows.length === 0 ? <EmptyState title={`Start managing branch ${type.toLowerCase()}.`} action={`Add ${type}`} onAction={onAdd} /> : <TransactionList transactions={rows} categories={dashboard.categories} accounts={dashboard.accounts} />}</div>;
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <MetricCard label={`Accumulated ${type}`} value={money(rows.reduce((sum, item) => sum + item.amount, 0))} icon={type === 'Income' ? ArrowDownLeft : ArrowUpRight} tone={type === 'Income' ? 'success' : 'expense'} />
+      {rows.length === 0 ? (
+         <EmptyState title={`No active ${type.toLowerCase()} telemetry present.`} action={`Provision a new ${type.toLowerCase()} record.`} onAction={onAdd} />
+      ) : (
+         <TransactionList transactions={rows} categories={dashboard.categories} accounts={dashboard.accounts} />
+      )}
+    </div>
+  );
 }
 
 export function StaffTaskPanel({ tasks }: { tasks: StaffTask[] }) {
-  return <Panel title="Assigned tasks">{tasks.map((task) => <div key={task.id} className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4"><p className="font-bold">{task.title}</p><p className="mt-1 text-xs text-[#8B9BB4]">{task.status} • due {shortDate(task.due)}</p></div>)}</Panel>;
+  return (
+    <Panel title="Assigned Backlog">
+      {tasks.map((task) => (
+        <div key={task.id} className="rounded-[20px] border border-white/[0.04] bg-[#111827]/30 p-4 hover:border-cyan/10 transition-all group flex justify-between items-center">
+          <div>
+            <p className="text-xs font-bold text-on-surface group-hover:text-cyan transition-colors font-sans">{task.title}</p>
+            <p className="mt-1 text-[10px] text-on-surface-variant font-semibold uppercase tracking-wider font-label-caps opacity-70">Due {shortDate(task.due)}</p>
+          </div>
+          <div className="px-2.5 py-1 rounded-full bg-[#111827] border border-white/[0.03] text-[9px] font-black tracking-wider uppercase font-label-caps text-on-surface-variant group-hover:text-cyan transition-colors select-none shadow-inner">{task.status}</div>
+        </div>
+      ))}
+      {tasks.length === 0 && (
+         <div className="py-6 text-center text-xs italic text-on-surface-variant/70">All operational task buffers clear.</div>
+      )}
+    </Panel>
+  );
 }
 
 export function StaffNotificationCenter({ notifications }: { notifications: StaffNotification[] }) {
-  return <Panel title="Notifications">{notifications.map((item) => <div key={item.id} className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4"><p className="font-bold">{item.title}</p><p className="mt-1 text-xs text-[#8B9BB4]">{item.message}</p></div>)}</Panel>;
+  return (
+    <Panel title="Incoming Telemetry Signals">
+      {notifications.map((item) => (
+        <div key={item.id} className="rounded-[20px] border border-white/[0.04] bg-[#111827]/30 p-4 group hover:border-cyan/10 transition-all">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-1 h-1.5 bg-cyan rounded-full shadow-[0_0_4px_#06B6D4] opacity-80 group-hover:animate-pulse" />
+            <p className="text-xs font-bold text-on-surface group-hover:text-cyan transition-colors">{item.title}</p>
+          </div>
+          <p className="text-[11px] text-on-surface-variant font-medium pl-3 leading-relaxed">{item.message}</p>
+        </div>
+      ))}
+      {notifications.length === 0 && (
+         <div className="py-6 text-center text-xs italic text-on-surface-variant/70">Inbox signals synchronized and clear.</div>
+      )}
+    </Panel>
+  );
 }
 
 export function StaffProfileCard({ dashboard }: { dashboard: StaffDashboardDto }) {
   const user = useAuthStore((state) => state.user);
-  return <div className="rounded-3xl border border-white/[0.06] bg-[#121A22] p-6"><UserCircle className="h-12 w-12 text-[#4F8CFF]" /><h1 className="mt-4 text-2xl font-black">{user?.displayName}</h1><p className="text-[#8B9BB4]">{user?.email}</p><div className="mt-5 grid gap-3 md:grid-cols-2"><Info label="Role" value="Staff" /><Info label="Department" value={dashboard.department || 'Operations'} /><Info label="Assigned branch" value={dashboard.branchName} /><Info label="Assigned owner" value="Branch Owner" /></div></div>;
+  return (
+    <div className="rounded-[28px] border border-white/[0.05] bg-[#111827]/40 p-6 md:p-8 relative overflow-hidden shadow-lg animate-in fade-in duration-500 max-w-3xl">
+      <div className="absolute -top-12 -right-12 w-44 h-44 bg-[#cfbcff]/5 blur-3xl rounded-full pointer-events-none" />
+      
+      <div className="flex items-center gap-4 relative z-10">
+        <div className="w-16 h-16 rounded-2xl bg-[#111827] flex items-center justify-center text-cyan border border-white/[0.04] shadow-inner">
+          <UserCircle size={36} strokeWidth={1.5} />
+        </div>
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-wide text-on-surface font-sans">{user?.displayName}</h1>
+          <p className="text-xs font-mono-data text-on-surface-variant mt-0.5 opacity-80 select-all">{user?.email}</p>
+        </div>
+      </div>
+      
+      <div className="mt-8 grid gap-4 md:grid-cols-2 relative z-10">
+        <Info label="Access Authority" value="Cluster Staff" />
+        <Info label="Segment Sector" value={dashboard.department || 'Operations Core'} />
+        <Info label="Active Subnode" value={dashboard.branchName} />
+        <Info label="Direct Control" value="Subsystem Head" />
+      </div>
+    </div>
+  );
 }
 
 function StaffReports({ dashboard, transactions }: { dashboard: StaffDashboardDto; transactions: Transaction[] }) {
-  return <div className="space-y-5"><div className="grid grid-cols-1 gap-4 md:grid-cols-3"><MetricCard label="Income" value={money(dashboard.summary.income)} icon={ArrowDownLeft} tone="success" /><MetricCard label="Expenses" value={money(dashboard.summary.expense)} icon={ArrowUpRight} tone="expense" /><MetricCard label="Net" value={money(dashboard.summary.net)} icon={Wallet} tone="primary" /></div><Panel title="Branch activity">{transactions.slice(0, 8).map((transaction) => <div key={transaction.id} className="flex justify-between rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 text-sm"><span>{shortDate(transaction.occurredOn)} • {transaction.type}</span><strong>{money(transaction.amount, transaction.currency)}</strong></div>)}</Panel></div>;
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <MetricCard label="Active Inflow Volume" value={money(dashboard.summary.income)} icon={ArrowDownLeft} tone="success" />
+        <MetricCard label="Active Outflow Volume" value={money(dashboard.summary.expense)} icon={ArrowUpRight} tone="expense" />
+        <MetricCard label="Net Core Velocity" value={money(dashboard.summary.net)} icon={Wallet} tone="primary" />
+      </div>
+      <Panel title="Sub-sector Flux Vector Stream">
+        {transactions.slice(0, 10).map((transaction) => (
+          <div key={transaction.id} className="flex items-center justify-between rounded-[18px] border border-white/[0.03] bg-[#111827]/30 px-4 py-3.5 group hover:border-white/[0.08] transition-all">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black tracking-wider font-label-caps text-on-surface uppercase">{transaction.type} ENTRY</span>
+              <span className="text-[10px] text-on-surface-variant font-semibold mt-0.5">{shortDate(transaction.occurredOn)}</span>
+            </div>
+            <strong className={`font-mono-data font-black text-[13px] tracking-tight ${transaction.type === 'Income' ? 'text-emerald' : 'text-danger'}`}>
+              {transaction.type === 'Income' ? '+' : '-'}{money(transaction.amount, transaction.currency)}
+            </strong>
+          </div>
+        ))}
+        {transactions.length === 0 && (
+           <div className="py-10 text-center text-xs italic text-on-surface-variant/60 select-none">Zero fluxes compiled in trace buffer.</div>
+        )}
+      </Panel>
+    </div>
+  );
 }
 
 export function BranchIdentityBadge({ branchName, department }: { branchName?: string | null; department?: string | null }) {
-  return <div className="flex flex-wrap gap-2"><span className="inline-flex items-center gap-1.5 rounded-full border border-[#4F8CFF]/25 bg-[#4F8CFF]/10 px-3 py-1.5 text-xs font-bold text-[#4F8CFF]"><Building2 className="h-3.5 w-3.5" />{branchName || 'Branch pending'}</span><span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.04] px-3 py-1.5 text-xs font-bold text-[#8B9BB4]"><Briefcase className="h-3.5 w-3.5" />{department || 'Operations'}</span></div>;
+  return (
+    <div className="flex flex-wrap gap-2">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan/20 bg-cyan/5 px-3 py-1 text-[9px] font-black font-label-caps tracking-wider uppercase text-cyan shadow-sm">
+        <Building2 className="h-3 w-3" />
+        {branchName || 'Mapping context...'}
+      </span>
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.04] bg-[#111827]/50 px-3 py-1 text-[9px] font-black font-label-caps tracking-wider uppercase text-on-surface-variant select-none">
+        <Briefcase className="h-3 w-3" />
+        {department || 'Standard Ops'}
+      </span>
+    </div>
+  );
 }
-
-
 
 function StaffTransactionModal({ type, dashboard, onClose, onSaved }: { type: EntryType; dashboard: StaffDashboardDto; onClose: () => void; onSaved: () => void }) {
   const queryClient = useQueryClient();
@@ -277,7 +420,7 @@ function StaffTransactionModal({ type, dashboard, onClose, onSaved }: { type: En
     amount: '',
     accountId: '',
     categoryId: '',
-    merchant: '', // used as general string holder
+    merchant: '',
     note: '',
     occurredOn: new Date().toISOString().slice(0, 10),
     receiptName: '',
@@ -294,7 +437,7 @@ function StaffTransactionModal({ type, dashboard, onClose, onSaved }: { type: En
       categoryId: form.categoryId,
       type,
       amount: Number(form.amount),
-      currency: 'USD', // Fallback fallback, ideal case lookup but selector provides id
+      currency: 'USD',
       merchant: form.merchant || undefined,
       note: form.note || undefined,
       occurredOn: form.occurredOn,
@@ -305,7 +448,6 @@ function StaffTransactionModal({ type, dashboard, onClose, onSaved }: { type: En
       if (type === 'Income') await hexaTrackApi.staff.createIncome(payload);
       else await hexaTrackApi.staff.createExpense(payload);
       
-      // Invalidate TanStack cache queries to ensure data consistency
       await queryClient.invalidateQueries({ queryKey: ['accounts', 'available'] });
       await queryClient.invalidateQueries({ queryKey: ['transactions'] });
       
@@ -313,26 +455,32 @@ function StaffTransactionModal({ type, dashboard, onClose, onSaved }: { type: En
       onClose();
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : 'Submission failed.');
+      alert(err instanceof Error ? err.message : 'Ingestion sequence halted.');
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-end justify-center bg-black/70 backdrop-blur-sm md:items-center md:p-4">
+    <div className="fixed inset-0 z-[999] flex items-end justify-center bg-black/80 backdrop-blur-md md:items-center md:p-4 animate-in fade-in duration-300">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative w-full max-w-xl rounded-t-[32px] border border-white/[0.08] bg-[#0B1015] p-6 md:rounded-[32px]">
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-xl font-black">Add {type}</h2>
-          <button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[0.05]">
-            <X className="h-5 w-5" />
+      <div className="relative w-full max-w-xl rounded-t-[28px] md:rounded-[28px] border border-white/[0.06] bg-[#0B1020] p-6 md:p-7 shadow-2xl scale-in duration-300">
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
+        
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+             <div className={`w-2 h-4 rounded-full ${type === 'Income' ? 'bg-emerald shadow-[0_0_8px_#10B981]' : 'bg-danger shadow-[0_0_8px_#EF4444]'}`} />
+             <h2 className="text-lg font-black tracking-wide text-on-surface font-sans">Ingest {type} Telemetry</h2>
+          </div>
+          <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-xl bg-[#111827] border border-white/[0.04] text-on-surface-variant hover:text-cyan active:scale-90 transition-all">
+            <X className="h-4.5 w-4.5" />
           </button>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <InputField label="Amount">
+        
+        <div className="grid gap-4.5 md:grid-cols-2">
+          <InputField label="Metric Weight (Amount)">
             <input 
-              className="input-finance w-full" 
+              className="input-finance w-full text-[15px] font-mono-data font-extrabold text-cyan py-3 tracking-tight h-[52px]" 
               type="number" 
               min="0.01" 
               step="0.01" 
@@ -341,73 +489,85 @@ function StaffTransactionModal({ type, dashboard, onClose, onSaved }: { type: En
               onChange={(e) => setForm({ ...form, amount: e.target.value })} 
             />
           </InputField>
-          <InputField label="Account">
-            <AccountSelector 
-              value={form.accountId} 
-              onChange={(val) => setForm({ ...form, accountId: val })} 
-            />
+          <InputField label="Source Cluster (Account)">
+            <div className="h-[52px]">
+              <AccountSelector 
+                value={form.accountId} 
+                onChange={(val) => setForm({ ...form, accountId: val })} 
+              />
+            </div>
           </InputField>
-          <InputField label="Category">
-            <CategorySelector 
-              type={type} 
-              value={form.categoryId} 
-              onChange={(val) => setForm({ ...form, categoryId: val })} 
-            />
+          <InputField label="Operational Sector (Category)">
+            <div className="h-[52px]">
+              <CategorySelector 
+                type={type} 
+                value={form.categoryId} 
+                onChange={(val) => setForm({ ...form, categoryId: val })} 
+              />
+            </div>
           </InputField>
-          <InputField label={type === 'Expense' ? 'Merchant' : 'Payment Method'}>
+          <InputField label={type === 'Expense' ? 'Ingestion Target' : 'Transfer Method'}>
             {type === 'Expense' ? (
               <input 
-                className="input-finance w-full" 
-                placeholder="Enter merchant..." 
+                className="input-finance w-full h-[52px]" 
+                placeholder="Destination entity..." 
                 value={form.merchant} 
                 onChange={(e) => setForm({ ...form, merchant: e.target.value })} 
               />
             ) : (
-              <PaymentMethodSelector 
-                value={form.merchant} 
-                onChange={(val) => setForm({ ...form, merchant: val })} 
-              />
+              <div className="h-[52px]">
+                 <PaymentMethodSelector 
+                   value={form.merchant} 
+                   onChange={(val) => setForm({ ...form, merchant: val })} 
+                 />
+              </div>
             )}
           </InputField>
-          <InputField label="Date">
+          <InputField label="Temporal Signature (Date)">
             <input 
-              className="input-finance w-full" 
+              className="input-finance w-full h-[52px] text-xs uppercase tracking-wider font-label-caps font-black text-cyan cursor-pointer" 
               type="date" 
               value={form.occurredOn} 
               onChange={(e) => setForm({ ...form, occurredOn: e.target.value })} 
             />
           </InputField>
-          <div className="flex h-12 items-center">
-             <label className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-[#121A22] px-4 h-full w-full text-sm font-bold text-[#8B9BB4]">
-               <input type="checkbox" checked={form.recurring} onChange={(e) => setForm({ ...form, recurring: e.target.checked })} /> 
-               Recurring
+          <div className="flex h-[52px] items-end pb-0.5">
+             <label className="flex items-center gap-3 rounded-[18px] border border-white/[0.04] bg-[#111827] px-4 h-full w-full text-[10px] font-black uppercase font-label-caps tracking-widest text-on-surface-variant hover:border-white/[0.08] cursor-pointer transition-all group shadow-inner select-none">
+               <input 
+                 type="checkbox" 
+                 checked={form.recurring} 
+                 onChange={(e) => setForm({ ...form, recurring: e.target.checked })} 
+                 className="rounded focus:ring-0 accent-cyan text-cyan border-white/[0.1] bg-transparent w-4 h-4"
+               /> 
+               <span>Auto Loop Flux</span>
              </label>
           </div>
           {type === 'Expense' ? (
-            <InputField label="Receipt">
+            <InputField label="Encrypted Verification (Receipt)">
               <input 
-                className="input-finance w-full text-xs" 
+                className="input-finance w-full h-[52px] pt-3 text-[9px] font-black tracking-widest font-label-caps uppercase file:hidden hover:border-white/[0.1] cursor-pointer" 
                 type="file" 
                 accept="image/*,.pdf" 
                 onChange={(e) => setForm({ ...form, receiptName: e.target.files?.[0]?.name ?? '' })} 
               />
             </InputField>
           ) : null}
-          <InputField label="Notes">
+          <InputField label="Static Ledger Notes">
             <input 
-              className="input-finance w-full" 
-              placeholder="Transaction notes..." 
+              className="input-finance w-full h-[52px]" 
+              placeholder="Telemetry footnotes..." 
               value={form.note} 
               onChange={(e) => setForm({ ...form, note: e.target.value })} 
             />
           </InputField>
         </div>
+        
         <button 
           disabled={saving || !isValid} 
           onClick={save} 
-          className={`mt-6 h-12 w-full rounded-[18px] font-bold text-white transition-all ${isValid ? 'bg-[#4F8CFF] shadow-lg shadow-blue-500/20 hover:bg-blue-600' : 'bg-white/[0.08] text-[#8B9BB4] cursor-not-allowed opacity-60'}`}
+          className={`mt-8 h-[56px] w-full rounded-full text-[10px] font-black tracking-widest uppercase font-label-caps transition-all select-none border shadow-lg active:scale-[0.99] ${isValid ? 'bg-indigo hover:brightness-110 shadow-indigo/20 border-white/[0.1] text-white' : 'bg-white/[0.05] text-on-surface-variant border-white/[0.02] cursor-not-allowed opacity-50'}`}
         >
-          {saving ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : `Record ${type}`}
+          {saving ? <Loader2 className="mx-auto h-5 w-5 animate-spin text-white" /> : `Execute ${type} Ingestion`}
         </button>
       </div>
     </div>
@@ -415,34 +575,123 @@ function StaffTransactionModal({ type, dashboard, onClose, onSaved }: { type: En
 }
 
 function TransactionList({ transactions, categories, accounts }: { transactions: Transaction[]; categories: Category[]; accounts: Account[] }) {
-  return <div className="space-y-3">{transactions.map((transaction) => <div key={transaction.id} className="rounded-2xl border border-white/[0.06] bg-[#121A22] p-4"><div className="flex items-center justify-between gap-4"><div><p className="font-bold">{categories.find((category) => category.id === transaction.categoryId)?.name ?? transaction.type}</p><p className="mt-1 text-xs text-[#8B9BB4]">{accounts.find((account) => account.id === transaction.accountId)?.name ?? 'Branch account'} • {shortDate(transaction.occurredOn)}</p></div><p className={`font-black ${transaction.type === 'Income' ? 'text-[#1FD18B]' : 'text-[#FF5C75]'}`}>{transaction.type === 'Income' ? '+' : '-'}{money(transaction.amount, transaction.currency)}</p></div></div>)}</div>;
+  return (
+    <div className="space-y-3.5">
+      {transactions.map((transaction) => {
+         const isInc = transaction.type === 'Income';
+         return (
+            <div key={transaction.id} className="rounded-[22px] border border-white/[0.04] bg-[#111827]/40 p-4.5 hover:border-cyan/15 hover:bg-[#111827]/60 transition-all shadow-sm group flex items-center justify-between gap-5 select-none">
+               <div className="flex items-center gap-4 min-w-0">
+                  <div className={`w-11 h-11 rounded-2xl border border-white/[0.03] flex items-center justify-center shrink-0 shadow-inner ${isInc ? 'bg-emerald/5 text-emerald' : 'bg-danger/5 text-danger'} group-hover:scale-105 transition-transform`}>
+                     {isInc ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
+                  </div>
+                  <div className="min-w-0">
+                     <p className="text-xs font-extrabold text-on-surface font-sans tracking-wide truncate group-hover:text-cyan transition-colors">
+                        {categories.find((cat) => cat.id === transaction.categoryId)?.name ?? transaction.merchant ?? transaction.type}
+                     </p>
+                     <p className="mt-1 text-[10px] text-on-surface-variant font-medium truncate">
+                        {accounts.find((acc) => acc.id === transaction.accountId)?.name ?? 'Internal Vault'} · {shortDate(transaction.occurredOn)}
+                     </p>
+                  </div>
+               </div>
+               <p className={`font-mono-data font-extrabold text-sm tracking-tight whitespace-nowrap ml-2 ${isInc ? 'text-emerald' : 'text-on-surface'}`}>
+                  {isInc ? '+' : '-'}{money(transaction.amount, transaction.currency)}
+               </p>
+            </div>
+         );
+      })}
+    </div>
+  );
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className="space-y-3 rounded-3xl border border-white/[0.06] bg-[#121A22] p-5"><h2 className="text-lg font-black">{title}</h2>{children}</section>;
+  return (
+    <section className="space-y-5 rounded-[28px] border border-white/[0.04] bg-[#111827]/30 p-6 backdrop-blur-md shadow-sm">
+      <h2 className="text-[15px] font-extrabold tracking-wide text-on-surface font-sans mb-1 flex items-center gap-2">
+         <div className="w-1 h-3 bg-cyan rounded-full opacity-75 shadow-[0_0_6px_#06B6D4]" />
+         {title}
+      </h2>
+      <div className="space-y-3">
+         {children}
+      </div>
+    </section>
+  );
 }
 
-function MetricCard({ label, value, icon: Icon, tone }: { label: string; value: string; icon: LucideIcon; tone: 'primary' | 'success' | 'expense' }) {
-  const color = tone === 'success' ? '#1FD18B' : tone === 'expense' ? '#FF5C75' : '#4F8CFF';
-  return <div className="rounded-3xl border border-white/[0.06] bg-[#121A22] p-5"><Icon className="mb-3 h-5 w-5" style={{ color }} /><p className="text-[11px] font-black uppercase tracking-widest text-[#8B9BB4]">{label}</p><p className="mt-2 text-2xl font-black">{value}</p></div>;
+function MetricCard({ label, value, icon: Icon, tone }: { label: string; value: string; icon: LucideIcon; tone: 'primary' | 'success' | 'expense' | 'cyan' }) {
+  const colorClass = tone === 'success' ? 'text-emerald drop-shadow-[0_0_6px_#10B981]' : tone === 'expense' ? 'text-danger drop-shadow-[0_0_6px_#EF4444]' : tone === 'cyan' ? 'text-cyan drop-shadow-[0_0_6px_#06B6D4]' : 'text-indigo drop-shadow-[0_0_6px_#6366F1]';
+  
+  return (
+    <div className="rounded-[28px] border border-white/[0.04] bg-[#111827]/40 p-6 shadow-md relative overflow-hidden group hover:border-cyan/10 transition-all cursor-default">
+       <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/[0.01] rounded-full blur-xl pointer-events-none transition-all group-hover:bg-white/[0.03]" />
+       <Icon className={`mb-4 h-5 w-5 relative z-10 ${colorClass} group-hover:scale-110 transition-transform`} />
+       <p className="text-[9px] font-black uppercase tracking-widest font-label-caps text-on-surface-variant relative z-10 opacity-70">{label}</p>
+       <p className="mt-2 font-headline text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight leading-none relative z-10 select-all">{value}</p>
+    </div>
+  );
 }
 
 function Info({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4"><p className="text-[11px] font-black uppercase tracking-widest text-[#8B9BB4]">{label}</p><p className="mt-1 font-bold">{value}</p></div>;
+  return (
+    <div className="rounded-[20px] border border-white/[0.04] bg-[#111827] p-5 shadow-sm hover:border-cyan/10 transition-all cursor-default select-none">
+      <p className="text-[9px] font-black uppercase tracking-widest font-label-caps text-on-surface-variant opacity-60 mb-1">{label}</p>
+      <p className="font-bold text-sm tracking-wide text-on-surface">{value}</p>
+    </div>
+  );
 }
 
 function InputField({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="block text-[11px] font-black uppercase tracking-widest text-[#8B9BB4]">{label}<div className="mt-1.5 normal-case tracking-normal">{children}</div></label>;
+  return (
+    <label className="block text-[9px] font-black uppercase tracking-widest font-label-caps text-on-surface-variant opacity-75 select-none">
+      {label}
+      <div className="mt-2 normal-case tracking-normal font-sans">
+         {children}
+      </div>
+    </label>
+  );
 }
 
 function EmptyState({ title, action, onAction }: { title: string; action: string; onAction?: () => void }) {
-  return <div className="rounded-3xl border border-dashed border-white/[0.1] bg-[#121A22] px-6 py-14 text-center"><Wallet className="mx-auto mb-4 h-10 w-10 text-[#4F8CFF]" /><h2 className="text-lg font-black">{title}</h2><p className="mt-2 text-sm text-[#8B9BB4]">{action}</p>{onAction ? <button onClick={onAction} className="mt-6 h-11 rounded-[18px] bg-[#4F8CFF] px-5 text-sm font-bold text-white">Add Transaction</button> : null}</div>;
+  return (
+    <div className="rounded-[28px] border border-dashed border-white/[0.08] bg-[#111827]/20 px-6 py-16 text-center select-none">
+      <div className="w-14 h-14 rounded-2xl bg-[#111827] border border-white/[0.04] flex items-center justify-center text-on-surface-variant mx-auto mb-5 shadow-inner">
+         <Wallet className="h-6 w-6 opacity-70" />
+      </div>
+      <h2 className="text-[15px] font-extrabold text-on-surface font-sans tracking-wide">{title}</h2>
+      <p className="mt-2 text-[11px] font-medium text-on-surface-variant max-w-sm mx-auto">{action}</p>
+      {onAction ? (
+         <button 
+           onClick={onAction} 
+           className="mt-6.5 h-11 rounded-full bg-cyan border border-white/[0.1] text-black px-5.5 text-[10px] font-black tracking-widest uppercase font-label-caps active:scale-95 transition-all shadow-md shadow-cyan/20 hover:brightness-110"
+         >
+           Provision Flux Entry
+         </button>
+      ) : null}
+    </div>
+  );
 }
 
 function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return <div className="flex items-center justify-between rounded-2xl border border-[#FF5C75]/25 bg-[#FF5C75]/10 p-4 text-sm text-[#FF5C75]"><span>{message}</span><button onClick={onRetry} className="font-bold text-[#F5F7FA]">Retry</button></div>;
+  return (
+    <div className="flex items-center justify-between rounded-[22px] border border-danger/20 bg-danger/5 p-4 text-[13px] text-danger font-bold font-sans select-none shadow-sm">
+      <span className="tracking-wide">{message}</span>
+      <button 
+        onClick={onRetry} 
+        className="font-black font-label-caps text-[10px] uppercase tracking-widest text-white bg-[#111827] border border-white/[0.05] px-3.5 py-1.5 rounded-lg shadow-sm hover:border-danger/30 transition-colors active:scale-95 ml-3 shrink-0"
+      >
+        Reboot Interface
+      </button>
+    </div>
+  );
 }
 
 function StaffSkeleton() {
-  return <div className="space-y-4">{[1, 2, 3, 4].map((item) => <div key={item} className="h-24 animate-pulse rounded-3xl bg-white/[0.05]" />)}</div>;
+  return (
+    <div className="space-y-5 animate-pulse">
+      {[1, 2, 3, 4].map((item) => (
+         <div key={item} className="h-24 rounded-[24px] bg-[#111827]/40 border border-white/[0.03]" />
+      ))}
+    </div>
+  );
 }
+

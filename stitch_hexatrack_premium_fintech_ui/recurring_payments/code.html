@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Recurring Payments - HexaTrack</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Geist:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#cfbcff",
+                        "surface-tint": "#cfbcff",
+                        "surface-container-highest": "#36343a",
+                        "primary": "#cfbcff",
+                        "primary-container": "#6750a4",
+                        "surface-container-lowest": "#0f0d13",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "on-tertiary": "#3e2e00",
+                        "on-secondary": "#342b4b",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "on-surface-variant": "#cbc4d2",
+                        "tertiary": "#e7c365",
+                        "on-secondary-container": "#bfb2da",
+                        "on-error-container": "#ffdad6",
+                        "secondary": "#cdc0e9",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-fixed": "#e9ddff",
+                        "surface-dim": "#141218",
+                        "surface-container-high": "#2b292f",
+                        "on-primary-fixed": "#22005d",
+                        "on-error": "#690005",
+                        "inverse-surface": "#e6e0e9",
+                        "background": "#141218",
+                        "primary-fixed": "#e9ddff",
+                        "error-container": "#93000a",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "tertiary-container": "#c9a74d",
+                        "surface": "#141218",
+                        "on-primary-container": "#e0d2ff",
+                        "surface-bright": "#3b383e",
+                        "tertiary-fixed": "#ffdf93",
+                        "inverse-on-surface": "#322f35",
+                        "secondary-container": "#4d4465",
+                        "surface-container": "#211f24",
+                        "on-background": "#e6e0e9",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "error": "#ffb4ab",
+                        "surface-variant": "#36343a",
+                        "on-surface": "#e6e0e9",
+                        "on-tertiary-container": "#503d00",
+                        "on-secondary-fixed": "#1f1635",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "inverse-primary": "#6750a4",
+                        "surface-container-low": "#1d1b20",
+                        "outline": "#948e9c",
+                        "outline-variant": "#494551",
+                        "on-primary": "#381e72"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "stack-md": "16px",
+                        "gutter": "16px",
+                        "stack-sm": "8px",
+                        "card-padding": "24px",
+                        "stack-lg": "32px",
+                        "container-margin": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "mono-data": ["Geist"],
+                        "label-caps": ["Geist"],
+                        "display-balance": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "mono-data": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "display-balance": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #0B1020; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 24px 40px rgba(11, 16, 32, 0.4);
+        }
+        .matte-panel { background: #111827; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-pill { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(40px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+        .emerald-glow { text-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
+        .text-emerald-400 { color: #10B981; } /* Fallback/override for specific request */
+        .bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.1); }
+        .border-emerald-500\/20 { border-color: rgba(16, 185, 129, 0.2); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-container-margin py-4 w-full bg-transparent font-headline-md text-headline-md full-width top-0 sticky backdrop-blur-xl bg-background/60 flat no shadows z-40">
+<div class="flex items-center gap-stack-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A futuristic minimalist portrait avatar of a user in a dark, moody sci-fi setting. Soft cool-toned lighting highlights the subject's face against a deep #0B1020 background. The image has a crisp, clinical digital asset command center aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdN5Q_9hs9fAXvzOjw0FiD4uYI9Ytt1QWieGlS_ZgDfXgNj1NuqnDzWJ_mHoWfm2RZhLSPM7iLNmrw6VZsyrzDg30HsYMw5wRhVOu6HZjhsh93aTWFdvAcmNvSYZxAZbTNU8ujYv0rbrqoy6uS4e5nNKxgqMLMAjwy8mwrbFjBifw3P3Bv8Yq6K5KBCGsr5M5vzUWf31ytou3hsl6mFYTMsS9NKQT3ddtOb4AVkFUC9SiJovhNaDf_55F-Hxruu3Ffq531bUOJmxtt"/>
+</div>
+<span class="font-headline-md text-headline-md font-bold text-primary">HexaTrack</span>
+</div>
+<button class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-on-surface hover:opacity-80 scale-95 transition-transform">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">notifications</span>
+</button>
+</header>
+<main class="px-container-margin pt-stack-md pb-stack-lg max-w-5xl mx-auto space-y-stack-lg">
+<!-- Header Section -->
+<div class="space-y-stack-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Recurring Payments</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your subscriptions and upcoming bills.</p>
+</div>
+<!-- Monthly Overview Bento -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-md">
+<!-- Total Monthly Card -->
+<div class="glass-panel rounded-lg p-card-padding flex flex-col justify-between md:col-span-2 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50 z-0"></div>
+<div class="relative z-10 space-y-stack-md">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-label-caps text-on-surface-variant">TOTAL MONTHLY (NOV)</span>
+<span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-label-caps text-label-caps flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_down</span> -$42 from last month
+                        </span>
+</div>
+<div class="font-display-balance text-display-balance text-on-surface">$1,248.50</div>
+</div>
+</div>
+<!-- AI Insight Card -->
+<div class="matte-panel rounded-lg p-card-padding flex flex-col justify-between border-t border-t-primary/30">
+<div class="flex items-center gap-2 mb-stack-sm text-primary">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-caps text-label-caps">AI INSIGHT</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-md">You haven't used Hulu in 45 days. Canceling could save you $15.99/mo.</p>
+<button class="w-full h-[56px] rounded-full bg-primary-container text-on-primary-container font-headline-md text-[16px] hover:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+                    Review Subs <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Upcoming Timeline -->
+<div class="space-y-stack-md">
+<h2 class="font-headline-md text-headline-md text-on-surface">Upcoming Timeline</h2>
+<div class="relative border-l border-outline-variant/30 ml-4 pl-6 space-y-stack-lg py-stack-sm">
+<!-- Timeline Item 1 -->
+<div class="relative">
+<!-- Timeline Node -->
+<div class="absolute -left-[30px] top-2 w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+<div class="flex flex-col md:flex-row gap-stack-md md:items-center">
+<div class="md:w-24 shrink-0">
+<span class="font-mono-data text-mono-data text-on-surface-variant">Nov 12</span>
+</div>
+<div class="flex-1 glass-panel rounded-DEFAULT p-4 flex items-center justify-between">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-lg matte-panel flex items-center justify-center text-error-container">
+<span class="material-symbols-outlined text-[28px]">movie</span>
+</div>
+<div>
+<div class="font-headline-md text-[18px] text-on-surface">Netflix Premium</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">ENTERTAINMENT</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-mono-data text-[16px] text-on-surface">$22.99</div>
+<div class="font-label-caps text-[10px] text-emerald-400">IN 2 DAYS</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative">
+<!-- Timeline Node -->
+<div class="absolute -left-[30px] top-2 w-3 h-3 rounded-full bg-surface-container-high border border-outline-variant"></div>
+<div class="flex flex-col md:flex-row gap-stack-md md:items-center">
+<div class="md:w-24 shrink-0">
+<span class="font-mono-data text-mono-data text-on-surface-variant">Nov 15</span>
+</div>
+<div class="flex-1 glass-panel rounded-DEFAULT p-4 flex items-center justify-between opacity-80">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-lg matte-panel flex items-center justify-center text-[#1DB954]">
+<span class="material-symbols-outlined text-[28px]">music_note</span>
+</div>
+<div>
+<div class="font-headline-md text-[18px] text-on-surface">Spotify Duo</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">ENTERTAINMENT</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-mono-data text-[16px] text-on-surface">$14.99</div>
+<div class="font-label-caps text-[10px] text-on-surface-variant">IN 5 DAYS</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Item 3 (Rent) -->
+<div class="relative">
+<div class="absolute -left-[30px] top-2 w-3 h-3 rounded-full bg-surface-container-high border border-outline-variant"></div>
+<div class="flex flex-col md:flex-row gap-stack-md md:items-center">
+<div class="md:w-24 shrink-0">
+<span class="font-mono-data text-mono-data text-on-surface-variant">Dec 01</span>
+</div>
+<div class="flex-1 glass-panel rounded-DEFAULT p-4 flex items-center justify-between opacity-80 border border-primary/20">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-lg matte-panel flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]">home</span>
+</div>
+<div>
+<div class="font-headline-md text-[18px] text-on-surface">Apartment Rent</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">HOUSING</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-mono-data text-[16px] text-on-surface">$1,100.00</div>
+<div class="font-label-caps text-[10px] text-on-surface-variant">IN 21 DAYS</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-6 left-0 right-0 z-50 flex justify-around items-center px-6 py-4 mx-auto max-w-lg fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] rounded-full backdrop-blur-[20px] border border-white/10 shadow-[0_24px_40px_rgba(20,18,24,0.4)] scale-90 transition-all duration-200 bg-white/10 md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:scale-110 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps mt-1 hidden sm:block">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:scale-110 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-caps text-label-caps mt-1 hidden sm:block">Activity</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary drop-shadow-[0_0_8px_rgba(207,188,255,0.6)] hover:scale-110 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="insert_chart" data-weight="fill" style="font-variation-settings: 'FILL' 1;">insert_chart</span>
+<span class="font-label-caps text-label-caps mt-1 hidden sm:block">Analytics</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:scale-110 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-caps text-label-caps mt-1 hidden sm:block">Wallets</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:scale-110 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps mt-1 hidden sm:block">Profile</span>
+</a>
+</nav>
+</body></html>

@@ -22,6 +22,7 @@ const HistoryScreen = dynamic(() => import('@/components/screens/history-screen'
 const RecurringScreen = dynamic(() => import('@/components/screens/recurring-screen').then((module) => module.RecurringScreen), { loading: () => <ScreenSkeleton /> });
 const ReportsScreen = dynamic(() => import('@/components/screens/reports-screen').then((module) => module.ReportsScreen), { loading: () => <ScreenSkeleton /> });
 const SettingsScreen = dynamic(() => import('@/components/screens/settings-screen').then((module) => module.SettingsScreen), { loading: () => <ScreenSkeleton /> });
+const AssistantScreen = dynamic(() => import('@/components/screens/assistant-screen').then((module) => module.AssistantScreen), { loading: () => <ScreenSkeleton /> });
 
 type UnauthView = 'marketing' | 'auth';
 
@@ -93,9 +94,9 @@ export default function Home() {
   const content = useMemo(() => {
     switch (screen) {
       case 'dashboard':
-        return <DashboardScreen onAddTransaction={() => setIsAdding(true)} />;
+        return <DashboardScreen onAddTransaction={() => setIsAdding(true)} onNavigate={setScreen} />;
       case 'transaction':
-        return <DashboardScreen onAddTransaction={() => setIsAdding(true)} compact />;
+        return <DashboardScreen onAddTransaction={() => setIsAdding(true)} onNavigate={setScreen} compact />;
       case 'history':
         return <HistoryScreen />;
       case 'reports':
@@ -106,6 +107,8 @@ export default function Home() {
         return <WalletsScreen />;
       case 'settings':
         return <SettingsScreen />;
+      case 'assistant':
+        return <AssistantScreen />;
     }
   }, [screen]);
 

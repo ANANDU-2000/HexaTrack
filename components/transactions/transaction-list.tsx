@@ -1,7 +1,8 @@
-import { ArrowDownLeft, ArrowUpRight, ChevronRight, MoreVertical, Receipt } from 'lucide-react';
-import { money, shortDate } from '@/lib/format';
+import { ArrowDownLeft, ArrowUpRight, ChevronRight, Archive, Info, Receipt } from 'lucide-react';
+import { money } from '@/lib/format';
 import type { Category, Transaction } from '@/lib/types';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type GroupedTransactions = {
   dateLabel: string;
@@ -48,70 +49,37 @@ export function TransactionList({ categories, transactions }: { categories: Cate
 
   if (transactions.length === 0) {
     return (
-      <div className="glass-card rounded-3xl p-12 text-center flex flex-col items-center animate-in fade-in">
-        <div className="w-14 h-14 rounded-2xl bg-surface-container flex items-center justify-center text-on-surface-variant mb-4 opacity-50">
-          <Receipt size={24} />
+      <div className="glass-card rounded-3xl p-12 text-center flex flex-col items-center animate-in fade-in border border-white/[0.03]">
+        <div className="w-14 h-14 rounded-2xl bg-[#111827]/50 border border-white/[0.04] flex items-center justify-center text-cyan mb-4 shadow-inner">
+          <Receipt size={22} />
         </div>
-        <p className="font-headline-md text-[#F5F7FA] font-bold">Zero activity traces</p>
-        <p className="text-body-sm text-on-surface-variant mt-1 max-w-xs mx-auto">Log your financial engagements to build the timeline.</p>
+        <p className="text-base font-extrabold text-on-surface tracking-tight">Zero activity traces</p>
+        <p className="text-xs text-on-surface-variant/60 mt-1.5 max-w-xs mx-auto font-medium">Log your financial engagements to populate this matrix feed.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
+    <div className="space-y-8 select-none font-sans">
       {groups.map((group) => (
-        <div key={group.dateKey} className="space-y-4">
-          {/* Premium Sticky Line Header */}
-          <div className="flex items-center justify-between gap-4">
-             <span className="text-label-mono text-[10px] font-bold text-on-surface-variant uppercase tracking-widest shrink-0 opacity-80">
+        <div key={group.dateKey} className="space-y-3.5">
+          {/* Sticky Grouping Header */}
+          <div className="flex items-center justify-between gap-4 px-1 select-none">
+             <span className="text-[10px] font-black text-cyan uppercase tracking-[0.18em] font-label-caps shrink-0">
                 {group.dateLabel}
              </span>
-             <div className="h-px w-full bg-white/[0.05]" />
+             <div className="h-px w-full bg-gradient-to-r from-white/[0.06] to-transparent" />
           </div>
 
-          {/* Glass Ledger Grouping */}
-          <div className="space-y-3">
+          {/* Gestural Rows Wrapper */}
+          <div className="space-y-2.5 overflow-hidden">
             {group.items.map((transaction) => {
-              const category = categories.find((item) => item.id === transaction.categoryId);
-              const income = transaction.type === 'Income';
-              
               return (
-                <div
-                  key={transaction.id}
-                  className="group relative glass-card p-4 rounded-2xl flex items-center justify-between hover:border-primary/30 transition-all cursor-pointer active:scale-[0.99]"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-white/[0.02] shadow-sm transition-transform group-hover:scale-105 ${
-                      income 
-                        ? 'bg-secondary/10 text-secondary' 
-                        : 'bg-surface-container-high text-on-surface-variant'
-                    }`}>
-                      {income ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
-                    </div>
-
-                    <div className="min-w-0">
-                       <h4 className="font-bold text-body-sm text-[#F5F7FA] truncate">
-                          {transaction.merchant || category?.name || 'General Transaction'}
-                       </h4>
-                       <p className="text-[11px] text-on-surface-variant opacity-70 mt-0.5 flex items-center gap-1.5 font-medium">
-                          {category?.name || 'Uncategorized'} 
-                          <span className="w-1 h-1 rounded-full bg-white/20" />
-                          {new Date(transaction.occurredOn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                       </p>
-                    </div>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                     <p className={`font-label-mono font-bold text-base ${income ? 'text-secondary' : 'text-[#F5F7FA]'}`}>
-                        {income ? '+' : '-'}{money(transaction.amount, transaction.currency)}
-                     </p>
-                     <div className="flex justify-end items-center gap-1 mt-1 opacity-80">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40" />
-                        <span className="text-[9px] font-bold text-on-surface-variant tracking-widest uppercase">Settled</span>
-                     </div>
-                  </div>
-                </div>
+                <SwipeableTransactionItem 
+                  key={transaction.id} 
+                  transaction={transaction} 
+                  categories={categories} 
+                />
               );
             })}
           </div>
@@ -120,4 +88,101 @@ export function TransactionList({ categories, transactions }: { categories: Cate
     </div>
   );
 }
+
+function SwipeableTransactionItem({ transaction, categories }: { transaction: Transaction; categories: Category[] }) {
+   const category = categories.find((item) => item.id === transaction.categoryId);
+   const isIncome = transaction.type === 'Income';
+   const [isArchived, setIsArchived] = useState(false);
+
+   // Helper emoji map from category names
+   const getEmoji = (name?: string) => {
+     const lName = name?.toLowerCase() || '';
+     if (lName.includes('food')) return '🍔';
+     if (lName.includes('shop')) return '🛍️';
+     if (lName.includes('transit') || lName.includes('transport')) return '🚗';
+     if (lName.includes('salary') || lName.includes('income')) return '💰';
+     if (lName.includes('bill') || lName.includes('util')) return '💡';
+     return null;
+   };
+
+   const emojiIcon = getEmoji(category?.name);
+
+   if (isArchived) return null;
+
+   return (
+      <div className="relative w-full select-none rounded-2xl group overflow-hidden bg-[#111827]/20 border border-white/[0.03]">
+         
+         {/* BACKDROP ACTIONS LAYER */}
+         <div className="absolute inset-0 flex justify-between items-center z-0 px-4 select-none pointer-events-none">
+            {/* LEFT DRAG ACTION (Reveals Info) */}
+            <div className="flex items-center gap-1.5 text-cyan opacity-80">
+               <Info size={16} />
+               <span className="text-[9px] font-black uppercase font-label-caps tracking-wider">Audit</span>
+            </div>
+
+            {/* RIGHT DRAG ACTION (Reveals Archive) */}
+            <div className="flex items-center gap-1.5 text-danger opacity-80">
+               <span className="text-[9px] font-black uppercase font-label-caps tracking-wider">Drop</span>
+               <Archive size={16} />
+            </div>
+         </div>
+
+         {/* FRONT SWIPEABLE LAYER */}
+         <motion.div
+            drag="x"
+            dragConstraints={{ left: -100, right: 100 }}
+            dragElastic={0.3}
+            onDragEnd={(_, info) => {
+               const threshold = 85;
+               if (info.offset.x < -threshold) {
+                  // Perform action: locally archive/hide as demonstration
+                  setIsArchived(true);
+               }
+               if (info.offset.x > threshold) {
+                  // Action: triggers metadata popup/details view, currently visual snap
+               }
+            }}
+            className="relative z-10 w-full bg-[#111827] border-y border-transparent group-hover:border-white/[0.03] rounded-2xl p-4 flex items-center justify-between touch-pan-x cursor-grab active:cursor-grabbing shadow-md transition-colors duration-200"
+         >
+            <div className="flex items-center gap-3.5 min-w-0 select-none">
+               {/* Large Iconic Badge */}
+               <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border shadow-inner select-none ${
+                  isIncome 
+                     ? 'bg-emerald/10 border-emerald/20 text-emerald' 
+                     : 'bg-white/[0.03] border-white/[0.04] text-on-surface-variant'
+               }`}>
+                  {emojiIcon ? (
+                     <span className="text-base">{emojiIcon}</span>
+                  ) : isIncome ? (
+                     <ArrowDownLeft size={18} />
+                  ) : (
+                     <ArrowUpRight size={18} />
+                  )}
+               </div>
+
+               <div className="min-w-0 select-none">
+                  <h4 className="text-[13px] font-extrabold text-on-surface truncate select-none">
+                     {transaction.merchant || category?.name || 'Generic Node'}
+                  </h4>
+                  <p className="text-[10px] text-on-surface-variant/60 mt-0.5 flex items-center gap-1.5 font-semibold select-none uppercase tracking-wider font-label-caps">
+                     {category?.name || 'Index'} 
+                     <span className="w-1 h-1 rounded-full bg-white/15" />
+                     {new Date(transaction.occurredOn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                  </p>
+               </div>
+            </div>
+
+            <div className="text-right shrink-0 select-none">
+               <p className={`font-headline font-black text-[15px] tracking-tight ${isIncome ? 'text-emerald' : 'text-on-surface'}`}>
+                  {isIncome ? '+' : '-'}{money(transaction.amount, transaction.currency)}
+               </p>
+               <div className="flex justify-end items-center gap-1 mt-0.5 select-none">
+                  <span className="text-[9px] font-bold font-mono-data text-cyan tracking-wide uppercase bg-cyan/5 px-1.5 py-0.25 rounded border border-cyan/10">Live</span>
+               </div>
+            </div>
+         </motion.div>
+      </div>
+   );
+}
+
 

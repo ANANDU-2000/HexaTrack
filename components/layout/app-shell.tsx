@@ -4,7 +4,7 @@ import { BrandMark } from '@/components/ui/brand';
 import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher';
 import { useAuthStore } from '@/store/auth-store';
 
-export type ScreenKey = 'dashboard' | 'transaction' | 'history' | 'reports' | 'recurring' | 'wallets' | 'settings';
+export type ScreenKey = 'dashboard' | 'transaction' | 'history' | 'reports' | 'recurring' | 'wallets' | 'settings' | 'assistant';
 
 const primaryNav = [
   { key: 'dashboard' as const, label: 'Home', icon: Home },
@@ -28,64 +28,97 @@ export function AppShell({ activeScreen, children, onAddTransaction, onNavigate,
   const logout = useAuthStore((s) => s.logout);
 
   return (
-    <div className="app-viewport-min mx-auto flex w-full max-w-[1440px] flex-col bg-background lg:flex-row relative">
-      {/* Desktop Edge Glow */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#1a1b4b] blur-[120px] opacity-30 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" />
+    <div className="app-viewport-min mx-auto flex w-full max-w-[1440px] flex-col bg-background lg:flex-row relative font-sans">
+      {/* Deep Space Atmospheric Glows */}
+      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-primary-container/10 blur-[140px] opacity-40 rounded-full -translate-x-1/3 -translate-y-1/3 pointer-events-none hidden lg:block" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-cyan/5 blur-[120px] opacity-20 rounded-full pointer-events-none hidden lg:block" />
 
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-white/[0.04] bg-surface-container-lowest/30 px-5 py-8 backdrop-blur-md lg:flex lg:flex-col z-10">
-        <div className="px-2 mb-8">
-          <BrandMark tone="dark" />
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-white/[0.05] bg-[#111827]/50 px-5 py-8 backdrop-blur-xl lg:flex lg:flex-col z-10">
+        <div className="flex items-center gap-3 px-2 mb-8">
+          <BrandMark tone="dark" className="h-7 w-auto text-primary" />
+          <span className="font-headline text-xl font-bold tracking-tight text-on-surface">HexaTrack</span>
         </div>
 
-        <div className="px-2 mb-6">
+        <div className="px-1 mb-8">
            <WorkspaceSwitcher />
         </div>
 
-        <nav className="space-y-1">
-          {[...primaryNav, ...secondaryNav.filter((item) => item.key === 'recurring')].map((item) => {
+        <nav className="space-y-2 flex-1">
+          <div className="px-2 text-[10px] font-black tracking-[0.15em] text-on-surface-variant/40 uppercase font-label-caps mb-2">Workspace</div>
+          
+          {[...primaryNav].map((item) => {
             const Icon = item.icon;
             const active = activeScreen === item.key;
             return (
               <button
                 key={item.key}
-                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 group ${
+                className={`flex w-full items-center gap-3.5 rounded-xl px-4 py-3 text-[13px] font-semibold font-sans tracking-wide transition-all duration-250 group relative ${
                   active
-                    ? 'bg-secondary-container text-on-secondary-container shadow-md shadow-secondary/10'
-                    : 'text-on-surface-variant hover:bg-white/[0.04] hover:text-on-surface'
+                    ? 'bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(207,188,255,0.15)] shadow-sm'
+                    : 'text-on-surface-variant hover:bg-white/[0.03] hover:text-on-surface'
                 }`}
                 onClick={() => onNavigate(item.key)}
                 type="button"
               >
-                <Icon size={18} className={active ? 'text-on-secondary-container' : 'text-on-surface-variant opacity-60 group-hover:opacity-100 transition-opacity'} />
+                <Icon size={18} className={active ? 'text-primary' : 'text-on-surface-variant opacity-50 group-hover:opacity-90 transition-opacity'} />
                 {item.label}
+                {active && (
+                  <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(207,188,255,0.6)]" />
+                )}
               </button>
             );
           })}
+
+          <div className="pt-4 px-2 text-[10px] font-black tracking-[0.15em] text-on-surface-variant/40 uppercase font-label-caps mb-2">Manage</div>
+          {[...secondaryNav].map((item) => {
+             const Icon = item.icon;
+             const active = activeScreen === item.key;
+             return (
+               <button
+                 key={item.key}
+                 className={`flex w-full items-center gap-3.5 rounded-xl px-4 py-3 text-[13px] font-semibold font-sans tracking-wide transition-all duration-250 group relative ${
+                   active
+                     ? 'bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(207,188,255,0.15)]'
+                     : 'text-on-surface-variant hover:bg-white/[0.03] hover:text-on-surface'
+                 }`}
+                 onClick={() => onNavigate(item.key)}
+                 type="button"
+               >
+                 <Icon size={18} className={active ? 'text-primary' : 'text-on-surface-variant opacity-50 group-hover:opacity-90 transition-opacity'} />
+                 {item.label}
+               </button>
+             );
+          })}
         </nav>
 
-        <div className="flex-1" />
-
-        <button
-          className="mt-auto flex w-full items-center gap-3 rounded-2xl border border-white/[0.04] bg-surface-container-high px-4 py-3.5 text-sm font-semibold text-error transition-all hover:bg-error/10 active:scale-[0.98]"
-          onClick={logout}
-          type="button"
-        >
-          <LogOut size={18} />
-          Logout
-        </button>
+        <div className="pt-4 border-t border-white/[0.05] mt-auto">
+          <button
+            className="flex w-full items-center gap-3 rounded-xl border border-white/[0.04] bg-[#141218] px-4 py-3.5 text-[13px] font-semibold font-sans text-danger transition-all hover:bg-error-container/20 active:scale-[0.98]"
+            onClick={logout}
+            type="button"
+          >
+            <LogOut size={18} className="opacity-80" />
+            Disconnect
+          </button>
+        </div>
       </aside>
 
-      <main className="mobile-page-bottom min-w-0 flex-1 px-4 pt-[max(env(safe-area-inset-top),1rem)] sm:px-6 lg:px-0 lg:pb-10 lg:pt-0 relative z-0 overflow-hidden">
+      <main className="mobile-page-bottom min-w-0 flex-1 px-4 pt-[max(env(safe-area-inset-top),1rem)] sm:px-6 lg:px-8 lg:pb-10 lg:pt-8 relative z-0">
 
         {activeScreen !== 'dashboard' && (
-          <header className="mb-5 flex flex-col gap-3 lg:hidden">
+          <header className="mb-6 flex flex-col gap-4 lg:hidden">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="eyebrow">HexaTrack</p>
-                <h1 className="truncate text-2xl font-bold text-[#F5F7FA]">Track Smarter</h1>
+                <p className="eyebrow tracking-widest mb-0.5">HEXATRACK</p>
+                <h1 className="truncate text-2xl font-bold tracking-tight text-on-surface">Command Station</h1>
               </div>
-              <button aria-label="Add transaction" className="icon-button" onClick={onAddTransaction} type="button">
-                <Plus size={20} />
+              <button 
+                aria-label="Add entry" 
+                className="w-11 h-11 rounded-2xl bg-[#111827] border border-white/[0.05] text-cyan shadow-sm flex items-center justify-center active:scale-95 transition-transform" 
+                onClick={onAddTransaction} 
+                type="button"
+              >
+                <Plus size={20} strokeWidth={2.5} />
               </button>
             </div>
             <WorkspaceSwitcher />
@@ -98,3 +131,4 @@ export function AppShell({ activeScreen, children, onAddTransaction, onNavigate,
     </div>
   );
 }
+

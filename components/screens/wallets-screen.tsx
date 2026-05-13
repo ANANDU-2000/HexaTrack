@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, TrendingUp, Wallet, CreditCard, Activity, Building2, CircleDollarSign, ChevronRight } from 'lucide-react';
+import { Plus, TrendingUp, Wallet, CreditCard, Activity, Building2, CircleDollarSign, ChevronRight, Send, ArrowDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { money } from '@/lib/format';
 import { useFinanceStore } from '@/store/finance-store';
@@ -12,176 +12,230 @@ export function WalletsScreen() {
   const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
 
   return (
-    <div className="space-y-8 pb-24 animate-in fade-in duration-500">
+    <div className="space-y-8 pb-28 lg:pb-10 px-4 sm:px-6 lg:px-gutter pt-5 font-sans select-none">
       
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      {/* High Fidelity Animated Page Head */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none">
         <div>
-           <p className="font-label-mono text-[10px] text-secondary tracking-[0.2em] uppercase font-bold mb-2">Global Custody</p>
-           <h2 className="font-display-lg text-3xl md:text-5xl text-[#F5F7FA] font-bold tracking-tight">Wallets & Accounts</h2>
+           <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-black text-cyan tracking-[0.2em] uppercase font-label-caps block leading-none">Matrix Registry</span>
+              <span className="w-1 h-1 bg-cyan rounded-full shadow-[0_0_6px_#06B6D4] animate-pulse" />
+           </div>
+           <h2 className="font-headline text-2xl md:text-3xl text-on-surface font-black tracking-tight">Asset Shells</h2>
         </div>
-        <button className="bg-primary text-on-primary px-6 py-3 rounded-full text-sm font-bold shadow-md shadow-primary/20 flex items-center gap-2 active:scale-95 hover:opacity-90 transition-all whitespace-nowrap w-fit">
-          <Plus size={16} /> ADD ASSET
+        <button className="bg-indigo text-white hover:brightness-105 active:scale-95 px-5 py-2.5 rounded-[20px] text-[10px] font-black tracking-[0.12em] uppercase shadow-lg shadow-indigo/20 flex items-center justify-center gap-2 transition-all w-fit font-label-caps border border-white/[0.08]">
+          <Plus size={15} strokeWidth={2.8} /> Sync Node
         </button>
       </div>
 
-      {/* 1. HORIZONTAL CARD CAROUSEL (High Fidelity Snap Scroll) */}
-      <section className="-mx-4 px-4 sm:mx-0 sm:px-0">
-        <div className="flex overflow-x-auto gap-6 pb-6 hide-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
-          
-          {/* Render main system accounts as high-fi visual cards, limit to top 2 to simulate premium feel, remainder as grid below */}
-          {accounts.slice(0, 2).map((acc, i) => (
-             <div 
-               key={acc.id} 
-               className={`snap-center shrink-0 w-[280px] md:w-[360px] aspect-[1.6/1] relative rounded-3xl overflow-hidden p-6 flex flex-col justify-between shadow-2xl ${
-                 i === 0 
-                   ? 'bg-gradient-to-br from-[#1E293B] to-[#0F172A] border border-white/10' 
-                   : 'bg-secondary-container/10 border border-secondary/20 backdrop-blur-md'
-               }`}
-             >
-               {/* Dynamic Gradient Overlay */}
-               <div className={`absolute top-0 right-0 w-40 h-40 blur-3xl rounded-full opacity-20 ${i === 0 ? 'bg-primary' : 'bg-secondary'}`} />
+      {/* LUXURIOUS Apple-Wallet Stack Container */}
+      <section className="relative w-full flex flex-col gap-5 mt-1 select-none">
+         {accounts.length === 0 ? (
+            <div className="w-full h-48 rounded-[28px] border border-dashed border-white/[0.1] flex items-center justify-center text-on-surface-variant font-bold text-xs tracking-wider uppercase">Empty Node Stack</div>
+         ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+               {accounts.map((acc, idx) => {
+                  // Sophisticated high-premium metallic gradients
+                  const cardStyles = [
+                     {
+                        grad: 'from-[#111827] via-[#0B1020] to-[#030712]',
+                        glow: 'bg-cyan/10',
+                        chip: 'bg-cyan/15 text-cyan border-cyan/20',
+                        glowDots: 'bg-[#06B6D4]/30'
+                     },
+                     {
+                        grad: 'from-[#0F172A] via-[#1E1B4B] to-[#0A0A0F]',
+                        glow: 'bg-indigo/10',
+                        chip: 'bg-indigo/15 text-[#A5B4FC] border-indigo/20',
+                        glowDots: 'bg-[#818CF8]/30'
+                     },
+                     {
+                        grad: 'from-[#064E3B] via-[#022C22] to-[#020617]',
+                        glow: 'bg-emerald/10',
+                        chip: 'bg-emerald/15 text-emerald border-emerald/20',
+                        glowDots: 'bg-[#10B981]/30'
+                     }
+                  ];
+                  const style = cardStyles[idx % cardStyles.length];
 
-               <div className="flex justify-between items-start relative z-10">
-                  <div>
-                     <p className={`font-label-mono text-[9px] uppercase tracking-widest mb-1 font-bold opacity-70 ${i === 0 ? 'text-primary' : 'text-secondary'}`}>
-                       {acc.type.toUpperCase()}
-                     </p>
-                     <h3 className="font-bold text-[#F5F7FA] tracking-wide">{acc.name}</h3>
-                  </div>
-                  {i === 0 ? <Wallet size={24} className="text-primary opacity-70" /> : <CreditCard size={24} className="text-secondary opacity-70" />}
-               </div>
+                  return (
+                     <motion.div
+                        key={acc.id}
+                        whileHover={{ y: -4, scale: 1.01 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                        className={`relative w-full aspect-[1.68/1] rounded-[28px] bg-gradient-to-br ${style.grad} border border-white/[0.08] p-6 overflow-hidden flex flex-col justify-between shadow-2xl shadow-black/80`}
+                     >
+                        {/* Visual depth overlay shaders */}
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.035),transparent_50%)] pointer-events-none" />
+                        <div className={`absolute top-0 right-0 w-52 h-52 blur-3xl rounded-full -mr-20 -mt-20 ${style.glow} pointer-events-none`} />
+                        
+                        {/* Core Card Grid Mesh Overlay */}
+                        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
 
-               <div className="relative z-10">
-                  <div className="flex gap-4 mb-4 opacity-60">
-                     <span className="font-label-mono text-base tracking-[0.2em]">••••</span>
-                     <span className="font-label-mono text-base tracking-[0.2em]">••••</span>
-                     <span className="font-label-mono text-base tracking-[0.2em]">••••</span>
-                     <span className="font-label-mono text-base tracking-widest font-bold">240{i}</span>
-                  </div>
-                  <div className="flex justify-between items-end">
-                     <div>
-                        <p className="text-[9px] font-label-mono text-on-surface-variant opacity-60 font-bold uppercase tracking-widest">Available</p>
-                        <p className="text-xl md:text-2xl font-bold text-[#F5F7FA] tracking-tight">{money(acc.balance)}</p>
-                     </div>
-                     <div className="flex gap-1 h-6 items-center">
-                        <div className={`w-6 h-6 rounded-full opacity-70 ${i === 0 ? 'bg-rose-500' : 'bg-orange-500'}`} />
-                        <div className={`w-6 h-6 rounded-full -ml-3 opacity-70 ${i === 0 ? 'bg-yellow-500' : 'bg-yellow-400'}`} />
-                     </div>
-                  </div>
-               </div>
-             </div>
-          ))}
+                        <div className="flex justify-between items-start relative z-10">
+                           <div>
+                              <span className={`inline-block px-2.5 py-0.75 rounded-lg text-[9px] font-black uppercase tracking-[0.18em] font-label-caps border shadow-inner mb-2 ${style.chip}`}>
+                                 {acc.type} NODE
+                              </span>
+                              <h3 className="text-base font-extrabold text-on-surface tracking-wide drop-shadow">{acc.name}</h3>
+                           </div>
+                           <div className="p-2.5 rounded-xl bg-[#111827]/80 border border-white/[0.04] flex items-center justify-center text-white/80 backdrop-blur shadow-inner shrink-0">
+                              <CreditCard size={18} />
+                           </div>
+                        </div>
 
-          {/* Placeholder for creation */}
-          <div className="snap-center shrink-0 w-[200px] md:w-[280px] aspect-[1.6/1] rounded-3xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3 hover:bg-white/5 transition-colors cursor-pointer group opacity-70">
-             <div className="w-10 h-10 rounded-full bg-surface-container-high border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Plus size={18} className="text-on-surface-variant" />
-             </div>
-             <span className="text-xs font-bold text-on-surface-variant tracking-widest font-label-mono">CONNECT NODE</span>
-          </div>
-        </div>
+                        <div className="relative z-10">
+                           {/* Premium Dot Sequence */}
+                           <div className="flex items-center gap-4 opacity-40 mb-4.5 font-mono-data text-xs font-bold select-none">
+                              <span>••••</span>
+                              <span>••••</span>
+                              <span>••••</span>
+                              <span className="font-black tracking-widest text-on-surface text-sm font-mono">992{idx}</span>
+                           </div>
+                           
+                           <div className="flex justify-between items-end">
+                              <div>
+                                 <p className="text-[9px] font-black font-label-caps text-on-surface-variant/60 uppercase tracking-[0.15em] mb-0.5">Liquid Allocation</p>
+                                 <div className="flex items-baseline gap-1.5">
+                                    <span className="font-headline text-2xl font-black text-on-surface tracking-tight">{money(acc.balance)}</span>
+                                    <span className="text-[9px] font-bold text-cyan font-mono">{acc.currency}</span>
+                                 </div>
+                              </div>
+                              {/* Intersecting glass circles branding mockup */}
+                              <div className="flex shrink-0 items-center relative pr-1 select-none pointer-events-none">
+                                 <div className={`w-6.5 h-6.5 rounded-full border border-white/[0.1] backdrop-blur-sm ${style.glowDots}`} />
+                                 <div className={`w-6.5 h-6.5 rounded-full border border-white/[0.1] backdrop-blur-sm bg-white/5 -ml-3.5`} />
+                              </div>
+                           </div>
+                        </div>
+                     </motion.div>
+                  );
+               })}
+
+               {/* Interactive Empty Placeholder Wrapper */}
+               <motion.button 
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full aspect-[1.68/1] rounded-[28px] border-2 border-dashed border-white/[0.05] hover:border-cyan/20 hover:bg-cyan/[0.02] transition-all flex flex-col items-center justify-center gap-3 select-none group outline-none"
+               >
+                  <div className="w-11 h-11 rounded-full bg-[#111827] border border-white/[0.04] flex items-center justify-center text-on-surface-variant group-hover:text-cyan group-hover:border-cyan/20 transition-all shadow-md">
+                     <Plus size={18} />
+                  </div>
+                  <p className="text-[10px] font-black text-on-surface-variant group-hover:text-on-surface uppercase tracking-[0.2em] font-label-caps transition-colors">Provision Shell</p>
+               </motion.button>
+            </div>
+         )}
       </section>
 
-      {/* 2. BENTO GRID: Total Liquidity & Detail Inventory */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Main Balance Tracker Chart Card */}
-        <div className="lg:col-span-8 glass-card rounded-[32px] p-6 md:p-8 border border-white/5 flex flex-col relative overflow-hidden min-h-[320px]">
-           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full pointer-events-none" />
-           
-           <div className="flex flex-col md:flex-row justify-between md:items-start gap-4 mb-8 z-10">
-              <div>
-                 <h3 className="font-bold text-[#F5F7FA] text-lg">Total Aggregated Liquidity</h3>
-                 <div className="flex items-baseline gap-3 mt-1">
-                    <span className="font-display-lg text-3xl md:text-5xl font-bold text-[#F5F7FA] tracking-tighter">{money(totalBalance)}</span>
-                    <span className="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-md font-label-mono text-[10px] font-bold flex items-center gap-1 border border-emerald-500/10">
-                       <TrendingUp size={10} /> +2.4%
-                    </span>
-                 </div>
-              </div>
-              <div className="flex gap-2">
-                 <div className="bg-surface-container-lowest border border-white/5 px-3 py-1.5 rounded-full font-label-mono text-[9px] font-bold text-on-surface-variant">
-                    AUTO-SYNC ENABLED
-                 </div>
-              </div>
-           </div>
+      {/* Global Metrics Matrix Bento Assembly */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-3">
+         
+         {/* Consolidated Capital Analytics Display */}
+         <div className="lg:col-span-8 bg-[#111827]/35 border border-white/[0.04] rounded-[28px] p-6 sm:p-7 relative overflow-hidden shadow-inner select-none min-h-[320px] flex flex-col justify-between">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-cyan/5 blur-3xl rounded-full pointer-events-none" />
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10 select-none">
+               <div>
+                  <span className="text-[9px] font-black text-on-surface-variant/70 uppercase tracking-[0.2em] font-label-caps leading-none block mb-2">Ecosystem Index</span>
+                  <h4 className="text-base font-extrabold text-on-surface tracking-wide">Global Aggregate Supply</h4>
+                  <div className="flex items-baseline gap-2.5 mt-2 select-none">
+                     <span className="font-headline text-3xl font-black text-on-surface tracking-tight">{money(totalBalance)}</span>
+                     <span className="px-2 py-0.5 rounded-full bg-emerald/10 text-emerald border border-emerald/20 flex items-center gap-1 font-mono-data text-[10px] font-black shadow-inner">
+                        <TrendingUp size={11} strokeWidth={2.8} /> +4.12%
+                     </span>
+                  </div>
+               </div>
+               <span className="bg-[#111827]/60 px-3 py-1.5 border border-white/[0.04] text-[9px] font-black font-label-caps text-cyan uppercase tracking-wider rounded-lg shadow-sm w-fit">
+                  Active Sweep
+               </span>
+            </div>
 
-           {/* Abstract Grid Graph (Mimicking design specification) */}
-           <div className="flex-grow flex items-end justify-between gap-2 md:gap-4 relative mt-4 h-32 z-10 px-2">
-              {[30, 45, 35, 55, 48, 70, 60, 85, 75, 100].map((val, i) => (
-                 <motion.div 
-                    key={i}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${val}%` }}
-                    transition={{ delay: i * 0.05, duration: 0.8, ease: "easeOut" }}
-                    className="flex-1 bg-primary/20 rounded-t-lg hover:bg-primary/50 transition-all group relative cursor-crosshair"
-                 >
-                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#F5F7FA] text-surface-container text-[9px] font-black px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                       PERIOD {i+1}
-                    </div>
-                 </motion.div>
-              ))}
-           </div>
-           
-           {/* Backdrop graph lines */}
-           <div className="absolute bottom-8 left-6 right-6 flex flex-col justify-between h-32 opacity-10 pointer-events-none">
-              <div className="border-t border-white w-full" />
-              <div className="border-t border-white w-full" />
-              <div className="border-t border-white w-full" />
-           </div>
-        </div>
+            {/* Futuristic custom bar graph preview */}
+            <div className="flex-grow flex items-end justify-between gap-2.5 h-28 mt-8 px-1 relative z-10 select-none">
+               {[35, 50, 40, 65, 55, 80, 70, 95, 85, 100, 90, 110].map((val, i) => (
+                  <motion.div
+                     key={i}
+                     initial={{ scaleY: 0 }}
+                     animate={{ scaleY: val / 110 }}
+                     transition={{ delay: i * 0.03, duration: 0.6, ease: 'easeOut' }}
+                     style={{ transformOrigin: 'bottom center' }}
+                     className="flex-1 h-full bg-gradient-to-t from-cyan/5 via-cyan/10 to-cyan/30 border-t border-cyan/40 rounded-t-lg hover:bg-cyan/50 hover:shadow-[0_0_12px_rgba(6,182,212,0.4)] transition-all cursor-crosshair relative group"
+                  >
+                     <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-[#111827] border border-white/[0.05] text-[8px] font-black text-cyan opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap uppercase font-label-caps pointer-events-none">
+                        {i + 1} CYC
+                     </div>
+                  </motion.div>
+               ))}
+            </div>
 
-        {/* Side Sub-Account Inventory */}
-        <div className="lg:col-span-4 flex flex-col gap-4">
-           <div className="px-1 flex justify-between items-center">
-              <span className="font-label-mono text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Asset Nodes</span>
-              <span className="font-label-mono text-[10px] font-bold text-[#F5F7FA]">{accounts.length}</span>
-           </div>
+            {/* Visual grid support ticks */}
+            <div className="absolute bottom-8 left-6 right-6 flex flex-col justify-between h-28 opacity-[0.03] pointer-events-none select-none">
+               <div className="border-b border-white w-full" />
+               <div className="border-b border-white w-full" />
+               <div className="border-b border-white w-full" />
+            </div>
+         </div>
 
-           <div className="flex flex-col gap-3">
-              {accounts.map((acc, i) => (
-                 <div key={acc.id} className="glass-card rounded-2xl p-4 flex items-center justify-between group hover:bg-white/[0.03] transition-all cursor-pointer border border-white/[0.02]">
-                    <div className="flex items-center gap-4">
-                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                          i % 3 === 0 ? 'bg-primary/10 text-primary' : i % 3 === 1 ? 'bg-secondary/10 text-secondary' : 'bg-white/5 text-[#F5F7FA]'
-                       }`}>
-                          {i % 3 === 0 ? <Building2 size={18} /> : i % 3 === 1 ? <CircleDollarSign size={18} /> : <Wallet size={18} />}
-                       </div>
-                       <div className="min-w-0">
-                          <p className="text-sm font-bold text-[#F5F7FA] truncate">{acc.name}</p>
-                          <p className="text-[10px] text-on-surface-variant font-medium opacity-60 uppercase">{acc.currency}</p>
-                       </div>
-                    </div>
-                    <div className="text-right flex flex-col items-end gap-0.5">
-                       <span className="font-label-mono font-bold text-sm text-[#F5F7FA]">{money(acc.balance)}</span>
-                       <ChevronRight size={12} className="text-on-surface-variant opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                    </div>
-                 </div>
-              ))}
-           </div>
-        </div>
+         {/* Nodes Details Control Sheet */}
+         <div className="lg:col-span-4 flex flex-col gap-3.5 select-none">
+            <div className="flex justify-between items-center px-1 select-none">
+               <span className="text-[9px] font-black uppercase font-label-caps tracking-[0.2em] text-on-surface-variant">Allocation Vectors</span>
+               <span className="text-[9px] font-bold font-mono-data text-cyan uppercase px-2 py-0.5 rounded bg-cyan/5 border border-cyan/10">{accounts.length} Shells</span>
+            </div>
+
+            <div className="flex flex-col gap-2.5 max-h-[280px] overflow-y-auto custom-scrollbar pr-0.5 select-none">
+               {accounts.map((acc, i) => (
+                  <div key={acc.id} className="w-full bg-[#111827]/30 border border-white/[0.03] hover:bg-[#111827]/50 hover:border-white/[0.06] rounded-[20px] p-4 flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer shadow-inner select-none">
+                     <div className="flex items-center gap-3.5 min-w-0">
+                        <div className={`w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 border shadow-inner ${
+                           i % 3 === 0 
+                             ? 'bg-cyan/10 text-cyan border-cyan/20' 
+                             : i % 3 === 1 
+                               ? 'bg-indigo/10 text-[#A5B4FC] border-indigo/20' 
+                               : 'bg-emerald/10 text-emerald border-emerald/20'
+                        }`}>
+                           {i % 3 === 0 ? <Building2 size={16} /> : i % 3 === 1 ? <CircleDollarSign size={16} /> : <Wallet size={16} />}
+                        </div>
+                        <div className="min-w-0 select-none">
+                           <h4 className="text-[13px] font-bold text-on-surface truncate tracking-wide">{acc.name}</h4>
+                           <p className="text-[9px] font-black font-label-caps tracking-wider uppercase text-on-surface-variant/50 mt-0.5 leading-none">{acc.currency} Index</p>
+                        </div>
+                     </div>
+                     <div className="text-right flex flex-col items-end justify-center shrink-0 ml-3 select-none">
+                        <span className="font-mono-data font-bold text-xs text-on-surface tracking-tight">{money(acc.balance)}</span>
+                        <ChevronRight size={11} className="text-cyan opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all mt-0.5" />
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
+
       </section>
 
-      {/* 3. RECENT HIGHLIGHTS (Contextual Transaction Peek) */}
-      <section className="pt-6">
-         <h3 className="font-bold text-[#F5F7FA] text-lg mb-5 flex items-center gap-2">
-            <Activity size={18} className="text-secondary" /> Ledger Stream
-         </h3>
-         <div className="space-y-3">
+      {/* Ledger Feed Stream Node */}
+      <section className="pt-3 select-none">
+         <div className="flex items-center gap-2 mb-4.5 px-1">
+            <div className="w-7 h-7 rounded-lg bg-cyan/10 border border-cyan/20 flex items-center justify-center text-cyan shadow-inner">
+               <Activity size={14} />
+            </div>
+            <h3 className="text-sm font-extrabold text-on-surface tracking-wide uppercase font-label-caps select-none">
+               Stream Flow Telemetry
+            </h3>
+         </div>
+
+         <div className="flex flex-col gap-2.5">
             {transactions.map(tx => (
-               <div key={tx.id} className="glass-card rounded-xl p-4 flex items-center justify-between border border-white/[0.02] hover:border-primary/10 transition-all">
-                  <div className="flex items-center gap-4 min-w-0">
-                     <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center border border-white/5">
-                        <div className="w-2 h-2 rounded-full bg-primary shadow-glow shadow-primary/40" />
+               <div key={tx.id} className="bg-[#111827]/25 border border-white/[0.03] hover:bg-[#111827]/35 transition-colors rounded-[20px] p-4 flex items-center justify-between select-none group shadow-inner">
+                  <div className="flex items-center gap-3.5 min-w-0 select-none">
+                     <div className="w-9 h-9 rounded-xl bg-[#111827] border border-white/[0.04] flex items-center justify-center shadow-inner">
+                        <div className="w-2 h-2 rounded-full bg-cyan group-hover:scale-110 transition-transform shadow-[0_0_6px_rgba(6,182,212,0.7)]" />
                      </div>
                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-[#F5F7FA] truncate">{tx.merchant || 'Unidentified Entity'}</p>
-                        <p className="text-[11px] text-on-surface-variant opacity-70 mt-0.5">Direct Debit Node • Finalized</p>
+                        <p className="text-[13px] font-bold text-on-surface truncate tracking-wide select-none">{tx.merchant || 'Aggregate Flow'}</p>
+                        <p className="text-[9px] font-black uppercase tracking-[0.12em] text-on-surface-variant/50 font-label-caps leading-none mt-1 select-none">Direct Route</p>
                      </div>
                   </div>
-                  <div className="text-right shrink-0 ml-4">
-                     <span className={`font-label-mono font-bold ${tx.type === 'Income' ? 'text-emerald-400' : 'text-[#F5F7FA]'}`}>
+                  <div className="shrink-0 text-right ml-3 select-none">
+                     <span className={`font-mono-data font-bold tracking-tight text-xs select-none ${tx.type === 'Income' ? 'text-emerald' : 'text-on-surface'}`}>
                         {tx.type === 'Income' ? '+' : '-'}{money(tx.amount)}
                      </span>
                   </div>
@@ -193,3 +247,5 @@ export function WalletsScreen() {
     </div>
   );
 }
+
+

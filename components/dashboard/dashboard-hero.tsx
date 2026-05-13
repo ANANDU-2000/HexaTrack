@@ -1,11 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, ChevronRight } from 'lucide-react';
 import { money } from '@/lib/format';
 import { useFinanceStore } from '@/store/finance-store';
-
-type TimeRange = 'week' | 'month' | 'year';
 
 export function DashboardHero() {
   const dashboard = useFinanceStore((state) => state.dashboard);
@@ -18,44 +16,50 @@ export function DashboardHero() {
     : '0.0';
 
   return (
-    <div className="glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden flex flex-col justify-between h-full min-h-[240px] shadow-2xl shadow-black/30">
-       {/* Top-left subtle ambient radial glow consistent with Stitch architecture */}
-       <div className="absolute top-0 left-0 w-40 h-40 bg-secondary/20 blur-[60px] rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-       
-       <div>
-          <span className="font-label-mono text-label-mono uppercase tracking-[0.15em] text-on-surface-variant text-[10px]">Global Net Assets</span>
-          <motion.h2 
-            key={totalBalance}
-            initial={{ opacity: 0.7, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="font-display-lg text-3xl md:text-5xl mt-2 font-bold text-[#F5F7FA]"
-          >
-            {money(totalBalance)}
-          </motion.h2>
-       </div>
+    <div className="glass-card rounded-[28px] p-6 md:p-8 relative overflow-hidden flex flex-col justify-between h-full min-h-[240px]">
+        {/* Dynamic Gradient Mesh Background */}
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-indigo/10 blur-3xl rounded-full pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-primary-container/15 blur-3xl rounded-full pointer-events-none" />
+        
+        <div>
+           <div className="flex items-center gap-2 mb-2">
+              <span className="font-label-caps text-label-caps uppercase tracking-[0.12em] text-on-surface-variant text-[11px]">Global Net Liquidity</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse shadow-[0_0_8px_#10B981]" />
+           </div>
+           <motion.h2 
+             key={totalBalance}
+             initial={{ opacity: 0.7, y: 5 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+             className="font-headline text-display-balance text-3xl md:text-5xl font-extrabold text-on-surface tracking-tight"
+           >
+             {money(totalBalance)}
+           </motion.h2>
+        </div>
 
-       <div className="flex justify-between items-end mt-8 pt-6 border-t border-white/5">
-          <div className="flex gap-6">
-             <div>
-                <p className={`text-label-mono font-bold font-label-mono flex items-center gap-1 ${Number(netChange) >= 0 ? 'text-secondary' : 'text-error'}`}>
-                   {Number(netChange) >= 0 ? '+' : ''}{netChange}%
-                </p>
-                <p className="text-body-sm text-on-surface-variant text-xs mt-0.5 font-medium opacity-70">Last 30 Days</p>
-             </div>
-             <div className="w-[1px] h-8 bg-white/10 self-center" />
-             <div>
-                <p className="text-label-mono text-on-surface font-label-mono font-bold">
-                   {accounts.length} Assets
-                </p>
-                <p className="text-body-sm text-on-surface-variant text-xs mt-0.5 font-medium opacity-70">Tracked Accounts</p>
-             </div>
-          </div>
-          
-          <div className="text-[#c1c1fc]/20 transition-transform group-hover:scale-110">
-             <TrendingUp size={48} strokeWidth={1.5} />
-          </div>
-       </div>
+        <div className="flex justify-between items-end mt-10 pt-6 border-t border-white/[0.05]">
+           <div className="flex gap-6">
+              <div>
+                 <div className={`font-mono-data text-sm font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 border border-white/[0.03] ${Number(netChange) >= 0 ? 'text-emerald' : 'text-danger'}`}>
+                    {Number(netChange) >= 0 ? '+' : ''}{netChange}%
+                 </div>
+                 <p className="text-[11px] font-label-caps text-on-surface-variant font-medium tracking-wider uppercase mt-2">Period Delta</p>
+              </div>
+              <div className="w-[1px] h-8 bg-white/10 self-center opacity-60" />
+              <div>
+                 <p className="font-mono-data text-sm font-bold text-on-surface">
+                    {accounts.length} Positions
+                 </p>
+                 <p className="text-[11px] font-label-caps text-on-surface-variant font-medium tracking-wider uppercase mt-2">Connected</p>
+              </div>
+           </div>
+           
+           <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/[0.05] hover:bg-white/10 transition-all text-on-surface-variant active:scale-95">
+              <ChevronRight size={16} className="text-on-surface" />
+           </button>
+        </div>
     </div>
   );
 }
+
 

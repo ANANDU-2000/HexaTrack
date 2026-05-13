@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { 
   MoreHorizontal, Search, Shield, UserPlus, Briefcase, Trash2, 
-  Lock, Mail, Loader2, X, AlertCircle, Building2, CheckCircle2,
-  KeyRound, Globe, ArrowRight
+  Lock, Mail, Loader2, X, AlertCircle, CheckCircle2,
+  KeyRound, ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { hexaTrackApi } from '@/lib/api';
@@ -60,108 +60,109 @@ export function StaffManagementTable() {
   }
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-500 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-16 font-sans">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
         <div>
-          <h2 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
-            Workforce Registry
-            <span className="px-2 py-0.5 bg-[#4F8CFF]/10 border border-[#4F8CFF]/30 text-[#4F8CFF] rounded text-[10px] font-black uppercase tracking-widest">Realtime</span>
-          </h2>
-          <p className="text-sm text-[#9CA3AF] mt-1 font-medium">Command operational clearances and delegate branch responsibilities.</p>
+          <div className="flex items-center gap-2 mb-1.5">
+             <Shield size={13} className="text-cyan animate-pulse" />
+             <span className="text-[10px] font-black font-label-caps tracking-widest text-cyan uppercase">Personnel Databank</span>
+          </div>
+          <h2 className="font-headline text-3xl font-extrabold text-on-surface tracking-tight">Workforce Registry</h2>
+          <p className="text-[13px] text-on-surface-variant mt-1 font-medium tracking-wide">Authorize operational clearances, reset access tokens, and provision node operators.</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="h-11 px-6 bg-[#4F8CFF] text-white rounded-xl font-bold text-sm shadow-[0_12px_24px_-8px_rgba(79,140,255,0.5)] flex items-center gap-2.5 hover:brightness-110 transition-all hover:-translate-y-0.5 active:translate-y-0"
+          className="h-11 px-5.5 bg-cyan text-black rounded-full font-black font-label-caps tracking-widest text-[10px] uppercase shadow-md shadow-cyan/20 flex items-center gap-2 hover:brightness-110 transition-all active:scale-98 shrink-0 border border-white/[0.1]"
         >
-          <UserPlus size={18} /> Add Staff Member
+          <UserPlus size={14} /> Add Node Operator
         </button>
       </div>
 
       <BranchStaffAnalytics staff={staff} branches={branches} />
 
       {/* Filters Toolbar */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center mt-4 relative z-20">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]/50 h-4 w-4" />
+          <Search className="absolute left-4.5 top-1/2 -translate-y-1/2 text-cyan h-4 w-4 opacity-80" />
           <input 
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, email, branch, or dept..."
-            className="w-full h-12 bg-[#111827] border border-white/[0.06] rounded-xl pl-11 pr-4 text-sm text-white placeholder:text-[#9CA3AF]/40 outline-none focus:border-[#4F8CFF]/50 transition-all shadow-sm"
+            placeholder="Filter by name, access link, branch, cluster..."
+            className="w-full h-13 bg-[#111827]/60 border border-white/[0.05] rounded-[20px] pl-12 pr-5 text-xs text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-cyan/30 transition-all shadow-inner font-medium"
           />
         </div>
         <BranchFilterDropdown branches={branches} value={selectedBranchId} onChange={setSelectedBranchId} />
       </div>
 
-      <div className="grid gap-3 md:hidden">
+      <div className="grid gap-4 md:hidden">
         {filtered.map((item) => (
-          <button key={item.id} type="button" onClick={() => setReassigning(item)} className="text-left">
+          <button key={item.id} type="button" onClick={() => setReassigning(item)} className="text-left active:scale-[0.99] transition-transform">
             <StaffBranchCard staff={item} />
           </button>
         ))}
       </div>
 
       {/* Tabular Engine */}
-      <div className="bg-[#111827] border border-white/[0.06] rounded-[24px] overflow-hidden shadow-xl relative min-h-[300px] hidden md:block">
+      <div className="bg-[#111827]/40 backdrop-blur-md border border-white/[0.05] rounded-[28px] overflow-hidden shadow-lg relative min-h-[320px] hidden md:block">
         {loading && staff.length === 0 ? (
-           <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#111827]/90 backdrop-blur-sm z-10">
-             <Loader2 className="animate-spin h-8 w-8 text-[#4F8CFF] mb-3" />
-             <span className="text-xs font-bold text-[#9CA3AF] uppercase tracking-widest">Indexing Realtime Records...</span>
+           <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0B1020]/90 backdrop-blur-md z-30">
+             <Loader2 className="animate-spin h-7 w-7 text-cyan mb-3" />
+             <span className="text-[10px] font-black text-cyan uppercase tracking-widest font-label-caps animate-pulse">Synchronizing records...</span>
            </div>
         ) : null}
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/[0.04] bg-white/[0.02]">
-                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Avatar / Name / Email</th>
-                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Department</th>
-                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Assigned Branch</th>
-                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest">Status</th>
-                <th className="px-6 py-4 text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest text-right">Actions</th>
+              <tr className="border-b border-white/[0.04] bg-[#111827]/50">
+                <th className="px-6 py-4 text-[9px] font-black font-label-caps text-on-surface-variant uppercase tracking-widest">Identity Vector</th>
+                <th className="px-6 py-4 text-[9px] font-black font-label-caps text-on-surface-variant uppercase tracking-widest">Sector</th>
+                <th className="px-6 py-4 text-[9px] font-black font-label-caps text-on-surface-variant uppercase tracking-widest">Assigned Node</th>
+                <th className="px-6 py-4 text-[9px] font-black font-label-caps text-on-surface-variant uppercase tracking-widest">Access Flow</th>
+                <th className="px-6 py-4 text-[9px] font-black font-label-caps text-on-surface-variant uppercase tracking-widest text-right">Sequence</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
+            <tbody className="divide-y divide-white/[0.03]">
               {filtered.map((s) => (
-                <tr key={s.id} className="group hover:bg-white/[0.01] transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#4F8CFF] to-[#2563EB] flex items-center justify-center text-white font-black shadow-lg border border-white/10">
+                <tr key={s.id} className="group hover:bg-[#111827]/50 transition-colors">
+                  <td className="px-6 py-4.5">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10.5 h-10.5 rounded-xl bg-[#111827] flex items-center justify-center text-cyan font-black shadow-inner border border-cyan/15 shrink-0">
                         {(s.displayName || s.email).charAt(0).toUpperCase()}
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-white tracking-tight group-hover:text-[#4F8CFF] transition-colors">{s.displayName || 'Unknown Vector'}</p>
-                        <p className="text-xs text-[#9CA3AF] font-medium mt-0.5 flex items-center gap-1"><Mail size={10} className="opacity-60" /> {s.email}</p>
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-extrabold text-on-surface tracking-wide group-hover:text-cyan transition-colors truncate">{s.displayName || 'System Matrix'}</p>
+                        <p className="text-[11px] text-on-surface-variant font-medium mt-0.5 flex items-center gap-1 truncate select-all"><Mail size={11} className="opacity-50" /> {s.email}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                     <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                       <Briefcase size={12} className="text-[#9CA3AF]" />
-                       {s.department || 'Finance'}
+                  <td className="px-6 py-4.5">
+                     <div className="flex items-center gap-1.5 text-xs font-bold text-on-surface">
+                       <Briefcase size={13} className="text-on-surface-variant opacity-60" />
+                       {s.department || 'Finance Ops'}
                      </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4.5">
                      <BranchBadge name={s.branchName} />
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4.5">
                      {s.isLocked ? (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-400 bg-red-500/10 px-2 py-1 rounded-md border border-red-500/20">
-                          <Lock size={12} /> Terminal Locked
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-black font-label-caps uppercase tracking-wider text-danger bg-danger/5 px-2.5 py-1 rounded-full border border-danger/20 shadow-inner">
+                          <Lock size={11} /> TERMINAL LOCKED
                         </span>
                      ) : (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Fully Active
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-black font-label-caps uppercase tracking-wider text-emerald bg-emerald/5 px-2.5 py-1 rounded-full border border-emerald/20 shadow-inner">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse shadow-[0_0_6px_#10B981]" /> SECURED LINK
                         </span>
                      )}
                   </td>
-                  <td className="px-6 py-4 text-right">
-                     <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => setReassigning(s)} className="h-8 px-3 flex items-center justify-center hover:bg-[#4F8CFF]/10 border border-transparent hover:border-[#4F8CFF]/20 rounded-lg text-[#9CA3AF] hover:text-[#4F8CFF] transition-all text-xs font-bold" title="Change Branch">Change Branch</button>
-                        <button className="h-8 w-8 flex items-center justify-center hover:bg-white/[0.05] border border-transparent hover:border-white/[0.1] rounded-lg text-[#9CA3AF] hover:text-white transition-all" title="Reset Password"><KeyRound size={14} /></button>
-                        <button className="h-8 w-8 flex items-center justify-center hover:bg-red-500/10 border border-transparent hover:border-red-500/20 rounded-lg text-[#9CA3AF] hover:text-red-400 transition-all" title="Terminate Access"><Trash2 size={14} /></button>
-                        <button className="h-8 w-8 flex items-center justify-center hover:bg-white/[0.05] border border-transparent hover:border-white/[0.1] rounded-lg text-[#9CA3AF] hover:text-white transition-all"><MoreHorizontal size={14} /></button>
+                  <td className="px-6 py-4.5 text-right">
+                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button onClick={() => setReassigning(s)} className="h-8 px-3 bg-[#111827] border border-white/[0.04] hover:border-cyan/20 rounded-lg text-on-surface-variant hover:text-cyan transition-all text-[10px] font-black font-label-caps tracking-widest uppercase" title="Reroute Node">Reroute</button>
+                        <button className="h-8 w-8 bg-[#111827] border border-white/[0.04] hover:border-cyan/20 rounded-lg text-on-surface-variant hover:text-cyan flex items-center justify-center transition-all" title="Reset Signature"><KeyRound size={13} /></button>
+                        <button className="h-8 w-8 bg-[#111827] border border-white/[0.04] hover:border-danger/20 rounded-lg text-on-surface-variant hover:text-danger flex items-center justify-center transition-all" title="Revoke Authority"><Trash2 size={13} /></button>
+                        <button className="h-8 w-8 bg-[#111827] border border-white/[0.04] hover:border-white/[0.1] rounded-lg text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-all"><MoreHorizontal size={13} /></button>
                      </div>
                   </td>
                 </tr>
@@ -170,30 +171,29 @@ export function StaffManagementTable() {
           </table>
 
           {!loading && filtered.length === 0 && staff.length > 0 && (
-            <div className="py-20 text-center text-[#9CA3AF] font-bold text-sm italic">No matching personnel vectors satisfy constraints.</div>
+            <div className="py-20 text-center text-on-surface-variant font-bold text-sm italic select-none">Zero signal signatures matches filters in cache memory.</div>
           )}
 
           {!loading && staff.length === 0 && (
-            <div className="py-24 flex flex-col items-center justify-center text-center px-6">
-               <div className="w-24 h-24 bg-gradient-to-br from-[#4F8CFF]/20 to-transparent rounded-[32px] flex items-center justify-center border border-[#4F8CFF]/30 mb-6 shadow-2xl relative overflow-hidden">
-                  <div className="absolute inset-0 bg-grid-white opacity-10"/>
-                  <UsersFull size={40} className="text-[#4F8CFF]" />
+            <div className="py-24 flex flex-col items-center justify-center text-center px-6 select-none">
+               <div className="w-20 h-20 bg-cyan/5 rounded-[28px] flex items-center justify-center border border-cyan/15 mb-6 shadow-inner relative overflow-hidden">
+                  <UsersFull size={32} className="text-cyan drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" />
                </div>
-               <h3 className="text-2xl font-black text-white tracking-tight">Construct Your Workforce</h3>
-               <p className="text-sm text-[#9CA3AF] max-w-sm mt-2 font-medium leading-relaxed">Zero active personnel exist within this operational envelope. Provision the first staff node to initiate corporate transactions.</p>
+               <h3 className="text-xl font-extrabold text-on-surface tracking-wide font-sans">Deploy New Personnel Subnode</h3>
+               <p className="text-[13px] text-on-surface-variant max-w-sm mt-2 font-medium leading-relaxed tracking-wide">No operational operators have been provisioned inside this tenant cluster. Recruit the first agent below.</p>
                
                <button 
                  onClick={() => setIsModalOpen(true)}
-                 className="mt-8 h-12 px-8 bg-[#4F8CFF] text-white font-black text-sm rounded-2xl shadow-[0_15px_30px_-10px_rgba(79,140,255,0.5)] hover:-translate-y-1 transition-all active:translate-y-0 flex items-center gap-2.5"
+                 className="mt-8 h-12 px-7 bg-cyan text-black font-black text-[10px] font-label-caps tracking-widest uppercase rounded-full shadow-md shadow-cyan/15 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 border border-white/[0.1]"
                >
-                  <UserPlus size={18} /> Start First Recruitment <ArrowRight size={16} />
+                  <UserPlus size={15} /> Initialize Recruitment Pipeline <ArrowRight size={15} />
                </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Create Staff Modal Portal */}
+      {/* Modals Portal */}
       <AnimatePresence>
         {isModalOpen && (
            <CreateStaffModal 
@@ -231,7 +231,6 @@ function CreateStaffModal({ branches, onClose, onSuccess }: { branches: LightBra
   });
 
   useEffect(() => {
-    // Re-sync branch if they loaded after mounting
     if (!form.branchId && branches.length > 0) {
        setForm(f => ({ ...f, branchId: branches[0].id }));
     }
@@ -242,7 +241,7 @@ function CreateStaffModal({ branches, onClose, onSuccess }: { branches: LightBra
      setError(null);
 
      if (!form.branchId) {
-        setError("Operational routing requires an assigned Branch vector.");
+        setError("Operational authorization requires an active node link.");
         return;
      }
 
@@ -252,117 +251,120 @@ function CreateStaffModal({ branches, onClose, onSuccess }: { branches: LightBra
         onSuccess();
      } catch (err: any) {
         console.error(err);
-        setError(err.message || "Deployment communication link failure.");
+        setError(err.message || "Node registry communication failure.");
      } finally {
         setSaving(false);
      }
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 font-sans animate-in fade-in duration-300">
       <motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
         exit={{ opacity: 0 }}
         onClick={onClose} 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/80 backdrop-blur-md"
       />
 
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        className="relative w-full max-w-md bg-[#0B1015] border border-white/[0.08] rounded-[32px] shadow-2xl shadow-black overflow-hidden z-10"
+        transition={{ type: "spring", damping: 25, stiffness: 350 }}
+        className="relative w-full max-w-md bg-[#0B1020] border border-white/[0.08] rounded-[28px] shadow-2xl overflow-hidden z-10 shadow-cyan/5"
       >
-        <div className="p-6 border-b border-white/[0.05] flex justify-between items-center bg-white/[0.01]">
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
+        
+        <div className="p-6 border-b border-white/[0.04] flex justify-between items-center bg-[#111827]/20">
            <div>
-             <h3 className="font-black text-xl text-white tracking-tight">Recruit Staff Node</h3>
-             <p className="text-xs text-[#9CA3AF] font-medium mt-0.5 uppercase tracking-widest flex items-center gap-1.5">
-               <Shield size={10} className="text-[#4F8CFF]"/> Validated Clearance Stream
+             <h3 className="font-black text-lg text-on-surface font-sans tracking-wide">Recruit Subnode Operator</h3>
+             <p className="text-[9px] text-cyan font-black font-label-caps mt-1 uppercase tracking-widest flex items-center gap-1.5">
+               <Shield size={11} className="text-cyan animate-pulse"/> VALIDATED INTERFACE LINK
              </p>
            </div>
-           <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/[0.05] text-[#9CA3AF] hover:text-white flex items-center justify-center transition-colors">
-             <X size={16} />
+           <button onClick={onClose} className="w-8 h-8 rounded-xl bg-[#111827] border border-white/[0.04] text-on-surface-variant hover:text-cyan flex items-center justify-center transition-all active:scale-90">
+             <X size={15} />
            </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5.5">
            {error && (
-             <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3.5 text-red-400 text-xs font-bold flex items-start gap-2.5 animate-in slide-in-from-top-2">
-                <AlertCircle size={16} className="shrink-0 mt-0.5" />
+             <div className="bg-danger/10 border border-danger/30 rounded-[18px] p-4 text-danger text-[11px] font-bold font-sans flex items-start gap-2.5 animate-in slide-in-from-top-2 shadow-sm leading-relaxed">
+                <AlertCircle size={15} className="shrink-0 mt-0.5" />
                 {error}
              </div>
            )}
 
-           <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest ml-1">Legal Associate Name</label>
+           <div className="space-y-2">
+              <label className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest font-label-caps ml-1 opacity-80">Legal Operator Name</label>
               <input 
                 required
                 value={form.fullName}
                 onChange={(e) => setForm({...form, fullName: e.target.value})}
-                placeholder="Ex: Alex Mercer"
-                className="w-full h-12 px-4 bg-[#111827] border border-white/[0.06] rounded-xl text-sm text-white font-medium focus:border-[#4F8CFF]/50 outline-none transition-all"
+                placeholder="Ex: Alexander Vance"
+                className="w-full h-12 px-4.5 bg-[#111827] border border-white/[0.05] rounded-[18px] text-xs text-on-surface font-medium focus:border-cyan/30 outline-none transition-all shadow-inner"
               />
            </div>
 
-           <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest ml-1">Authorized Email Endpoint</label>
+           <div className="space-y-2">
+              <label className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest font-label-caps ml-1 opacity-80">Identity Email Link</label>
               <input 
                 required
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({...form, email: e.target.value})}
-                placeholder="alex@corporation.com"
-                className="w-full h-12 px-4 bg-[#111827] border border-white/[0.06] rounded-xl text-sm text-white font-medium focus:border-[#4F8CFF]/50 outline-none transition-all"
+                placeholder="operator@entity.corp"
+                className="w-full h-12 px-4.5 bg-[#111827] border border-white/[0.05] rounded-[18px] text-xs text-on-surface font-medium focus:border-cyan/30 outline-none transition-all shadow-inner"
               />
            </div>
 
            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                  <BranchSelector
                    branches={branches}
                    value={form.branchId}
                    onChange={(branchId) => setForm({...form, branchId})}
-                   label="Branch Cluster"
+                   label="Branch Vector"
                  />
               </div>
 
-              <div className="space-y-1.5">
-                 <label className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest ml-1">Allocated Dept</label>
+              <div className="space-y-2">
+                 <label className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest font-label-caps ml-1 opacity-80">Cluster Sector</label>
                  <select 
                    value={form.department}
                    onChange={(e) => setForm({...form, department: e.target.value})}
-                   className="w-full h-12 px-3 bg-[#111827] border border-white/[0.06] rounded-xl text-sm text-white font-medium focus:border-[#4F8CFF]/50 outline-none appearance-none cursor-pointer"
+                   className="w-full h-12 px-4 bg-[#111827] border border-white/[0.05] rounded-[18px] text-xs text-cyan font-bold tracking-wide focus:border-cyan/30 outline-none appearance-none cursor-pointer shadow-inner select-none"
                  >
                     {['Finance', 'Operations', 'Sales', 'HR', 'Management'].map(d => (
-                       <option key={d} value={d} className="bg-[#0B1015] text-white">{d}</option>
+                       <option key={d} value={d} className="bg-[#0B1020] text-on-surface font-medium">{d}</option>
                     ))}
                  </select>
               </div>
            </div>
 
-           <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest ml-1">Initial Access Matrix (Password)</label>
+           <div className="space-y-2">
+              <label className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest font-label-caps ml-1 opacity-80">Initial Entrance Key</label>
               <input 
                 required
                 type="password"
                 value={form.password}
                 onChange={(e) => setForm({...form, password: e.target.value})}
                 placeholder="••••••••"
-                className="w-full h-12 px-4 bg-[#111827] border border-white/[0.06] rounded-xl text-sm text-white font-medium focus:border-[#4F8CFF]/50 outline-none transition-all"
+                className="w-full h-12 px-4.5 bg-[#111827] border border-white/[0.05] rounded-[18px] text-xs text-cyan tracking-widest focus:border-cyan/30 outline-none transition-all shadow-inner"
               />
            </div>
 
-           <div className="pt-4 border-t border-white/[0.05] flex gap-3">
-              <button type="button" onClick={onClose} className="flex-1 h-12 border border-white/[0.08] rounded-xl text-sm font-bold text-white hover:bg-white/[0.05] transition-colors">
-                Abort
+           <div className="pt-5 border-t border-white/[0.04] flex gap-3 relative z-10">
+              <button type="button" onClick={onClose} className="flex-1 h-12 bg-[#111827] border border-white/[0.04] hover:border-white/[0.1] rounded-full text-[10px] font-black font-label-caps tracking-widest uppercase text-on-surface-variant hover:text-on-surface transition-all active:scale-[0.98]">
+                Abort Seq
               </button>
               <button 
                  type="submit" 
                  disabled={saving || branches.length === 0} 
-                 className="flex-1 h-12 bg-[#4F8CFF] text-white font-bold text-sm rounded-xl shadow-lg shadow-[#4F8CFF]/20 flex items-center justify-center gap-2 hover:brightness-110 disabled:opacity-50 transition-all"
+                 className="flex-1 h-12 bg-cyan text-black font-black text-[10px] font-label-caps tracking-widest uppercase rounded-full shadow-md shadow-cyan/10 border border-white/[0.05] flex items-center justify-center gap-2 hover:brightness-110 disabled:opacity-50 active:scale-[0.98] transition-all"
               >
-                {saving ? <Loader2 className="animate-spin" size={16} /> : 'Commit Vector'}
+                {saving ? <Loader2 className="animate-spin" size={15} /> : 'Provision Cell'}
               </button>
            </div>
         </form>
@@ -371,7 +373,7 @@ function CreateStaffModal({ branches, onClose, onSuccess }: { branches: LightBra
   );
 }
 
-/* Custom SVGs */
+/* High-Tech Registry SVG Icon */
 function UsersFull(props: any) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -382,3 +384,4 @@ function UsersFull(props: any) {
     </svg>
   );
 }
+

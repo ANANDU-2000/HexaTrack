@@ -10,16 +10,17 @@ interface UserIdentityCardProps {
 
 export function UserIdentityCard({ name, role, branchName }: UserIdentityCardProps) {
   return (
-    <div className="flex items-center gap-3 bg-[#111827]/60 border border-white/[0.05] rounded-2xl px-3 py-2 backdrop-blur-sm hover:bg-[#111827] transition-colors group cursor-pointer">
-      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F8CFF]/20 to-[#4F8CFF]/5 flex items-center justify-center text-[#4F8CFF] font-bold text-sm border border-white/[0.05] shadow-inner group-hover:border-[#4F8CFF]/30 transition-all shrink-0">
-        {name.charAt(0)}
+    <div className="flex items-center gap-3 bg-[#111827]/50 border border-white/[0.04] rounded-[20px] px-3 py-2 backdrop-blur-md hover:bg-[#111827]/70 hover:border-cyan/15 transition-all group cursor-pointer shadow-inner select-none">
+      <div className="w-9 h-9 rounded-xl bg-[#111827] flex items-center justify-center text-cyan font-black text-sm border border-cyan/10 shadow-inner group-hover:border-cyan/30 group-hover:scale-105 transition-all shrink-0 select-none">
+        {name.charAt(0).toUpperCase()}
       </div>
-      <div className="hidden sm:flex flex-col min-w-0 text-left">
-        <span className="text-sm font-bold text-[#F9FAFB] tracking-tight leading-tight truncate">{name}</span>
-        <div className="mt-1">
+      <div className="hidden sm:flex flex-col min-w-0 text-left pr-1">
+        <span className="text-[13px] font-extrabold text-on-surface tracking-wide leading-tight truncate group-hover:text-cyan transition-colors">{name}</span>
+        <div className="mt-0.5">
            <RoleBadge role={role} branchName={branchName} animate={false} />
         </div>
       </div>
     </div>
   );
 }
+
