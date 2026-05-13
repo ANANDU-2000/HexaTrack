@@ -2,27 +2,17 @@
 
 import { 
   BarChart3, 
-  History, 
+  History as HistoryIcon, 
   Home, 
   Plus, 
-  Settings, 
-  Wallet, 
-  ScanLine, 
+  Sparkles, 
   ArrowRightLeft,
   DollarSign,
-  X
+  TrendingUp
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import type { ScreenKey } from '@/components/layout/app-shell';
-
-// Map consistent 5-tab navigation structure mandated by mobile perfection guidelines
-const tabs = [
-  { key: 'dashboard' as const, label: 'Home', icon: Home },
-  { key: 'history' as const, label: 'Entries', icon: History },
-  { key: 'reports' as const, label: 'Data', icon: BarChart3 },
-  { key: 'settings' as const, label: 'Profile', icon: Settings },
-];
 
 type BottomNavProps = {
   activeScreen: ScreenKey;
@@ -40,11 +30,10 @@ export function BottomNav({ activeScreen, onAddTransaction, onNavigate }: Bottom
      action();
   };
 
-  // Primary speed dial operational items
+  // Primary speed dial operational items adjusted for operational fintech direction
   const speedDialItems = [
-    { label: 'Scan Bill', icon: ScanLine, color: 'text-cyan bg-cyan/10 border-cyan/20', delay: 0.08, onClick: () => {} },
-    { label: 'Transfer', icon: ArrowRightLeft, color: 'text-indigo bg-indigo/10 border-indigo/20', delay: 0.04, onClick: () => {} },
-    { label: 'Expense', icon: DollarSign, color: 'text-emerald bg-emerald/10 border-emerald/20', delay: 0, onClick: onAddTransaction },
+    { label: 'Add Income', icon: TrendingUp, color: 'text-teal bg-teal/10 border-teal/20', delay: 0.06, onClick: onAddTransaction },
+    { label: 'Add Expense', icon: DollarSign, color: 'text-emerald bg-emerald/10 border-emerald/20', delay: 0, onClick: onAddTransaction },
   ];
 
   return (
@@ -57,28 +46,28 @@ export function BottomNav({ activeScreen, onAddTransaction, onNavigate }: Bottom
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSpeedDialOpen(false)}
-            className="fixed inset-0 z-30 bg-[#0B1020]/80 backdrop-blur-xl lg:hidden pointer-events-auto"
+            className="fixed inset-0 z-30 bg-[#0B0D11]/80 backdrop-blur-md lg:hidden pointer-events-auto"
           />
         )}
       </AnimatePresence>
 
-      {/* Floating Speed Dial Buttons Menu (Staggered Arc) */}
+      {/* Floating Speed Dial Buttons Menu */}
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center lg:hidden pb-[max(env(safe-area-inset-bottom),1.25rem)]">
          <div className="relative w-full max-w-md mx-auto flex justify-center">
             <AnimatePresence>
               {speedDialOpen && (
                 <div className="absolute bottom-24 flex flex-col items-center gap-4 pointer-events-auto">
-                  {speedDialItems.map((item, idx) => (
+                  {speedDialItems.map((item) => (
                      <motion.div
                        key={item.label}
-                       initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                       initial={{ opacity: 0, y: 15, scale: 0.9 }}
                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                       exit={{ opacity: 0, y: 15, scale: 0.8 }}
-                       transition={{ type: 'spring', stiffness: 500, damping: 30, delay: item.delay }}
+                       exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                       transition={{ type: 'spring', stiffness: 400, damping: 28, delay: item.delay }}
                        className="flex items-center gap-3 group"
                      >
                         {/* Text Label Tag */}
-                        <span className="px-3 py-1 rounded-full bg-[#111827]/90 border border-white/[0.04] shadow-md text-[10px] font-black tracking-widest font-label-caps text-on-surface whitespace-nowrap uppercase">
+                        <span className="px-3 py-1.5 rounded-lg bg-[#1D1F27] border border-outline-variant/20 shadow-md text-[10px] font-black tracking-wider font-label-caps text-on-surface whitespace-nowrap uppercase">
                            {item.label}
                         </span>
                         
@@ -86,7 +75,7 @@ export function BottomNav({ activeScreen, onAddTransaction, onNavigate }: Bottom
                         <motion.button
                           whileTap={{ scale: 0.9 }}
                           onClick={() => handleAction(item.onClick)}
-                          className={`w-12 h-12 rounded-full border ${item.color} shadow-lg flex items-center justify-center active:brightness-110 transition-all`}
+                          className={`w-12 h-12 rounded-xl border ${item.color} shadow-md flex items-center justify-center active:brightness-110 transition-all`}
                         >
                            <item.icon size={18} />
                         </motion.button>
@@ -98,17 +87,14 @@ export function BottomNav({ activeScreen, onAddTransaction, onNavigate }: Bottom
          </div>
       </div>
 
-      {/* Fixed Sticky Bottom Navigation Bar Component */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(env(safe-area-inset-bottom),1.25rem)] lg:hidden">
+      {/* Fixed Floating Bottom Navigation Bar Component */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:hidden">
         <nav className="pointer-events-auto relative mx-auto max-w-md select-none" aria-label="Mobile Navigation Bar">
           
-          {/* Subtle soft Glass Inner Glow Layer */}
-          <div className="absolute inset-x-0 -top-px h-[5.5rem] rounded-[32px] bg-gradient-to-b from-white/[0.06] to-transparent blur-[1px] pointer-events-none" />
-          
-          {/* Primary Matte Structural Container */}
-          <div className="relative grid min-h-[5.5rem] grid-cols-[1fr_1fr_4.75rem_1fr_1fr] items-center rounded-[32px] border border-white/[0.08] bg-[#111827]/65 px-2 shadow-2xl backdrop-blur-3xl shadow-black/80">
+          {/* Primary Matte Clean Container */}
+          <div className="relative grid min-h-[4.75rem] grid-cols-[1fr_1fr_4.25rem_1fr_1fr] items-center rounded-2xl border border-outline-variant/20 bg-[#11131A]/90 px-2 shadow-xl backdrop-blur-xl">
             
-            {/* Left Side Controls (Home, Wallets) */}
+            {/* Left Side Controls (Home, Reports) */}
             <BottomNavItem 
               active={activeScreen === 'dashboard'} 
               icon={Home} 
@@ -116,47 +102,47 @@ export function BottomNav({ activeScreen, onAddTransaction, onNavigate }: Bottom
               onClick={() => { onNavigate('dashboard'); setSpeedDialOpen(false); }} 
             />
             <BottomNavItem 
-              active={activeScreen === 'wallets'} 
-              icon={Wallet} 
-              label="Wallets" 
-              onClick={() => { onNavigate('wallets'); setSpeedDialOpen(false); }} 
+              active={activeScreen === 'reports'} 
+              icon={BarChart3} 
+              label="Reports" 
+              onClick={() => { onNavigate('reports'); setSpeedDialOpen(false); }} 
             />
 
-            {/* Morphing Core Speed-Dial FAB */}
+            {/* Floating Action Button */}
             <div className="relative flex h-full items-center justify-center">
               <motion.button
-                aria-label="Trigger actions"
-                className={`absolute -top-6.5 grid h-14.5 w-14.5 place-items-center rounded-full border shadow-lg ring-[7px] ring-[#0B1020] transition-all outline-none z-50 ${
+                aria-label="Add transaction"
+                className={`absolute -top-5 grid h-13 w-13 place-items-center rounded-xl border shadow-lg transition-all outline-none z-50 ${
                   speedDialOpen 
-                    ? 'bg-[#111827] text-cyan border-cyan/30 shadow-cyan/10' 
-                    : 'bg-cyan text-black border-transparent shadow-cyan/20'
+                    ? 'bg-[#1D1F27] text-emerald border-emerald/30' 
+                    : 'bg-emerald text-white border-transparent shadow-emerald/20'
                 }`}
                 onClick={toggleSpeedDial}
                 type="button"
-                whileTap={{ scale: 0.9 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               >
                 <motion.div
                   animate={{ rotate: speedDialOpen ? 135 : 0 }}
-                  transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                 >
-                  <Plus size={25} strokeWidth={2.6} />
+                  <Plus size={24} strokeWidth={2.5} />
                 </motion.div>
               </motion.button>
             </div>
 
-            {/* Right Side Controls (Entries, Profile) */}
+            {/* Right Side Controls (History, Assistant) */}
             <BottomNavItem 
               active={activeScreen === 'history'} 
-              icon={History} 
-              label="Entries" 
+              icon={HistoryIcon} 
+              label="History" 
               onClick={() => { onNavigate('history'); setSpeedDialOpen(false); }} 
             />
             <BottomNavItem 
-              active={activeScreen === 'settings'} 
-              icon={Settings} 
-              label="Profile" 
-              onClick={() => { onNavigate('settings'); setSpeedDialOpen(false); }} 
+              active={activeScreen === 'assistant'} 
+              icon={Sparkles} 
+              label="AI Help" 
+              onClick={() => { onNavigate('assistant'); setSpeedDialOpen(false); }} 
             />
             
           </div>
@@ -170,42 +156,38 @@ export function BottomNav({ activeScreen, onAddTransaction, onNavigate }: Bottom
 function BottomNavItem({ active, icon: Icon, label, onClick }: { active: boolean; icon: React.ElementType; label: string; onClick: () => void }) {
   return (
     <motion.button
-      className={`relative flex min-h-[4.5rem] min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl px-1 text-[9px] font-black uppercase tracking-[0.15em] font-label-caps leading-none transition-colors select-none focus:outline-none ${
-        active ? 'text-cyan' : 'text-on-surface-variant/70'
+      className={`relative flex min-h-[4rem] min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[9px] font-bold uppercase tracking-wider font-label-caps leading-none transition-colors select-none focus:outline-none ${
+        active ? 'text-emerald' : 'text-on-surface-variant/60'
       }`}
       onClick={onClick}
       type="button"
-      whileTap={{ scale: 0.92 }}
-      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+      whileTap={{ scale: 0.95 }}
     >
       <AnimatePresence>
         {active && (
           <>
-            {/* Luminous soft capsule glow */}
+            {/* Simple, clean pill glow */}
             <motion.span
-              className="absolute inset-x-1.5 inset-y-2.5 rounded-2xl bg-white/5 border border-white/[0.03]"
+              className="absolute inset-x-1 inset-y-1 rounded-xl bg-emerald/5 border border-emerald/10"
               layoutId="mobile-nav-pill-bg"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             />
-            
-            {/* Laser active underline */}
+            {/* Small Active Dot */}
             <motion.span
-              className="absolute bottom-1.5 w-4 h-[2px] bg-cyan rounded-full shadow-[0_0_8px_#06B6D4]"
-              layoutId="mobile-nav-laser"
-              initial={{ opacity: 0, scaleX: 0.2 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              exit={{ opacity: 0, scaleX: 0.2 }}
+              className="absolute bottom-1.5 w-1 h-1 bg-emerald rounded-full shadow-[0_0_4px_rgba(16,185,129,0.5)]"
+              layoutId="mobile-nav-dot"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
             />
           </>
         )}
       </AnimatePresence>
       
-      <Icon className={`relative h-4.5 w-4.5 ${active ? 'text-cyan drop-shadow-[0_0_3px_rgba(6,182,212,0.3)]' : 'opacity-70'}`} strokeWidth={active ? 2.8 : 2.2} />
-      <span className="relative block w-full truncate text-center font-black">{label}</span>
+      <Icon className={`relative h-4.5 w-4.5 ${active ? 'text-emerald' : 'opacity-70'}`} strokeWidth={active ? 2.5 : 2} />
+      <span className="relative block w-full truncate text-center mt-0.5">{label}</span>
     </motion.button>
   );
 }
-
-

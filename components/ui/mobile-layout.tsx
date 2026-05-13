@@ -22,7 +22,7 @@ type BottomSheetProps = {
 export function BottomSheet({ open, onClose, children, labelledBy }: BottomSheetProps) {
   
   // Handle the swipe down velocity threshold
-  function handleDragEnd(event: any, info: PanInfo) {
+  function handleDragEnd(_: unknown, info: PanInfo) {
     const threshold = 120;
     const velocityThreshold = 500;
     if (info.offset.y > threshold || info.velocity.y > velocityThreshold) {
