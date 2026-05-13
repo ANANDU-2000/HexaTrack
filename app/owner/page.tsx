@@ -25,7 +25,7 @@ import { BranchSwitcher } from '@/components/branches/branch-switcher';
 /* Shared Workspace Screens (Direct Re-use of Prebuilt Enterprise Tools) */
 const DashboardScreen = dynamic(() => import('@/components/screens/dashboard-screen').then(m => m.DashboardScreen), { loading: () => <LoaderSkeleton /> });
 const HistoryScreen = dynamic(() => import('@/components/screens/history-screen').then(m => m.HistoryScreen), { loading: () => <LoaderSkeleton /> });
-const ReportsScreen = dynamic(() => import('@/components/screens/reports-screen').then(m => m.ReportsScreen), { loading: () => <LoaderSkeleton /> });
+const ReportsScreen = dynamic(() => import('@/components/screens/reports-screen').then(m => m.ReportsScreen), { loading: () => <LoaderSkeleton />, ssr: false });
 const RecurringScreen = dynamic(() => import('@/components/screens/recurring-screen').then(m => m.RecurringScreen), { loading: () => <LoaderSkeleton /> });
 const SettingsScreen = dynamic(() => import('@/components/screens/settings-screen').then(m => m.SettingsScreen), { loading: () => <LoaderSkeleton /> });
 

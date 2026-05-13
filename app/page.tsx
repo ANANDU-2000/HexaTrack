@@ -20,7 +20,7 @@ import { LandingPage } from '@/components/marketing/landing-page';
 const WalletsScreen = dynamic(() => import('@/components/screens/wallets-screen').then((module) => module.WalletsScreen), { loading: () => <ScreenSkeleton /> });
 const HistoryScreen = dynamic(() => import('@/components/screens/history-screen').then((module) => module.HistoryScreen), { loading: () => <ScreenSkeleton /> });
 const RecurringScreen = dynamic(() => import('@/components/screens/recurring-screen').then((module) => module.RecurringScreen), { loading: () => <ScreenSkeleton /> });
-const ReportsScreen = dynamic(() => import('@/components/screens/reports-screen').then((module) => module.ReportsScreen), { loading: () => <ScreenSkeleton /> });
+const ReportsScreen = dynamic(() => import('@/components/screens/reports-screen').then((module) => module.ReportsScreen), { loading: () => <ScreenSkeleton />, ssr: false });
 const SettingsScreen = dynamic(() => import('@/components/screens/settings-screen').then((module) => module.SettingsScreen), { loading: () => <ScreenSkeleton /> });
 const AssistantScreen = dynamic(() => import('@/components/screens/assistant-screen').then((module) => module.AssistantScreen), { loading: () => <ScreenSkeleton /> });
 
