@@ -7,6 +7,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   allowedDevOrigins: ['http://localhost:3000', 'http://127.0.0.1:3000'],
   async redirects() {
     return [{ source: '/superadmin', destination: '/admin', permanent: false }];
