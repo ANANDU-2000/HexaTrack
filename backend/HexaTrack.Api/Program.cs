@@ -18,6 +18,7 @@ using HexaTrack.Api.Api;
 using HexaTrack.Api.Api.Middleware;
 using HexaTrack.Api.Application.Security;
 using HexaTrack.Api.Application.Services;
+using HexaTrack.Api.Domain.Entities;
 using HexaTrack.Api.Application.Validators;
 using HexaTrack.Api.Infrastructure;
 using HexaTrack.Api.Infrastructure.Repositories;
@@ -276,7 +277,7 @@ using (var scope = app.Services.CreateScope())
             
             // Seed Super Admin if not exists
             var adminEmail = "admin@track.com";
-            var existingAdmin = await context.Users.FirstOrDefaultAsync(u => u.Email == adminEmail);
+            var existingAdmin = await context.Set<User>().FirstOrDefaultAsync(u => u.Email == adminEmail);
             if (existingAdmin == null)
             {
                 var hasher = services.GetRequiredService<IPasswordHasher>();
@@ -289,7 +290,7 @@ using (var scope = app.Services.CreateScope())
                     CreatedAt = DateTime.UtcNow,
                     EmailConfirmed = true
                 };
-                context.Users.Add(newAdmin);
+                context.Set<User>().Add(newAdmin);
                 await context.SaveChangesAsync();
             }
         }
