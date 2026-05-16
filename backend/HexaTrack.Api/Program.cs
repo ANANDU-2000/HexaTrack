@@ -273,12 +273,31 @@ using (var scope = app.Services.CreateScope())
         if (context.Database.IsRelational())
         {
             await context.Database.MigrateAsync();
+            
+            // Seed Super Admin if not exists
+            var adminEmail = "admin@track.com";
+            var existingAdmin = await context.Users.FirstOrDefaultAsync(u => u.Email == adminEmail);
+            if (existingAdmin == null)
+            {
+                var hasher = services.GetRequiredService<IPasswordHasher>();
+                var newAdmin = new User
+                {
+                    Email = adminEmail,
+                    FullName = "System Administrator",
+                    PasswordHash = hasher.HashPassword("Admin132!hexA"),
+                    IsSuperAdmin = true,
+                    CreatedAt = DateTime.UtcNow,
+                    EmailConfirmed = true
+                };
+                context.Users.Add(newAdmin);
+                await context.SaveChangesAsync();
+            }
         }
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating the database.");
+        logger.LogError(ex, "An error occurred during database initialization.");
     }
 }
 
