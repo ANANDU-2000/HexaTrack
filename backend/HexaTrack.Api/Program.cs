@@ -280,15 +280,13 @@ using (var scope = app.Services.CreateScope())
             var existingAdmin = await context.Set<User>().FirstOrDefaultAsync(u => u.Email == adminEmail);
             if (existingAdmin == null)
             {
-                var hasher = services.GetRequiredService<IPasswordHasher>();
                 var newAdmin = new User
                 {
                     Email = adminEmail,
-                    FullName = "System Administrator",
-                    PasswordHash = hasher.HashPassword("Admin132!hexA"),
+                    DisplayName = "System Administrator",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin132!hexA"),
                     IsSuperAdmin = true,
-                    CreatedAt = DateTime.UtcNow,
-                    EmailConfirmed = true
+                    CreatedAt = DateTimeOffset.UtcNow
                 };
                 context.Set<User>().Add(newAdmin);
                 await context.SaveChangesAsync();
