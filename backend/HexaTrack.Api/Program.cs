@@ -262,6 +262,26 @@ builder.Services.AddHostedService<SuperAdminBootstrapHostedService>();
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+
+// Automatically migrate database on startup
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<HexaTrackDbContext>();
+        if (context.Database.IsRelational())
+        {
+            await context.Database.MigrateAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
+
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
 
