@@ -226,6 +226,12 @@ export default function OwnerDashboard() {
               <Bell size={16} />
               <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
             </button>
+            <button 
+              onClick={handleLogout}
+              className="h-10 w-10 rounded-xl border border-white/[0.05] bg-[#0E152B] flex items-center justify-center text-[#FF5C75] shrink-0 active:scale-90 transition-transform"
+            >
+              <LogOut size={16} />
+            </button>
             <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center text-white text-xs font-bold border border-white/[0.1] shrink-0">
               {user.displayName?.charAt(0).toUpperCase() || 'O'}
             </div>
