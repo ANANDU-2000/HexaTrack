@@ -10,13 +10,17 @@ import {
   ArrowUpRight,
   BarChart3,
   Building2,
+  ChevronLeft,
   CreditCard,
   Download,
   FileText,
+  History,
+  Home,
   Loader2,
   Plus,
   RefreshCw,
   Search,
+  Settings,
   Trash2,
   Wallet,
   X,
@@ -34,8 +38,8 @@ import { useWorkspaceStore } from '@/store/workspace-store';
 type FinanceKind = 'income' | 'expenses' | 'accounts' | 'transactions' | 'analytics' | 'ledger' | 'categories';
 type TxFormType = Extract<TransactionType, 'Income' | 'Expense'>;
 
-const incomeDefaults = ['Sales', 'Services', 'Investments', 'Transfers', 'Refunds', 'Other'];
-const expenseDefaults = ['Salary', 'Utilities', 'Marketing', 'Operations', 'Software', 'Travel', 'Cloud'];
+const incomeDefaults = ['Sales', 'Client Payment', 'Salary', 'Investment', 'Refund', 'Commission', 'Rental', 'Interest', 'Bonus', 'Other Income'];
+const expenseDefaults = ['Food', 'Travel', 'Salary', 'Bills', 'Utilities', 'Marketing', 'Cloud Services', 'Office', 'Hardware', 'Software', 'Maintenance', 'Fuel', 'Healthcare', 'Tax', 'Rent', 'Subscription', 'Miscellaneous'];
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -102,46 +106,101 @@ function OwnerFinanceShell({ kind }: { kind: FinanceKind }) {
   }, [activeWorkspaceId, loadWorkspace]);
 
   if (!hydrated || !user) {
-    return <div className="min-h-screen bg-[#0B1015] text-[#8B9BB4] grid place-items-center text-xs font-black uppercase tracking-widest">Authorizing owner finance</div>;
+    return <div className="min-h-screen bg-[#050816] text-[#C2C6D6] grid place-items-center text-xs font-black uppercase tracking-widest">Authorizing owner finance</div>;
   }
 
+  const moduleContent = (
+    <>
+      {!activeWorkspaceId && kind !== 'analytics' && kind !== 'ledger' ? (
+        <EmptyState title="Select a branch to begin" action="Branch context is required for balance-safe writes." />
+      ) : null}
+      {error ? <ErrorCard message={error} onRetry={() => activeWorkspaceId && loadWorkspace()} /> : null}
+      {loading ? <FinanceSkeleton /> : renderModule(kind, setQuickOpen)}
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-[#0B1015] text-[#F5F7FA]">
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#0B1015]/85 px-4 py-4 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <BrandMark tone="dark" />
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-widest text-[#4F8CFF]">Owner finance</p>
-              <h1 className="text-2xl font-black tracking-tight">{titleFor(kind)}</h1>
+    <>
+      {/* ─── DESKTOP LAYOUT (xl+) ─── */}
+      <div className="hidden xl:block min-h-screen bg-[#050816] text-[#E1E2EC]">
+        <header className="sticky top-0 z-40 border-b border-white/[0.05] bg-[#050816]/85 px-4 py-4 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              <BrandMark tone="dark" />
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-widest text-[#10B981]">Owner Finance</p>
+                <h1 className="text-2xl font-black tracking-tight">{titleFor(kind)}</h1>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <BranchSwitcher />
+              {kind !== 'analytics' && kind !== 'ledger' ? (
+                <button
+                  type="button"
+                  onClick={() => setQuickOpen(kind === 'expenses' ? 'Expense' : 'Income')}
+                  className="h-11 rounded-[18px] bg-[#10B981] px-5 text-sm font-bold text-white active:scale-95"
+                >
+                  <Plus className="mr-2 inline h-4 w-4" />
+                  {kind === 'accounts' ? 'Quick Record' : `Add ${kind === 'expenses' ? 'Expense' : 'Income'}`}
+                </button>
+              ) : null}
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+        </header>
+        <main className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
+          {moduleContent}
+        </main>
+      </div>
+
+      {/* ─── MOBILE LAYOUT (below xl) ─── */}
+      <div className="xl:hidden flex flex-col bg-[#050816] text-[#E1E2EC] font-sans" style={{ height: '100dvh' }}>
+        {/* Mobile Header */}
+        <header className="shrink-0 flex items-center justify-between px-4 bg-[#050816]/90 backdrop-blur-xl border-b border-white/[0.05]" style={{ height: 72 }}>
+          <div className="flex items-center gap-3 min-w-0">
+            <button onClick={() => router.push('/owner')} className="h-9 w-9 rounded-xl border border-white/[0.05] bg-[#0E152B] flex items-center justify-center text-[#C2C6D6] shrink-0">
+              <ChevronLeft size={18} />
+            </button>
+            <div className="min-w-0">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#10B981]">Owner</p>
+              <h1 className="text-sm font-black tracking-tight truncate">{titleFor(kind)}</h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
             <BranchSwitcher />
             {kind !== 'analytics' && kind !== 'ledger' ? (
               <button
                 type="button"
                 onClick={() => setQuickOpen(kind === 'expenses' ? 'Expense' : 'Income')}
-                className="h-11 rounded-[18px] bg-[#4F8CFF] px-5 text-sm font-bold text-white active:scale-95"
+                className="h-9 px-3 rounded-xl bg-[#10B981] text-[11px] font-bold text-white flex items-center gap-1.5 active:scale-95 shrink-0"
               >
-                <Plus className="mr-2 inline h-4 w-4" />
-                {kind === 'accounts' ? 'Quick Record' : `Add ${kind === 'expenses' ? 'Expense' : 'Income'}`}
+                <Plus size={14} /> Add
               </button>
             ) : null}
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
-        {!activeWorkspaceId && kind !== 'analytics' && kind !== 'ledger' ? (
-          <EmptyState title="Select a branch to begin" action="Branch context is required for balance-safe writes." />
-        ) : null}
-        {error ? <ErrorCard message={error} onRetry={() => activeWorkspaceId && loadWorkspace()} /> : null}
-        {loading ? <FinanceSkeleton /> : renderModule(kind, setQuickOpen)}
-      </main>
+        {/* Scrollable Content */}
+        <main
+          className="flex-1 overflow-y-auto overflow-x-hidden"
+          style={{
+            paddingLeft: 16,
+            paddingRight: 16,
+            paddingTop: 16,
+            paddingBottom: 'calc(82px + env(safe-area-inset-bottom) + 24px)',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          <div className="space-y-4">
+            {moduleContent}
+          </div>
+        </main>
+
+        {/* Fixed Bottom Navigation */}
+        <OwnerBottomNav activeTab={kind === 'transactions' ? 'history' : kind === 'analytics' ? 'reports' : 'home'} onAdd={() => setQuickOpen(kind === 'expenses' ? 'Expense' : 'Income')} disabled={!activeWorkspaceId} />
+      </div>
 
       {quickOpen ? <QuickTransactionModal type={quickOpen} onClose={() => setQuickOpen(null)} /> : null}
-    </div>
+    </>
   );
 }
 
@@ -157,46 +216,82 @@ function renderModule(kind: FinanceKind, openQuick: (type: TxFormType | null) =>
 
 function CategoriesModule() {
   const categories = useFinanceStore((state) => state.categories);
+  const transactions = useFinanceStore((state) => state.transactions);
   const loadWorkspace = useFinanceStore((state) => state.loadWorkspace);
   const [open, setOpen] = useState(false);
+  const [activeType, setActiveType] = useState<'Expense' | 'Income'>('Expense');
+
+  const typeCats = categories.filter(c => !c.parentCategoryId && c.type === activeType);
 
   return (
-    <div className="space-y-5">
-       <div className="flex justify-between items-center">
-          <p className="text-sm font-semibold text-[#8B9BB4]">Organize transactions with hierarchy and colors.</p>
-          <button onClick={() => setOpen(true)} className="h-11 rounded-[18px] bg-[#4F8CFF] px-5 text-sm font-bold text-white">
-             <Plus className="mr-2 inline h-4 w-4" /> Create Category
-          </button>
-       </div>
-       {categories.length === 0 ? (
-         <EmptyState title="No categories defined yet." action="Start by creating one." />
-       ) : (
-         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-           {categories.filter(c => !c.parentCategoryId).map((cat) => (
-             <div key={cat.id} className="rounded-3xl border border-white/[0.06] bg-[#121A22] p-6">
-                <div className="flex justify-between items-start">
-                   <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{backgroundColor: `${cat.color || '#4F8CFF'}20`, color: cat.color || '#4F8CFF'}}>
-                         <TagIcon className="h-5 w-5" />
-                      </div>
-                      <div>
-                         <h3 className="font-black">{cat.name}</h3>
-                         <p className="text-xs font-bold text-[#8B9BB4] uppercase tracking-widest mt-0.5">{cat.type}</p>
-                      </div>
-                   </div>
+    <div className="space-y-4">
+      {/* Type Toggle */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex gap-2">
+          {(['Expense', 'Income'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setActiveType(t)}
+              className={`h-9 rounded-full px-4 text-[11px] font-bold uppercase tracking-wider transition-all border ${
+                activeType === t
+                  ? 'bg-[#10B981]/15 border-[#10B981]/30 text-[#10B981]'
+                  : 'border-white/[0.05] bg-[#0E152B] text-[#C2C6D6]'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => setOpen(true)}
+          className="h-9 rounded-xl bg-[#10B981] px-3.5 text-[11px] font-bold text-white flex items-center gap-1.5 active:scale-95 shrink-0"
+        >
+          <Plus size={14} /> Add
+        </button>
+      </div>
+
+      {/* Category Cards */}
+      {typeCats.length === 0 ? (
+        <EmptyState title={`No ${activeType.toLowerCase()} categories.`} action="Create your first category to organize transactions." onAction={() => setOpen(true)} />
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {typeCats.map((cat) => {
+            const subs = categories.filter(sub => sub.parentCategoryId === cat.id);
+            const txCount = transactions.filter(tx => tx.categoryId === cat.id || subs.some(s => s.id === tx.categoryId)).length;
+            const totalAmt = transactions.filter(tx => tx.categoryId === cat.id || subs.some(s => s.id === tx.categoryId)).reduce((s, tx) => s + tx.amount, 0);
+
+            return (
+              <div key={cat.id} className="rounded-2xl border border-white/[0.05] bg-[#0E152B] p-4 active:scale-[0.99] transition-transform">
+                <div className="flex items-start gap-3">
+                  {/* Color Icon */}
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: `${cat.color || '#10B981'}15`, border: `1px solid ${cat.color || '#10B981'}25` }}
+                  >
+                    <TagIcon size={18} style={{ color: cat.color || '#10B981' }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-[#E1E2EC] truncate">{cat.name}</p>
+                    <p className="text-[10px] text-[#C2C6D6] mt-0.5">{txCount} records · {money(totalAmt)}</p>
+                  </div>
+                  {/* Color dot */}
+                  <div className="w-3 h-3 rounded-full shrink-0 mt-1" style={{ background: cat.color || '#10B981' }} />
                 </div>
-                <div className="mt-4 space-y-2">
-                   {categories.filter(sub => sub.parentCategoryId === cat.id).map(sub => (
-                     <div key={sub.id} className="text-sm px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex justify-between items-center">
-                        <span>{sub.name}</span>
-                     </div>
-                   ))}
-                </div>
-             </div>
-           ))}
-         </div>
-       )}
-       {open && <CategoryModal onClose={() => setOpen(false)} onSaved={() => { setOpen(false); loadWorkspace(); }} />}
+                {/* Subcategories */}
+                {subs.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {subs.map(sub => (
+                      <span key={sub.id} className="text-[10px] font-medium text-[#C2C6D6] bg-white/[0.03] border border-white/[0.05] px-2 py-1 rounded-lg">{sub.name}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {open && <CategoryModal onClose={() => setOpen(false)} onSaved={() => { setOpen(false); loadWorkspace(); }} />}
     </div>
   );
 }
@@ -204,7 +299,7 @@ function CategoriesModule() {
 import { Tag as TagIcon } from 'lucide-react';
 
 function CategoryModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState({ name: '', type: 'Expense' as Category['type'], color: '#4F8CFF', parentCategoryId: '' });
+  const [form, setForm] = useState({ name: '', type: 'Expense' as Category['type'], color: '#10B981', parentCategoryId: '' });
   const [saving, setSaving] = useState(false);
   const parentOptions = useFinanceStore((state) => state.categories.filter(c => !c.parentCategoryId));
 
@@ -228,7 +323,7 @@ function CategoryModal({ onClose, onSaved }: { onClose: () => void; onSaved: () 
   return (
     <div className="fixed inset-0 z-[999] grid place-items-end bg-black/70 p-0 backdrop-blur-sm md:place-items-center md:p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-t-[32px] border border-white/[0.08] bg-[#0B1015] p-6 md:rounded-[32px]">
+      <div className="relative w-full max-w-md rounded-t-[32px] border border-white/[0.08] bg-[#050816] p-6 md:rounded-[32px]">
         <div className="flex justify-between items-center mb-5"><h2 className="text-xl font-black">Create Category</h2><button onClick={onClose}><X className="h-5 w-5" /></button></div>
         <div className="space-y-4">
           <Field label="Category Name"><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-finance w-full" placeholder="e.g. Marketing" /></Field>
@@ -250,7 +345,7 @@ function CategoryModal({ onClose, onSaved }: { onClose: () => void; onSaved: () 
              <input type="color" value={form.color} onChange={e => setForm({...form, color: e.target.value})} className="w-full h-10 rounded-xl bg-transparent border-0" />
           </Field>
         </div>
-        <button disabled={saving || !form.name} onClick={save} className="mt-6 h-12 w-full rounded-[18px] bg-[#4F8CFF] font-bold text-white disabled:opacity-50">{saving ? 'Saving...' : 'Create category'}</button>
+        <button disabled={saving || !form.name} onClick={save} className="mt-6 h-12 w-full rounded-[18px] bg-[#10B981] font-bold text-white disabled:opacity-50">{saving ? 'Saving...' : 'Create category'}</button>
       </div>
     </div>
   );
@@ -260,20 +355,153 @@ function IncomeExpenseModule({ type, onAdd }: { type: TxFormType; onAdd: () => v
   const transactions = useFinanceStore((state) => state.transactions);
   const categories = useFinanceStore((state) => state.categories);
   const accounts = useFinanceStore((state) => state.accounts);
+  const recurring = useFinanceStore((state) => state.recurring);
+  const [query, setQuery] = useState('');
+  const [selectedCat, setSelectedCat] = useState<string | null>(null);
+
   const rows = transactions.filter((tx) => tx.type === type);
   const total = rows.reduce((sum, tx) => sum + tx.amount, 0);
+  const thisMonth = rows.filter((tx) => {
+    const d = new Date(tx.occurredOn);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const monthTotal = thisMonth.reduce((sum, tx) => sum + tx.amount, 0);
+  const recurringCount = recurring.filter((r) => r.type === type && r.isActive).length;
+  const typeCats = categories.filter((c) => c.type === type && !c.parentCategoryId);
+
+  const filtered = rows.filter((tx) => {
+    const cat = categories.find((c) => c.id === tx.categoryId);
+    const acc = accounts.find((a) => a.id === tx.accountId);
+    const matchQuery = !query || [tx.merchant, tx.note, cat?.name, acc?.name].some((v) => v?.toLowerCase().includes(query.toLowerCase()));
+    const matchCat = !selectedCat || tx.categoryId === selectedCat;
+    return matchQuery && matchCat;
+  });
+
+  const isIncome = type === 'Income';
+  const accent = isIncome ? '#22C55E' : '#EF4444';
 
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <MetricCard label={type === 'Income' ? 'Branch revenue' : 'Branch expenses'} value={money(total, accounts[0]?.currency)} icon={type === 'Income' ? ArrowDownLeft : ArrowUpRight} tone={type === 'Income' ? 'success' : 'expense'} />
-        <MetricCard label="Records" value={rows.length.toString()} icon={BarChart3} tone="primary" />
-        <MetricCard label="Payment accounts" value={accounts.length.toString()} icon={CreditCard} tone="primary" />
+    <div className="space-y-4">
+      {/* ── Summary Cards (2×2 compact) ── */}
+      <div className="grid grid-cols-2 gap-3">
+        <SummaryCard
+          label={isIncome ? 'Total Income' : 'Total Expenses'}
+          value={money(total, accounts[0]?.currency)}
+          color={accent}
+          icon={isIncome ? ArrowDownLeft : ArrowUpRight}
+        />
+        <SummaryCard
+          label="This Month"
+          value={money(monthTotal, accounts[0]?.currency)}
+          color="#10B981"
+          icon={BarChart3}
+        />
+        <SummaryCard
+          label="Records"
+          value={rows.length.toString()}
+          color="#C2C6D6"
+          icon={CreditCard}
+        />
+        <SummaryCard
+          label={`Recurring ${type}`}
+          value={recurringCount.toString()}
+          color="#F59E0B"
+          icon={RefreshCw}
+        />
       </div>
-      {rows.length === 0 ? (
-        <EmptyState title={`Start tracking branch ${type.toLowerCase()}.`} action={`Add first ${type.toLowerCase()}`} onAction={onAdd} />
+
+      {/* ── Search Bar ── */}
+      <label className="flex h-11 items-center gap-3 rounded-2xl border border-white/[0.05] bg-[#0E152B] px-4">
+        <Search className="h-4 w-4 text-[#C2C6D6] shrink-0" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={`Search ${type.toLowerCase()}s...`}
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#C2C6D6]/60 text-[#E1E2EC]"
+        />
+      </label>
+
+      {/* ── Category Filter Pills ── */}
+      {typeCats.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto no-scrollbar hide-scrollbar pb-1">
+          <button
+            onClick={() => setSelectedCat(null)}
+            className={`shrink-0 h-8 rounded-full px-3 text-[10px] font-bold uppercase tracking-wider border transition-all ${
+              !selectedCat
+                ? 'bg-[#10B981]/15 border-[#10B981]/30 text-[#10B981]'
+                : 'border-white/[0.05] bg-[#0E152B] text-[#C2C6D6]'
+            }`}
+          >
+            All
+          </button>
+          {typeCats.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCat(selectedCat === cat.id ? null : cat.id)}
+              className={`shrink-0 h-8 rounded-full px-3 text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 ${
+                selectedCat === cat.id
+                  ? 'border-[#10B981]/30 text-[#E1E2EC]'
+                  : 'border-white/[0.05] bg-[#0E152B] text-[#C2C6D6]'
+              }`}
+              style={selectedCat === cat.id ? { background: `${cat.color || '#10B981'}20` } : undefined}
+            >
+              <div className="w-2 h-2 rounded-full" style={{ background: cat.color || '#10B981' }} />
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Transaction List ── */}
+      {filtered.length === 0 ? (
+        <EmptyState
+          title={rows.length === 0 ? `Start tracking ${type.toLowerCase()}.` : 'No matching records.'}
+          action={rows.length === 0 ? `Add first ${type.toLowerCase()}` : 'Try a different filter.'}
+          onAction={rows.length === 0 ? onAdd : undefined}
+        />
       ) : (
-        <TransactionTable transactions={rows} categories={categories} accounts={accounts} />
+        <div className="space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C2C6D6]">
+            {filtered.length} {type.toLowerCase()}{filtered.length !== 1 ? 's' : ''}
+          </p>
+          {filtered.map((tx) => {
+            const cat = categories.find((c) => c.id === tx.categoryId);
+            const acc = accounts.find((a) => a.id === tx.accountId);
+            return (
+              <div
+                key={tx.id}
+                className="flex items-center gap-3 rounded-2xl border border-white/[0.05] bg-[#0E152B] p-3.5 active:scale-[0.99] transition-transform"
+              >
+                {/* Category Icon */}
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: `${cat?.color || accent}15`, border: `1px solid ${cat?.color || accent}25` }}
+                >
+                  {isIncome ? (
+                    <ArrowDownLeft size={18} style={{ color: cat?.color || accent }} />
+                  ) : (
+                    <ArrowUpRight size={18} style={{ color: cat?.color || accent }} />
+                  )}
+                </div>
+                {/* Details */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-[#E1E2EC] truncate">{tx.merchant || cat?.name || type}</p>
+                  <p className="text-[11px] text-[#C2C6D6] truncate">{cat?.name}{acc ? ` · ${acc.name}` : ''} · {shortDate(tx.occurredOn)}</p>
+                </div>
+                {/* Amount + Badge */}
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-extrabold" style={{ color: isIncome ? '#22C55E' : '#E1E2EC' }}>
+                    {isIncome ? '+' : '-'}{money(tx.amount, tx.currency)}
+                  </p>
+                  <span className="inline-block mt-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#22C55E]/10 text-[#22C55E]">
+                    Posted
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
@@ -289,9 +517,9 @@ function AccountsModule({ onQuick }: { onQuick: () => void }) {
     <div className="space-y-5">
       <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
         <div>
-          <p className="text-sm font-semibold text-[#8B9BB4]">Create accounts, track recent activity, and reconcile branch balances.</p>
+          <p className="text-sm font-semibold text-[#C2C6D6]">Create accounts, track recent activity, and reconcile branch balances.</p>
         </div>
-        <button type="button" onClick={() => setOpen(true)} className="h-11 rounded-[18px] bg-[#4F8CFF] px-5 text-sm font-bold text-white">
+        <button type="button" onClick={() => setOpen(true)} className="h-11 rounded-[18px] bg-[#10B981] px-5 text-sm font-bold text-white">
           <Plus className="mr-2 inline h-4 w-4" /> Create Account
         </button>
       </div>
@@ -323,18 +551,87 @@ function TransactionsModule({ onAdd }: { onAdd: () => void }) {
   });
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center">
-        <label className="flex h-12 flex-1 items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#121A22] px-4">
-          <Search className="h-4 w-4 text-[#8B9BB4]" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search merchant, notes, category, account" className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#8B9BB4]" />
-        </label>
-        <select value={type} onChange={(event) => setType(event.target.value as 'All' | TransactionType)} className="h-12 rounded-2xl border border-white/[0.06] bg-[#121A22] px-4 text-sm font-bold">
-          {['All', 'Income', 'Expense', 'Transfer'].map((item) => <option key={item}>{item}</option>)}
-        </select>
+    <div className="space-y-4">
+      {/* Search */}
+      <label className="flex h-11 items-center gap-3 rounded-2xl border border-white/[0.05] bg-[#0E152B] px-4">
+        <Search className="h-4 w-4 text-[#C2C6D6] shrink-0" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search transactions..."
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#C2C6D6]/60 text-[#E1E2EC]"
+        />
+      </label>
+
+      {/* Type Filter Pills */}
+      <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+        {(['All', 'Income', 'Expense', 'Transfer'] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setType(t)}
+            className={`shrink-0 h-8 rounded-full px-3 text-[10px] font-bold uppercase tracking-wider border transition-all ${
+              type === t
+                ? 'bg-[#10B981]/15 border-[#10B981]/30 text-[#10B981]'
+                : 'border-white/[0.05] bg-[#0E152B] text-[#C2C6D6]'
+            }`}
+          >
+            {t}
+          </button>
+        ))}
         <ExportButtons rows={filtered} />
       </div>
-      {filtered.length === 0 ? <EmptyState title="Start tracking branch finances." action="Add First Transaction" onAction={onAdd} /> : <TransactionTimeline transactions={filtered} categories={categories} accounts={accounts} />}
+
+      {/* Results */}
+      {filtered.length === 0 ? (
+        <EmptyState title="No transactions found." action="Add First Transaction" onAction={onAdd} />
+      ) : (
+        <div className="space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C2C6D6]">
+            {filtered.length} transaction{filtered.length !== 1 ? 's' : ''}
+          </p>
+          {filtered.map((tx) => {
+            const cat = categories.find((c) => c.id === tx.categoryId);
+            const acc = accounts.find((a) => a.id === tx.accountId);
+            const isIncome = tx.type === 'Income';
+            const accent = isIncome ? '#22C55E' : '#EF4444';
+            return (
+              <div
+                key={tx.id}
+                className="flex items-center gap-3 rounded-2xl border border-white/[0.05] bg-[#0E152B] p-3.5 active:scale-[0.99] transition-transform"
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: `${cat?.color || accent}15`, border: `1px solid ${cat?.color || accent}25` }}
+                >
+                  {isIncome ? (
+                    <ArrowDownLeft size={18} style={{ color: cat?.color || accent }} />
+                  ) : (
+                    <ArrowUpRight size={18} style={{ color: cat?.color || accent }} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-[#E1E2EC] truncate">{tx.merchant || cat?.name || tx.type}</p>
+                  <p className="text-[11px] text-[#C2C6D6] truncate">{cat?.name}{acc ? ` · ${acc.name}` : ''} · {shortDate(tx.occurredOn)}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-extrabold" style={{ color: isIncome ? '#22C55E' : '#E1E2EC' }}>
+                    {isIncome ? '+' : '-'}{money(tx.amount, tx.currency)}
+                  </p>
+                  <span
+                    className="inline-block mt-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                    style={{
+                      background: isIncome ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+                      color: isIncome ? '#22C55E' : '#EF4444',
+                    }}
+                  >
+                    {tx.type}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -432,10 +729,10 @@ export function QuickTransactionModal({ type, onClose }: { type: TxFormType; onC
   return (
     <div className="fixed inset-0 z-[999] flex items-end justify-center bg-black/70 backdrop-blur-sm md:items-center md:p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative w-full max-w-xl rounded-t-[32px] border border-white/[0.08] bg-[#0B1015] p-6 shadow-2xl md:rounded-[32px]">
+      <div className="relative w-full max-w-xl rounded-t-[32px] border border-white/[0.08] bg-[#050816] p-6 shadow-2xl md:rounded-[32px]">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-widest text-[#4F8CFF]">Quick transaction</p>
+            <p className="text-[11px] font-black uppercase tracking-widest text-[#10B981]">Quick transaction</p>
             <h2 className="text-xl font-black">Add {type}</h2>
           </div>
           <button type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-2xl bg-white/[0.05]"><X className="h-5 w-5" /></button>
@@ -464,7 +761,7 @@ export function QuickTransactionModal({ type, onClose }: { type: TxFormType; onC
           </Field>
           <Field label="Date"><input type="date" value={form.occurredOn} onChange={(e) => setForm({ ...form, occurredOn: e.target.value })} className="input-finance w-full" /></Field>
           <div className="flex h-12 items-center">
-            <label className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-[#121A22] px-4 w-full h-full text-sm font-bold text-[#8B9BB4]">
+            <label className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-[#0E152B] px-4 w-full h-full text-sm font-bold text-[#C2C6D6]">
               <input type="checkbox" checked={form.recurring} onChange={(e) => setForm({ ...form, recurring: e.target.checked })} /> 
               Recurring
             </label>
@@ -476,7 +773,7 @@ export function QuickTransactionModal({ type, onClose }: { type: TxFormType; onC
           <button 
              disabled={saving || !isValid} 
              onClick={() => save(false)} 
-             className={`h-12 rounded-[18px] font-bold text-white transition-all ${isValid ? 'bg-[#4F8CFF] hover:bg-blue-600' : 'bg-white/[0.08] opacity-50 cursor-not-allowed'}`}
+             className={`h-12 rounded-[18px] font-bold text-white transition-all ${isValid ? 'bg-[#10B981] hover:bg-blue-600' : 'bg-white/[0.08] opacity-50 cursor-not-allowed'}`}
           >
             {saving ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : `Record ${type}`}
           </button>
@@ -496,7 +793,7 @@ export function QuickTransactionModal({ type, onClose }: { type: TxFormType; onC
 async function ensureDefaultCategories(type: TxFormType, existing: Category[]) {
   if (existing.length > 0) return;
   const names = type === 'Income' ? incomeDefaults : expenseDefaults;
-  await Promise.all(names.map((name) => hexaTrackApi.categories.create({ name, type, parentCategoryId: null, color: type === 'Income' ? '#1FD18B' : '#FF5C75', icon: type === 'Income' ? 'ArrowDownLeft' : 'ArrowUpRight' }).catch(() => null)));
+  await Promise.all(names.map((name) => hexaTrackApi.categories.create({ name, type, parentCategoryId: null, color: type === 'Income' ? '#22C55E' : '#FF5C75', icon: type === 'Income' ? 'ArrowDownLeft' : 'ArrowUpRight' }).catch(() => null)));
 }
 
 function AccountModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
@@ -514,14 +811,14 @@ function AccountModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
   return (
     <div className="fixed inset-0 z-[999] grid place-items-end bg-black/70 p-0 backdrop-blur-sm md:place-items-center md:p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-t-[32px] border border-white/[0.08] bg-[#0B1015] p-6 md:rounded-[32px]">
+      <div className="relative w-full max-w-md rounded-t-[32px] border border-white/[0.08] bg-[#050816] p-6 md:rounded-[32px]">
         <h2 className="text-xl font-black">Create account</h2>
         <div className="mt-5 space-y-4">
           <Field label="Account name"><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-finance" /></Field>
           <Field label="Account type"><select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as Account['type'] })} className="input-finance">{['Bank', 'Wallet', 'Cash', 'Credit', 'Savings'].map((type) => <option key={type}>{type}</option>)}</select></Field>
           <Field label="Opening balance"><input value={form.openingBalance} onChange={(e) => setForm({ ...form, openingBalance: e.target.value })} type="number" className="input-finance" /></Field>
         </div>
-        <button disabled={saving || !form.name} onClick={save} className="mt-6 h-12 w-full rounded-[18px] bg-[#4F8CFF] font-bold text-white disabled:opacity-50">{saving ? 'Saving...' : 'Create account'}</button>
+        <button disabled={saving || !form.name} onClick={save} className="mt-6 h-12 w-full rounded-[18px] bg-[#10B981] font-bold text-white disabled:opacity-50">{saving ? 'Saving...' : 'Create account'}</button>
       </div>
     </div>
   );
@@ -529,11 +826,11 @@ function AccountModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
 
 function TransactionTable({ transactions, categories, accounts }: { transactions: Transaction[]; categories: Category[]; accounts: Account[] }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/[0.06] bg-[#121A22]">
+    <div className="overflow-hidden rounded-3xl border border-white/[0.06] bg-[#0E152B]">
       <table className="w-full text-left text-sm">
-        <thead className="text-[11px] uppercase tracking-widest text-[#8B9BB4]"><tr><th className="p-4">Amount</th><th className="p-4">Category</th><th className="p-4">Account</th><th className="p-4">Status</th><th className="p-4">Created date</th><th className="p-4 text-right">Actions</th></tr></thead>
+        <thead className="text-[11px] uppercase tracking-widest text-[#C2C6D6]"><tr><th className="p-4">Amount</th><th className="p-4">Category</th><th className="p-4">Account</th><th className="p-4">Status</th><th className="p-4">Created date</th><th className="p-4 text-right">Actions</th></tr></thead>
         <tbody className="divide-y divide-white/[0.05]">
-          {transactions.map((tx) => <tr key={tx.id}><td className="p-4 font-black">{money(tx.amount, tx.currency)}</td><td className="p-4">{categories.find((c) => c.id === tx.categoryId)?.name ?? 'Uncategorized'}</td><td className="p-4">{accounts.find((a) => a.id === tx.accountId)?.name ?? 'Account'}</td><td className="p-4 text-[#1FD18B]">Posted</td><td className="p-4">{shortDate(tx.occurredOn)}</td><td className="p-4 text-right"><Trash2 className="ml-auto h-4 w-4 text-[#8B9BB4]" /></td></tr>)}
+          {transactions.map((tx) => <tr key={tx.id}><td className="p-4 font-black">{money(tx.amount, tx.currency)}</td><td className="p-4">{categories.find((c) => c.id === tx.categoryId)?.name ?? 'Uncategorized'}</td><td className="p-4">{accounts.find((a) => a.id === tx.accountId)?.name ?? 'Account'}</td><td className="p-4 text-[#22C55E]">Posted</td><td className="p-4">{shortDate(tx.occurredOn)}</td><td className="p-4 text-right"><Trash2 className="ml-auto h-4 w-4 text-[#C2C6D6]" /></td></tr>)}
         </tbody>
       </table>
     </div>
@@ -542,7 +839,7 @@ function TransactionTable({ transactions, categories, accounts }: { transactions
 
 export function TransactionTimeline({ transactions, categories, accounts }: { transactions: Transaction[]; categories: Category[]; accounts: Account[] }) {
   const groups = useMemo(() => groupTransactions(transactions), [transactions]);
-  return <div className="space-y-5">{groups.map((group) => <section key={group.label}><h2 className="mb-3 text-xs font-black uppercase tracking-widest text-[#8B9BB4]">{group.label}</h2><TransactionTable transactions={group.items} categories={categories} accounts={accounts} /></section>)}</div>;
+  return <div className="space-y-5">{groups.map((group) => <section key={group.label}><h2 className="mb-3 text-xs font-black uppercase tracking-widest text-[#C2C6D6]">{group.label}</h2><TransactionTable transactions={group.items} categories={categories} accounts={accounts} /></section>)}</div>;
 }
 
 function groupTransactions(rows: Transaction[]) {
@@ -559,11 +856,11 @@ function daysAgo(date: string, now: Date) {
 }
 
 export function AccountBalanceCard({ account, recentCount, onQuick }: { account: Account; recentCount: number; onQuick: () => void }) {
-  return <div className="rounded-3xl border border-white/[0.06] bg-[#121A22] p-6"><div className="flex items-center justify-between"><Wallet className="h-6 w-6 text-[#4F8CFF]" /><span className="rounded-full bg-white/[0.04] px-3 py-1 text-[11px] font-bold text-[#8B9BB4]">{account.type}</span></div><h3 className="mt-4 text-lg font-black">{account.name}</h3><p className="mt-2 text-3xl font-black">{money(account.balance, account.currency)}</p><p className="mt-2 text-sm text-[#8B9BB4]">{recentCount} recent movements • Branch mapped</p><button onClick={onQuick} className="mt-5 h-10 rounded-[18px] border border-[#4F8CFF]/25 px-4 text-sm font-bold text-[#4F8CFF]">Record movement</button></div>;
+  return <div className="rounded-3xl border border-white/[0.06] bg-[#0E152B] p-6"><div className="flex items-center justify-between"><Wallet className="h-6 w-6 text-[#10B981]" /><span className="rounded-full bg-white/[0.04] px-3 py-1 text-[11px] font-bold text-[#C2C6D6]">{account.type}</span></div><h3 className="mt-4 text-lg font-black">{account.name}</h3><p className="mt-2 text-3xl font-black">{money(account.balance, account.currency)}</p><p className="mt-2 text-sm text-[#C2C6D6]">{recentCount} recent movements • Branch mapped</p><button onClick={onQuick} className="mt-5 h-10 rounded-[18px] border border-[#10B981]/25 px-4 text-sm font-bold text-[#10B981]">Record movement</button></div>;
 }
 
 function LedgerTable({ rows }: { rows: Array<Record<string, unknown>> }) {
-  return <div className="overflow-hidden rounded-3xl border border-white/[0.06] bg-[#121A22]"><table className="w-full text-left text-sm"><thead className="text-[11px] uppercase tracking-widest text-[#8B9BB4]"><tr><th className="p-4">Date</th><th className="p-4">Branch</th><th className="p-4">Account</th><th className="p-4">Category</th><th className="p-4">Amount</th></tr></thead><tbody className="divide-y divide-white/[0.05]">{rows.map((row) => <tr key={String(row.id)}><td className="p-4">{String(row.occurredOn)}</td><td className="p-4">{String(row.branchName)}</td><td className="p-4">{String(row.account)}</td><td className="p-4">{String(row.category)}</td><td className="p-4 font-black">{money(Number(row.amount), String(row.currency ?? 'USD'))}</td></tr>)}</tbody></table></div>;
+  return <div className="overflow-hidden rounded-3xl border border-white/[0.06] bg-[#0E152B]"><table className="w-full text-left text-sm"><thead className="text-[11px] uppercase tracking-widest text-[#C2C6D6]"><tr><th className="p-4">Date</th><th className="p-4">Branch</th><th className="p-4">Account</th><th className="p-4">Category</th><th className="p-4">Amount</th></tr></thead><tbody className="divide-y divide-white/[0.05]">{rows.map((row) => <tr key={String(row.id)}><td className="p-4">{String(row.occurredOn)}</td><td className="p-4">{String(row.branchName)}</td><td className="p-4">{String(row.account)}</td><td className="p-4">{String(row.category)}</td><td className="p-4 font-black">{money(Number(row.amount), String(row.currency ?? 'USD'))}</td></tr>)}</tbody></table></div>;
 }
 
 export function FinancialAnalyticsCards({ revenue, expenses, profit }: { revenue: number; expenses: number; profit: number }) {
@@ -572,12 +869,32 @@ export function FinancialAnalyticsCards({ revenue, expenses, profit }: { revenue
 
 export function BranchRevenueChart({ rows }: { rows: Array<{ id: string; name: string; revenue: number; expenses: number; profit: number }> }) {
   const max = Math.max(1, ...rows.map((row) => row.revenue));
-  return <div className="rounded-3xl border border-white/[0.06] bg-[#121A22] p-6"><h2 className="mb-5 text-lg font-black">Branch performance</h2>{rows.length === 0 ? <p className="text-sm text-[#8B9BB4]">No branch finance data yet.</p> : <div className="space-y-4">{rows.map((row) => <div key={row.id}><div className="mb-2 flex justify-between text-sm"><span className="font-bold">{row.name}</span><span className="text-[#8B9BB4]">{money(row.revenue)} revenue</span></div><div className="h-3 rounded-full bg-white/[0.05]"><div className="h-full rounded-full bg-[#4F8CFF]" style={{ width: `${Math.max(4, (row.revenue / max) * 100)}%` }} /></div></div>)}</div>}</div>;
+  return <div className="rounded-3xl border border-white/[0.06] bg-[#0E152B] p-6"><h2 className="mb-5 text-lg font-black">Branch performance</h2>{rows.length === 0 ? <p className="text-sm text-[#C2C6D6]">No branch finance data yet.</p> : <div className="space-y-4">{rows.map((row) => <div key={row.id}><div className="mb-2 flex justify-between text-sm"><span className="font-bold">{row.name}</span><span className="text-[#C2C6D6]">{money(row.revenue)} revenue</span></div><div className="h-3 rounded-full bg-white/[0.05]"><div className="h-full rounded-full bg-[#10B981]" style={{ width: `${Math.max(4, (row.revenue / max) * 100)}%` }} /></div></div>)}</div>}</div>;
 }
 
 function MetricCard({ label, value, icon: Icon, tone }: { label: string; value: string; icon: LucideIcon; tone: 'primary' | 'success' | 'expense' }) {
-  const color = tone === 'success' ? '#1FD18B' : tone === 'expense' ? '#FF5C75' : '#4F8CFF';
-  return <div className="rounded-3xl border border-white/[0.06] bg-[#121A22] p-6"><Icon className="mb-4 h-6 w-6" style={{ color }} /><p className="text-[11px] font-black uppercase tracking-widest text-[#8B9BB4]">{label}</p><p className="mt-2 text-3xl font-black">{value}</p></div>;
+  const color = tone === 'success' ? '#22C55E' : tone === 'expense' ? '#EF4444' : '#10B981';
+  return <div className="rounded-3xl border border-white/[0.06] bg-[#0E152B] p-6"><Icon className="mb-4 h-6 w-6" style={{ color }} /><p className="text-[11px] font-black uppercase tracking-widest text-[#C2C6D6]">{label}</p><p className="mt-2 text-3xl font-black">{value}</p></div>;
+}
+
+function SummaryCard({ label, value, color, icon: Icon }: { label: string; value: string; color: string; icon: LucideIcon }) {
+  return (
+    <div
+      className="rounded-2xl border border-white/[0.05] bg-[#0E152B] p-3.5 flex items-center gap-3"
+      style={{ height: 92 }}
+    >
+      <div
+        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+        style={{ background: `${color}15`, border: `1px solid ${color}25` }}
+      >
+        <Icon size={18} style={{ color }} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#C2C6D6] truncate">{label}</p>
+        <p className="mt-1 text-lg font-extrabold text-[#E1E2EC] tracking-tight leading-none truncate">{value}</p>
+      </div>
+    </div>
+  );
 }
 
 function ExportButtons({ rows }: { rows: Transaction[] }) {
@@ -592,20 +909,26 @@ function ExportButtons({ rows }: { rows: Transaction[] }) {
     anchor.click();
     URL.revokeObjectURL(url);
   }
-  return <div className="flex gap-2"><button onClick={() => download('csv')} className="h-12 rounded-2xl border border-white/[0.06] px-3 text-xs font-bold"><Download className="mr-1 inline h-4 w-4" />CSV</button><button onClick={() => download('xls')} className="h-12 rounded-2xl border border-white/[0.06] px-3 text-xs font-bold">Excel</button><button onClick={() => download('pdf')} className="h-12 rounded-2xl border border-white/[0.06] px-3 text-xs font-bold"><FileText className="mr-1 inline h-4 w-4" />PDF</button></div>;
+  return (
+    <div className="flex gap-1.5 ml-auto shrink-0">
+      <button onClick={() => download('csv')} className="h-8 rounded-full border border-white/[0.05] bg-[#0E152B] px-2.5 text-[10px] font-bold text-[#C2C6D6] flex items-center gap-1"><Download size={12} />CSV</button>
+      <button onClick={() => download('xls')} className="h-8 rounded-full border border-white/[0.05] bg-[#0E152B] px-2.5 text-[10px] font-bold text-[#C2C6D6]">XLS</button>
+      <button onClick={() => download('pdf')} className="h-8 rounded-full border border-white/[0.05] bg-[#0E152B] px-2.5 text-[10px] font-bold text-[#C2C6D6]">PDF</button>
+    </div>
+  );
 }
 
 function ReceiptUpload() {
   const [name, setName] = useState('');
-  return <Field label="Receipt upload"><input type="file" accept="image/*,.pdf" onChange={(e) => setName(e.target.files?.[0]?.name ?? '')} className="input-finance" />{name ? <p className="mt-1 text-xs text-[#8B9BB4]">Preview ready: {name} • OCR placeholder</p> : null}</Field>;
+  return <Field label="Receipt upload"><input type="file" accept="image/*,.pdf" onChange={(e) => setName(e.target.files?.[0]?.name ?? '')} className="input-finance" />{name ? <p className="mt-1 text-xs text-[#C2C6D6]">Preview ready: {name} • OCR placeholder</p> : null}</Field>;
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
-  return <label className="block text-[11px] font-black uppercase tracking-widest text-[#8B9BB4]">{label}<div className="mt-1.5 normal-case tracking-normal">{children}</div></label>;
+  return <label className="block text-[11px] font-black uppercase tracking-widest text-[#C2C6D6]">{label}<div className="mt-1.5 normal-case tracking-normal">{children}</div></label>;
 }
 
 function EmptyState({ title, action, onAction }: { title: string; action: string; onAction?: () => void }) {
-  return <div className="rounded-3xl border border-dashed border-white/[0.1] bg-[#121A22] px-6 py-16 text-center"><Building2 className="mx-auto mb-4 h-10 w-10 text-[#4F8CFF]" /><h2 className="text-lg font-black">{title}</h2><p className="mt-2 text-sm text-[#8B9BB4]">{action}</p>{onAction ? <button onClick={onAction} className="mt-6 h-11 rounded-[18px] bg-[#4F8CFF] px-5 text-sm font-bold text-white">Add First Transaction</button> : null}</div>;
+  return <div className="rounded-3xl border border-dashed border-white/[0.1] bg-[#0E152B] px-6 py-16 text-center"><Building2 className="mx-auto mb-4 h-10 w-10 text-[#10B981]" /><h2 className="text-lg font-black">{title}</h2><p className="mt-2 text-sm text-[#C2C6D6]">{action}</p>{onAction ? <button onClick={onAction} className="mt-6 h-11 rounded-[18px] bg-[#10B981] px-5 text-sm font-bold text-white">Add First Transaction</button> : null}</div>;
 }
 
 function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
@@ -614,4 +937,84 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
 
 function FinanceSkeleton() {
   return <div className="space-y-4">{[1, 2, 3].map((item) => <div key={item} className="h-24 animate-pulse rounded-3xl bg-white/[0.05]" />)}</div>;
+}
+
+type BottomTab = 'home' | 'history' | 'reports' | 'settings';
+
+function OwnerBottomNav({ activeTab, onAdd, disabled }: { activeTab: BottomTab; onAdd: () => void; disabled?: boolean }) {
+  const router = useRouter();
+  const tabs: Array<{ key: BottomTab; icon: React.ElementType; label: string; onClick: () => void }> = [
+    { key: 'home', icon: Home, label: 'Home', onClick: () => router.push('/owner') },
+    { key: 'history', icon: History, label: 'History', onClick: () => router.push('/owner/transactions') },
+    { key: 'reports', icon: BarChart3, label: 'Reports', onClick: () => router.push('/owner/analytics') },
+    { key: 'settings', icon: Settings, label: 'Settings', onClick: () => router.push('/owner') },
+  ];
+
+  return (
+    <div
+      className="fixed inset-x-0 bottom-0 z-50"
+      style={{
+        background: 'rgba(5,8,22,0.92)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+      }}
+    >
+      <nav
+        className="mx-auto w-full max-w-md grid grid-cols-5 items-end select-none"
+        style={{ height: 82, paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        {/* First 2 tabs */}
+        {tabs.slice(0, 2).map((tab) => (
+          <BottomNavItem key={tab.key} active={activeTab === tab.key} icon={tab.icon} label={tab.label} onClick={tab.onClick} />
+        ))}
+        {/* Center FAB */}
+        <div className="relative flex items-center justify-center" style={{ height: 82 }}>
+          <div className="absolute rounded-full pointer-events-none" style={{ width: 68, height: 68, background: 'rgba(16,185,129,0.25)', filter: 'blur(14px)', top: '50%', left: '50%', transform: 'translate(-50%, -54%)' }} />
+          <button
+            onClick={onAdd}
+            disabled={disabled}
+            className="relative z-10 flex items-center justify-center rounded-full overflow-hidden disabled:opacity-50 active:scale-90 transition-transform"
+            style={{
+              width: 68,
+              height: 68,
+              marginBottom: 10,
+              background: 'linear-gradient(145deg, #34D399 0%, #10B981 50%, #059669 100%)',
+              boxShadow: '0 8px 24px rgba(16,185,129,0.45), 0 2px 8px rgba(0,0,0,0.4)',
+              border: '1.5px solid rgba(255,255,255,0.12)',
+            }}
+          >
+            <Plus size={28} strokeWidth={2} className="text-white" />
+          </button>
+        </div>
+        {/* Last 2 tabs */}
+        {tabs.slice(2).map((tab) => (
+          <BottomNavItem key={tab.key} active={activeTab === tab.key} icon={tab.icon} label={tab.label} onClick={tab.onClick} />
+        ))}
+      </nav>
+    </div>
+  );
+}
+
+function BottomNavItem({ active, icon: Icon, label, onClick }: { active: boolean; icon: React.ElementType; label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative flex flex-col items-center justify-end gap-1.5 w-full h-full pb-[10px] outline-none active:scale-95 transition-transform"
+    >
+      {active && (
+        <div
+          className="absolute top-0 inset-x-3 h-[2px] rounded-b-full"
+          style={{ background: '#10B981', boxShadow: '0 2px 8px #10B981' }}
+        />
+      )}
+      <div style={{ color: active ? '#E1E2EC' : '#C2C6D6' }}>
+        <Icon size={22} strokeWidth={1.75} style={active ? { filter: 'drop-shadow(0 0 6px rgba(16,185,129,0.5))' } : undefined} />
+      </div>
+      <span className="leading-none font-medium" style={{ fontSize: 11, color: active ? '#E1E2EC' : '#C2C6D6' }}>
+        {label}
+      </span>
+    </button>
+  );
 }

@@ -25,14 +25,14 @@ export function ExpenseAnalytics() {
            <h3 className="font-headline text-lg font-extrabold text-on-surface tracking-tight">Capital Forecast</h3>
         </div>
         
-        <div className="flex gap-1 p-1 bg-[#111827]/80 rounded-xl border border-white/[0.04]">
+        <div className="flex gap-1 p-1 bg-[#0E152B]/80 rounded-xl border border-white/[0.04]">
           {(['1M', '3M', '1Y'] as const).map((r) => (
             <button
               key={r}
               onClick={() => setRange(r)}
               className={`px-3 py-1 rounded-lg text-[10px] font-black font-label-caps tracking-widest uppercase transition-all active:scale-95 ${
                 range === r 
-                  ? 'bg-white/5 text-cyan shadow-[0_0_10px_rgba(6,182,212,0.2)] border border-white/[0.03]' 
+                  ? 'bg-white/5 text-cyan shadow-[0_0_10px_rgba(16,185,129,0.2)] border border-white/[0.03]' 
                   : 'text-on-surface-variant opacity-60 hover:opacity-100'
               }`}
             >
@@ -48,8 +48,8 @@ export function ExpenseAnalytics() {
             <AreaChart data={chartData.length > 0 ? chartData : fallbackData} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="premiumChartGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.25}/>
-                  <stop offset="100%" stopColor="#06B6D4" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.25}/>
+                  <stop offset="100%" stopColor="#10B981" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <XAxis 
@@ -61,15 +61,15 @@ export function ExpenseAnalytics() {
               />
               <YAxis hide domain={['dataMin - 500', 'dataMax + 500']} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#111827', borderColor: 'rgba(255,255,255,0.06)', borderRadius: '16px', color: '#e6e0e9', boxShadow: '0 12px 32px rgba(11,16,32,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}
-                itemStyle={{ color: '#06B6D4', fontFamily: 'Geist', fontWeight: 600 }}
+                contentStyle={{ backgroundColor: '#0E152B', borderColor: 'rgba(255,255,255,0.06)', borderRadius: '16px', color: '#e6e0e9', boxShadow: '0 12px 32px rgba(11,16,32,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}
+                itemStyle={{ color: '#10B981', fontFamily: 'Geist', fontWeight: 600 }}
                 formatter={(value: number) => money(value)}
                 labelStyle={{ color: '#cbc4d2', fontSize: '9px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Geist' }}
               />
               <Area 
                 type="monotone" 
                 dataKey="amount" 
-                stroke="#06B6D4" 
+                stroke="#10B981" 
                 strokeWidth={2.5} 
                 fillOpacity={1} 
                 fill="url(#premiumChartGrad)"

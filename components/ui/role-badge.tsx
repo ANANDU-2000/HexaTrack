@@ -16,7 +16,7 @@ export function RoleBadge({ role, branchName, animate = true }: RoleBadgeProps) 
   const isOwner = role === 'Owner';
 
   const styles = {
-    SuperAdmin: 'bg-indigo/5 border-indigo/20 text-indigo shadow-inner',
+    SuperAdmin: 'bg-primary/5 border-primary/20 text-primary shadow-inner',
     Owner: 'bg-cyan/5 border-cyan/20 text-cyan shadow-inner',
     Staff: 'bg-emerald/5 border-emerald/20 text-emerald shadow-inner'
   }[role];

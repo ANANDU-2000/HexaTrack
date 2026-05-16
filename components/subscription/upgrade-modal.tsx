@@ -22,19 +22,19 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
         animate={{ scale: 1, opacity: 1 }}
         className="w-full max-w-5xl relative bg-transparent"
       >
-        <button onClick={onClose} className="absolute -top-12 right-0 p-2 text-[#9CA3AF] hover:text-white bg-white/[0.05] rounded-full"><X size={24}/></button>
+        <button onClick={onClose} className="absolute -top-12 right-0 p-2 text-[#C2C6D6] hover:text-white bg-white/[0.05] rounded-full"><X size={24}/></button>
 
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-[#4F8CFF]/10 border border-[#4F8CFF]/20 px-4 py-1.5 rounded-full text-[#4F8CFF] text-sm font-bold mb-4 shadow-sm shadow-[#4F8CFF]/10">
             <Sparkles size={16} /> Scalable Premium Growth
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-[#F9FAFB] tracking-tight mb-3">Ascend your architecture.</h1>
-          <p className="text-[#9CA3AF] text-base font-medium max-w-xl mx-auto leading-relaxed">Provision greater organizational node headroom and unlock deep algorithmic intelligence.</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#E1E2EC] tracking-tight mb-3">Ascend your architecture.</h1>
+          <p className="text-[#C2C6D6] text-base font-medium max-w-xl mx-auto leading-relaxed">Provision greater organizational node headroom and unlock deep algorithmic intelligence.</p>
           
           {/* Cycle Toggle */}
-          <div className="mt-8 inline-flex items-center p-1 bg-[#111827] border border-white/[0.05] rounded-2xl relative">
-             <button onClick={() => setAnnual(false)} className={`px-6 py-2 rounded-xl text-xs font-bold transition-all relative z-10 ${!annual ? 'text-[#F9FAFB]' : 'text-[#9CA3AF]'}`}>Monthly</button>
-             <button onClick={() => setAnnual(true)} className={`px-6 py-2 rounded-xl text-xs font-bold transition-all relative z-10 ${annual ? 'text-[#F9FAFB]' : 'text-[#9CA3AF]'}`}>Yearly <span className="text-[#22C55E] text-[10px] ml-1 font-extrabold">SAVE 20%</span></button>
+          <div className="mt-8 inline-flex items-center p-1 bg-[#0E152B] border border-white/[0.05] rounded-2xl relative">
+             <button onClick={() => setAnnual(false)} className={`px-6 py-2 rounded-xl text-xs font-bold transition-all relative z-10 ${!annual ? 'text-[#E1E2EC]' : 'text-[#C2C6D6]'}`}>Monthly</button>
+             <button onClick={() => setAnnual(true)} className={`px-6 py-2 rounded-xl text-xs font-bold transition-all relative z-10 ${annual ? 'text-[#E1E2EC]' : 'text-[#C2C6D6]'}`}>Yearly <span className="text-[#22C55E] text-[10px] ml-1 font-extrabold">SAVE 20%</span></button>
              
              <motion.div
                className="absolute inset-y-1 bg-[#4F8CFF] rounded-xl shadow-md shadow-[#4F8CFF]/20"
@@ -55,30 +55,30 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
                initial={{ y: 20, opacity: 0 }}
                animate={{ y: 0, opacity: 1 }}
                transition={{ delay: i * 0.1 }}
-               className={`relative bg-[#111827] border rounded-[32px] p-8 flex flex-col ${
+               className={`relative bg-[#0E152B] border rounded-[32px] p-8 flex flex-col ${
                  plan.popular ? 'border-[#4F8CFF] shadow-[0_24px_64px_-12px_rgba(79,140,255,0.25)]' : 'border-white/[0.06]'
                }`}
              >
                {plan.popular && (
-                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#4F8CFF] text-[#F9FAFB] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-[#4F8CFF]/30 flex items-center gap-1">
+                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#4F8CFF] text-[#E1E2EC] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-[#4F8CFF]/30 flex items-center gap-1">
                    <Zap size={10} fill="currentColor"/> Recommended
                  </div>
                )}
 
-               <h3 className="text-lg font-bold text-[#F9FAFB] tracking-tight mb-1">{plan.name}</h3>
+               <h3 className="text-lg font-bold text-[#E1E2EC] tracking-tight mb-1">{plan.name}</h3>
                <div className="flex items-baseline gap-1 mt-4 mb-6">
-                 <span className="text-4xl font-extrabold text-[#F9FAFB] tracking-tighter">${annual ? Math.floor(plan.price * 0.8) : plan.price}</span>
-                 <span className="text-[#9CA3AF] text-sm font-medium">/mo</span>
+                 <span className="text-4xl font-extrabold text-[#E1E2EC] tracking-tighter">${annual ? Math.floor(plan.price * 0.8) : plan.price}</span>
+                 <span className="text-[#C2C6D6] text-sm font-medium">/mo</span>
                </div>
 
                <div className="space-y-3 py-6 border-y border-white/[0.04] mb-6">
-                 <div className="flex items-center justify-between"><span className="text-xs font-bold text-[#9CA3AF]">Staff Vector</span><span className="text-sm font-bold text-[#F9FAFB]">{plan.staff} Limit</span></div>
-                 <div className="flex items-center justify-between"><span className="text-xs font-bold text-[#9CA3AF]">Branch Span</span><span className="text-sm font-bold text-[#F9FAFB]">{plan.branches} Nodes</span></div>
+                 <div className="flex items-center justify-between"><span className="text-xs font-bold text-[#C2C6D6]">Staff Vector</span><span className="text-sm font-bold text-[#E1E2EC]">{plan.staff} Limit</span></div>
+                 <div className="flex items-center justify-between"><span className="text-xs font-bold text-[#C2C6D6]">Branch Span</span><span className="text-sm font-bold text-[#E1E2EC]">{plan.branches} Nodes</span></div>
                </div>
 
                <ul className="space-y-4 mb-8 flex-1">
                  {plan.feat.map(f => (
-                   <li key={f} className="flex items-center gap-3 text-xs font-bold text-[#F9FAFB]">
+                   <li key={f} className="flex items-center gap-3 text-xs font-bold text-[#E1E2EC]">
                       <div className="w-5 h-5 rounded-full bg-[#22C55E]/10 flex items-center justify-center text-[#22C55E] shrink-0"><Check size={12} strokeWidth={3}/></div>
                       {f}
                    </li>
@@ -86,7 +86,7 @@ export function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => 
                </ul>
 
                <button className={`w-full h-12 rounded-2xl font-bold text-sm transition-all active:scale-95 ${
-                 plan.popular ? 'bg-[#4F8CFF] text-white shadow-md' : 'bg-white/[0.04] border border-white/[0.05] text-[#F9FAFB] hover:bg-white/[0.08]'
+                 plan.popular ? 'bg-[#4F8CFF] text-white shadow-md' : 'bg-white/[0.04] border border-white/[0.05] text-[#E1E2EC] hover:bg-white/[0.08]'
                }`}>
                  Select {plan.name}
                </button>

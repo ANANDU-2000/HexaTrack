@@ -100,7 +100,7 @@ export function HistoryScreen() {
   const filters: TypeFilter[] = ['All', 'Income', 'Expense'];
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col gap-5 pb-28 pt-4 select-none font-sans">
+    <div className="w-full max-w-md mx-auto flex flex-col gap-5 pt-4 select-none font-sans">
       
       {/* Clean Header */}
       <div className="flex flex-col gap-4">
@@ -113,7 +113,7 @@ export function HistoryScreen() {
          </div>
 
          {/* Expense Highlight Capsule */}
-         <div className="bg-[#11131A] border border-outline-variant/20 rounded-xl p-4 flex justify-between items-center shadow-sm">
+         <div className="bg-[#0E152B] border border-outline-variant/20 rounded-xl p-4 flex justify-between items-center shadow-sm">
             <div className="flex flex-col gap-0.5">
                <span className="text-[9px] font-bold uppercase font-label-caps text-on-surface-variant/60 tracking-wider">Interval Expenditures</span>
                <span className="text-xl font-extrabold text-on-surface tracking-tight">{money(report.expense)}</span>
@@ -133,7 +133,7 @@ export function HistoryScreen() {
                value={queryInput}
                onChange={(e) => setQueryInput(e.target.value)}
                placeholder="Search vendor, notes, or tags..."
-               className="w-full h-11 bg-[#11131A] border border-outline-variant/20 focus:border-emerald/30 rounded-xl pl-10 pr-10 text-xs font-bold text-on-surface placeholder:text-on-surface-variant/40 outline-none shadow-sm"
+               className="w-full h-11 bg-[#0E152B] border border-outline-variant/20 focus:border-emerald/30 rounded-xl pl-10 pr-10 text-xs font-bold text-on-surface placeholder:text-on-surface-variant/40 outline-none shadow-sm"
             />
             {loading && items.length > 0 && <Loader2 size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 animate-spin text-emerald/80" />}
          </div>
@@ -145,7 +145,7 @@ export function HistoryScreen() {
                   onClick={() => setActiveFilter(f)}
                   className={`px-4 py-1.5 rounded-lg font-bold text-[9px] font-label-caps tracking-wider uppercase whitespace-nowrap transition-all active:scale-[0.97] ${
                      activeFilter === f
-                       ? 'bg-[#11131A] text-emerald shadow-sm border border-outline-variant/20'
+                       ? 'bg-[#0E152B] text-emerald shadow-sm border border-outline-variant/20'
                        : 'text-on-surface-variant/60 hover:text-on-surface'
                   }`}
                >
@@ -167,20 +167,20 @@ export function HistoryScreen() {
          {loading && items.length === 0 && !error && (
             <div className="flex flex-col gap-2">
                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-16 bg-[#11131A]/40 border border-outline-variant/10 rounded-xl animate-pulse" />
+                  <div key={i} className="h-16 bg-[#0E152B]/40 border border-outline-variant/10 rounded-xl animate-pulse" />
                ))}
             </div>
          )}
 
          {!loading && items.length === 0 && !error && (
-            <div className="bg-[#11131A] border border-outline-variant/20 rounded-xl py-12 text-center shadow-sm">
+            <div className="bg-[#0E152B] border border-outline-variant/20 rounded-xl py-12 text-center shadow-sm">
                <p className="text-xs font-bold text-on-surface-variant/70 tracking-wide">No operational matches found.</p>
                <p className="text-[9px] font-label-caps uppercase text-on-surface-variant/50 tracking-wider mt-1">Refine your query tags</p>
             </div>
          )}
 
          {items.length > 0 && (
-            <div className="flex flex-col border border-outline-variant/20 rounded-xl overflow-hidden bg-[#11131A] shadow-sm">
+            <div className="flex flex-col border border-outline-variant/20 rounded-xl overflow-hidden bg-[#0E152B] shadow-sm">
                <TransactionList categories={categories} transactions={items} />
             </div>
          )}
@@ -189,7 +189,7 @@ export function HistoryScreen() {
             <button
                onClick={handleLoadMore}
                disabled={loading}
-               className="w-full h-11 mt-4 bg-[#11131A] border border-outline-variant/20 rounded-xl text-[9px] font-black uppercase tracking-wider font-label-caps text-on-surface-variant/80 flex items-center justify-center gap-2 shadow-sm hover:text-emerald active:scale-[0.98] transition-all"
+               className="w-full h-11 mt-4 bg-[#0E152B] border border-outline-variant/20 rounded-xl text-[9px] font-black uppercase tracking-wider font-label-caps text-on-surface-variant/80 flex items-center justify-center gap-2 shadow-sm hover:text-emerald active:scale-[0.98] transition-all"
             >
                {loading ? <Loader2 className="animate-spin" size={12} /> : 'Fetch Sequential Logs'}
             </button>
@@ -197,7 +197,7 @@ export function HistoryScreen() {
       </div>
 
       {/* Simple Average Indicator footer */}
-      <div className="bg-[#11131A] border border-outline-variant/20 rounded-xl p-4 flex items-center gap-4 shadow-sm shrink-0">
+      <div className="bg-[#0E152B] border border-outline-variant/20 rounded-xl p-4 flex items-center gap-4 shadow-sm shrink-0">
          <div className="w-8 h-8 rounded-lg bg-teal/10 flex items-center justify-center text-teal shrink-0 border border-teal/20">
             <TrendingUp size={14} />
          </div>

@@ -14,6 +14,7 @@ public sealed class User
     public Guid? RouteId { get; set; }
     public string? OrganizationRole { get; set; } // "Owner", "Staff"
     public string? Department { get; set; }
+    public long? PermissionOverrides { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? DeletedAt { get; set; }

@@ -12,7 +12,7 @@ export function WalletsScreen() {
   const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col gap-5 pb-28 pt-4 select-none font-sans">
+    <div className="w-full max-w-md mx-auto flex flex-col gap-5 pt-4 select-none font-sans">
       
       {/* Clean Page Head */}
       <div className="flex items-center justify-between px-1">
@@ -23,13 +23,13 @@ export function WalletsScreen() {
             </div>
             <h2 className="text-xl font-extrabold text-on-surface tracking-tight">Accounts & Wallets</h2>
          </div>
-         <button className="h-9 px-3 rounded-xl bg-[#11131A] border border-outline-variant/20 text-on-surface hover:text-emerald hover:border-emerald/30 active:scale-95 text-[10px] font-bold tracking-wider uppercase flex items-center justify-center gap-1.5 transition-all shadow-sm">
+         <button className="h-9 px-3 rounded-xl bg-[#0E152B] border border-outline-variant/20 text-on-surface hover:text-emerald hover:border-emerald/30 active:scale-95 text-[10px] font-bold tracking-wider uppercase flex items-center justify-center gap-1.5 transition-all shadow-sm">
            <Plus size={14} /> Add Account
          </button>
       </div>
 
       {/* 1. CONSOLIDATED CAPITAL BLOCK */}
-      <div className="bg-[#11131A] border border-outline-variant/20 rounded-xl p-5 relative overflow-hidden shadow-sm">
+      <div className="bg-[#0E152B] border border-outline-variant/20 rounded-xl p-5 relative overflow-hidden shadow-sm">
          <div className="absolute top-0 right-0 w-36 h-36 bg-emerald/5 blur-2xl rounded-full pointer-events-none" />
          
          <div className="flex flex-col gap-1 relative z-10">
@@ -68,7 +68,7 @@ export function WalletsScreen() {
                accounts.map((acc, idx) => (
                   <motion.div
                      key={acc.id}
-                     className="relative w-full bg-[#11131A] border border-outline-variant/20 rounded-xl p-5 overflow-hidden flex items-center justify-between shadow-sm group cursor-pointer hover:border-emerald/20 transition-colors"
+                     className="relative w-full bg-[#0E152B] border border-outline-variant/20 rounded-xl p-5 overflow-hidden flex items-center justify-between shadow-sm group cursor-pointer hover:border-emerald/20 transition-colors"
                   >
                      <div className="flex items-center gap-4 relative z-10">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
@@ -107,7 +107,7 @@ export function WalletsScreen() {
             </h3>
          </div>
 
-         <div className="flex flex-col border border-outline-variant/20 rounded-xl overflow-hidden bg-[#11131A] shadow-sm">
+         <div className="flex flex-col border border-outline-variant/20 rounded-xl overflow-hidden bg-[#0E152B] shadow-sm">
             {transactions.map((tx, idx) => (
                <div key={tx.id} className={`flex justify-between items-center p-4 ${idx !== transactions.length - 1 ? 'border-b border-outline-variant/10' : ''} group`}>
                   <div className="flex items-center gap-3 min-w-0 select-none">

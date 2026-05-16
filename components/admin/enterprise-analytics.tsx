@@ -34,18 +34,18 @@ import {
 import type { AdminAnalyticsDashboard } from '@/lib/types';
 import { GlassCard } from '@/components/admin/glass-card';
 
-const PIE_COLORS = ['#06B6D4', '#6366F1', '#10B981', '#cfbcff'];
-const CHART_AXIS = { stroke: '#9CA3AF', fontSize: 9, fontWeight: 800, fontFamily: 'var(--font-label-caps)', letterSpacing: '0.05em' };
+const PIE_COLORS = ['#10B981', '#0D9488', '#10B981', '#0D9488'];
+const CHART_AXIS = { stroke: '#C2C6D6', fontSize: 9, fontWeight: 800, fontFamily: 'var(--font-label-caps)', letterSpacing: '0.05em' };
 const tooltipProps = {
   contentStyle: {
-    background: '#111827',
+    background: '#0E152B',
     border: '1px solid rgba(255,255,255,0.05)',
     borderRadius: 16,
     boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
     padding: '10px 14px',
   },
-  labelStyle: { color: '#9CA3AF', fontSize: '10px', fontWeight: 800, fontFamily: 'var(--font-label-caps)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' },
-  itemStyle: { color: '#06B6D4', fontWeight: 700, fontSize: '12px', fontFamily: 'var(--font-mono-data)' },
+  labelStyle: { color: '#C2C6D6', fontSize: '10px', fontWeight: 800, fontFamily: 'var(--font-label-caps)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' },
+  itemStyle: { color: '#10B981', fontWeight: 700, fontSize: '12px', fontFamily: 'var(--font-mono-data)' },
 };
 
 const sectionMotion = {
@@ -125,7 +125,7 @@ export function EnterpriseAnalytics({ dashboard, chartDays }: EnterpriseAnalytic
         animate={{ opacity: 1 }}
         className="flex flex-wrap items-center gap-2 text-[11px] text-on-surface-variant font-semibold"
       >
-        <span className="rounded-xl border border-white/[0.04] bg-[#111827] px-3.5 py-1.5 font-black text-cyan tracking-widest uppercase font-label-caps shadow-sm">
+        <span className="rounded-xl border border-white/[0.04] bg-[#0E152B] px-3.5 py-1.5 font-black text-cyan tracking-widest uppercase font-label-caps shadow-sm">
           Range: last {chartDays} days (UTC)
         </span>
         <span className="opacity-85 ml-2">Aggregated analytical stream synthesizing core usage indexes.</span>
@@ -173,19 +173,19 @@ export function EnterpriseAnalytics({ dashboard, chartDays }: EnterpriseAnalytic
           >
             <div className="space-y-5">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="rounded-[20px] border border-white/[0.03] bg-[#111827]/60 p-4 shadow-sm">
+                <div className="rounded-[20px] border border-white/[0.03] bg-[#0E152B]/60 p-4 shadow-sm">
                   <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant font-label-caps">Est. MRR</p>
                   <p className="mt-1.5 text-[15px] font-bold tracking-tight font-mono-data text-on-surface leading-none">
                     {formatInr(dashboard.estimatedMrrInr)}
                   </p>
                 </div>
-                <div className="rounded-[20px] border border-white/[0.03] bg-[#111827]/60 p-4 shadow-sm">
+                <div className="rounded-[20px] border border-white/[0.03] bg-[#0E152B]/60 p-4 shadow-sm">
                   <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant font-label-caps">Active Seats</p>
                   <p className="mt-1.5 text-[15px] font-bold tracking-tight font-mono-data text-on-surface leading-none">
                     {formatTokenCount(dashboard.payingSubscriptionCount)}
                   </p>
                 </div>
-                <div className="rounded-[20px] border border-white/[0.03] bg-[#111827]/60 p-4 shadow-sm">
+                <div className="rounded-[20px] border border-white/[0.03] bg-[#0E152B]/60 p-4 shadow-sm">
                   <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant font-label-caps">ARPU</p>
                   <p className="mt-1.5 text-[15px] font-bold tracking-tight font-mono-data text-cyan leading-none">
                     {formatInr(dashboard.averageRevenuePerPayingUserInr)}
@@ -269,12 +269,12 @@ export function EnterpriseAnalytics({ dashboard, chartDays }: EnterpriseAnalytic
                   />
                   <Legend wrapperStyle={{ fontSize: 10, fontFamily: 'var(--font-label-caps)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                   <Bar yAxisId="left" dataKey="signups" fill="#10B981" name="Registrations" radius={[4, 4, 0, 0]} opacity={0.8} />
-                  <Bar yAxisId="left" dataKey="paidAdds" fill="#6366F1" name="Committed" radius={[4, 4, 0, 0]} />
+                  <Bar yAxisId="left" dataKey="paidAdds" fill="#0D9488" name="Committed" radius={[4, 4, 0, 0]} />
                   <Line
                     yAxisId="right"
                     type="monotone"
                     dataKey="conversionPct"
-                    stroke="#06B6D4"
+                    stroke="#10B981"
                     strokeWidth={2.5}
                     dot={false}
                     name="Conversion"
@@ -314,7 +314,7 @@ export function EnterpriseAnalytics({ dashboard, chartDays }: EnterpriseAnalytic
                   <Line
                     type="monotone"
                     dataKey="value"
-                    stroke="#6366F1"
+                    stroke="#0D9488"
                     strokeWidth={3}
                     dot={false}
                     name="DAU"
@@ -352,7 +352,7 @@ export function EnterpriseAnalytics({ dashboard, chartDays }: EnterpriseAnalytic
                     labelFormatter={(l) => formatAxisDate(String(l))}
                     formatter={(v: number) => [formatTokenCount(v), 'Transactions']}
                   />
-                  <Bar dataKey="value" fill="#06B6D4" radius={[6, 6, 0, 0]} opacity={0.85} className="drop-shadow-[0_0_8px_rgba(6,182,212,0.15)]" />
+                  <Bar dataKey="value" fill="#10B981" radius={[6, 6, 0, 0]} opacity={0.85} className="drop-shadow-[0_0_8px_rgba(16,185,129,0.15)]" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -398,8 +398,8 @@ export function EnterpriseAnalytics({ dashboard, chartDays }: EnterpriseAnalytic
                     yAxisId="left"
                     type="monotone"
                     dataKey="cumulative"
-                    stroke="#6366F1"
-                    fill="#6366F1"
+                    stroke="#0D9488"
+                    fill="#0D9488"
                     fillOpacity={0.15}
                     strokeWidth={2.5}
                     name="Cumulative"
@@ -450,8 +450,8 @@ export function EnterpriseAnalytics({ dashboard, chartDays }: EnterpriseAnalytic
                     dataKey="promptTokens"
                     name="Prompt"
                     stackId="1"
-                    stroke="#6366F1"
-                    fill="#6366F1"
+                    stroke="#0D9488"
+                    fill="#0D9488"
                     fillOpacity={0.2}
                     strokeWidth={2}
                   />
@@ -460,8 +460,8 @@ export function EnterpriseAnalytics({ dashboard, chartDays }: EnterpriseAnalytic
                     dataKey="completionTokens"
                     name="Completion"
                     stackId="1"
-                    stroke="#06B6D4"
-                    fill="#06B6D4"
+                    stroke="#10B981"
+                    fill="#10B981"
                     fillOpacity={0.2}
                     strokeWidth={2}
                   />
@@ -483,8 +483,8 @@ export function EnterpriseAnalytics({ dashboard, chartDays }: EnterpriseAnalytic
                 <AreaChart data={dashboard.tokenEstimatedCostByDay} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="saasCostFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#06B6D4" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="#06B6D4" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="rgba(255,255,255,0.03)" vertical={false} />
@@ -506,7 +506,7 @@ export function EnterpriseAnalytics({ dashboard, chartDays }: EnterpriseAnalytic
                   <Area
                     type="monotone"
                     dataKey="estimatedCostUsd"
-                    stroke="#06B6D4"
+                    stroke="#10B981"
                     strokeWidth={2.5}
                     fill="url(#saasCostFill)"
                     name="USD"

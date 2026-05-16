@@ -12,14 +12,14 @@ export function QuickInsights() {
   return (
     <div className="p-6 md:p-7 rounded-[28px] bg-gradient-to-br from-cyan/10 to-surface-container-lowest/40 border border-cyan/20 relative overflow-hidden shadow-lg shadow-cyan/5 group">
       {/* Atmospheric Grid Backdrop */}
-      <div className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none bg-[radial-gradient(rgba(6,182,212,0.4)_1px,transparent_1px)] [background-size:16px_16px]" />
+      <div className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none bg-[radial-gradient(rgba(16,185,129,0.4)_1px,transparent_1px)] [background-size:16px_16px]" />
       
       <div className="absolute top-0 right-0 p-6 text-cyan">
         <motion.div
           animate={{ opacity: [0.4, 1, 0.4], scale: [1, 1.12, 1] }}
           transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
         >
-          <Sparkles size={20} className="drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]" />
+          <Sparkles size={20} className="drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
         </motion.div>
       </div>
 

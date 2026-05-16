@@ -23,7 +23,7 @@ export function CreateBranchModal({ open, onOpenChange }: { open: boolean; onOpe
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-xl bg-[#111827] border border-white/[0.06] rounded-[32px] overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative flex flex-col max-h-[90vh]"
+        className="w-full max-w-xl bg-[#0E152B] border border-white/[0.06] rounded-[32px] overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative flex flex-col max-h-[90vh]"
       >
         {/* Header */}
         <div className="p-6 border-b border-white/[0.05] flex items-center justify-between bg-white/[0.01]">
@@ -32,32 +32,32 @@ export function CreateBranchModal({ open, onOpenChange }: { open: boolean; onOpe
                 <Building size={20} />
              </div>
              <div>
-               <h2 className="font-bold text-[#F9FAFB] tracking-tight text-xl">Establish New Branch</h2>
-               <p className="text-xs text-[#9CA3AF] font-medium mt-0.5">Expand your organizational footprint</p>
+               <h2 className="font-bold text-[#E1E2EC] tracking-tight text-xl">Establish New Branch</h2>
+               <p className="text-xs text-[#C2C6D6] font-medium mt-0.5">Expand your organizational footprint</p>
              </div>
           </div>
-          <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-white/[0.05] rounded-xl transition-colors text-[#9CA3AF]"><X size={20}/></button>
+          <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-white/[0.05] rounded-xl transition-colors text-[#C2C6D6]"><X size={20}/></button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Branch Identifier</label>
-              <input required placeholder="e.g. Dubai Branch" className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#F9FAFB] outline-none focus:border-[#F59E0B]/40" />
+              <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider">Branch Identifier</label>
+              <input required placeholder="e.g. Dubai Branch" className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#E1E2EC] outline-none focus:border-[#F59E0B]/40" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Branch Key / Code</label>
-              <input required placeholder="DBX-01" className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-mono font-bold text-[#F9FAFB] outline-none" />
+              <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider">Branch Key / Code</label>
+              <input required placeholder="DBX-01" className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-mono font-bold text-[#E1E2EC] outline-none" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Fiscal Currency</label>
+              <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider">Fiscal Currency</label>
               <div className="relative">
-                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
-                 <select className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-bold text-[#F9FAFB] outline-none appearance-none">
+                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C2C6D6]/40 h-4 w-4" />
+                 <select className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-bold text-[#E1E2EC] outline-none appearance-none">
                    <option>AED</option>
                    <option>USD</option>
                    <option>INR</option>
@@ -66,10 +66,10 @@ export function CreateBranchModal({ open, onOpenChange }: { open: boolean; onOpe
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Timezone Anchor</label>
+              <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider">Timezone Anchor</label>
               <div className="relative">
-                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
-                 <select className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#F9FAFB] outline-none appearance-none">
+                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C2C6D6]/40 h-4 w-4" />
+                 <select className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#E1E2EC] outline-none appearance-none">
                    <option>UTC +4 (Gulf)</option>
                    <option>UTC +5:30 (IST)</option>
                    <option>UTC +0 (GMT)</option>
@@ -79,22 +79,22 @@ export function CreateBranchModal({ open, onOpenChange }: { open: boolean; onOpe
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Physical Geometry (Address)</label>
+            <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider">Physical Geometry (Address)</label>
             <div className="relative">
-               <MapPin className="absolute left-3 top-3 text-[#9CA3AF]/40 h-4 w-4" />
-               <textarea rows={2} placeholder="Unit, Tower, Street..." className="w-full pl-9 pr-4 py-3 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#F9FAFB] outline-none resize-none focus:border-[#F59E0B]/40" />
+               <MapPin className="absolute left-3 top-3 text-[#C2C6D6]/40 h-4 w-4" />
+               <textarea rows={2} placeholder="Unit, Tower, Street..." className="w-full pl-9 pr-4 py-3 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#E1E2EC] outline-none resize-none focus:border-[#F59E0B]/40" />
             </div>
           </div>
 
           <div className="space-y-1.5">
-             <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Contact Vector</label>
+             <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider">Contact Vector</label>
              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
-                <input placeholder="+971 ..." className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#F9FAFB] outline-none" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C2C6D6]/40 h-4 w-4" />
+                <input placeholder="+971 ..." className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#E1E2EC] outline-none" />
              </div>
           </div>
 
-          <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/[0.04] text-[11px] text-[#9CA3AF] leading-relaxed">
+          <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/[0.04] text-[11px] text-[#C2C6D6] leading-relaxed">
             Establishing a branch consumes one slot of your tiered architecture. Initialized branches instantly receive dedicated ledger instances.
           </div>
 

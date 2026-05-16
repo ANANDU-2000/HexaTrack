@@ -121,12 +121,12 @@ export function AssistantScreen() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col h-[calc(100dvh-6.5rem)] pb-24 pt-4 select-none relative overflow-hidden font-sans">
+    <div className="w-full max-w-md mx-auto flex flex-col h-[calc(100dvh-6.5rem)] pt-4 select-none relative overflow-hidden font-sans">
        
        {/* Header bar */}
-       <header className="relative z-10 flex items-center justify-between bg-[#11131A] border border-outline-variant/20 rounded-xl p-3 shadow-sm mb-4 shrink-0">
+       <header className="relative z-10 flex items-center justify-between bg-[#0E152B] border border-outline-variant/20 rounded-xl p-3 shadow-sm mb-4 shrink-0">
           <div className="flex items-center gap-3">
-             <div className="w-8.5 h-8.5 rounded-xl bg-indigo/10 border border-indigo/20 flex items-center justify-center text-indigo shrink-0 relative">
+             <div className="w-8.5 h-8.5 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 relative">
                 <Bot size={16} />
              </div>
              <div>
@@ -160,8 +160,8 @@ export function AssistantScreen() {
                    >
                       <div className={`max-w-[88%] flex flex-col gap-2 rounded-xl px-4 py-3 text-xs ${
                          isAi 
-                           ? 'bg-[#11131A] border border-outline-variant/20 text-on-surface shadow-sm' 
-                           : 'bg-indigo text-white font-bold tracking-wide shadow-sm'
+                           ? 'bg-[#0E152B] border border-outline-variant/20 text-on-surface shadow-sm' 
+                           : 'bg-primary text-white font-bold tracking-wide shadow-sm'
                       }`}>
                          <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                          
@@ -171,7 +171,7 @@ export function AssistantScreen() {
                                   msg.insight.type === 'risk' 
                                     ? 'bg-danger/10 text-danger border border-danger/20' 
                                     : msg.insight.type === 'action' 
-                                      ? 'bg-indigo/10 text-indigo border border-indigo/20' 
+                                      ? 'bg-primary/10 text-primary border border-primary/20' 
                                       : 'bg-emerald/10 text-emerald border border-emerald/20'
                                }`}>
                                   {msg.insight.type === 'risk' ? <AlertTriangle size={13} /> : msg.insight.type === 'action' ? <Cpu size={13} /> : <TrendingUp size={13} />}
@@ -206,12 +206,12 @@ export function AssistantScreen() {
                 <motion.div 
                    initial={{ opacity: 0, y: 8 }}
                    animate={{ opacity: 1, y: 0 }}
-                   className="flex items-center gap-2 rounded-xl bg-[#11131A] border border-outline-variant/20 px-3 py-2.5 text-xs text-on-surface-variant tracking-wider w-fit"
+                   className="flex items-center gap-2 rounded-xl bg-[#0E152B] border border-outline-variant/20 px-3 py-2.5 text-xs text-on-surface-variant tracking-wider w-fit"
                 >
                    <div className="flex gap-1">
-                      <span className="w-1 h-1 rounded-full bg-indigo animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-1 h-1 rounded-full bg-indigo animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-1 h-1 rounded-full bg-indigo animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <span className="w-1 h-1 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1 h-1 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1 h-1 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
                    </div>
                    <span className="font-bold text-[8px] font-label-caps uppercase tracking-widest ml-1">Calculating</span>
                 </motion.div>
@@ -224,10 +224,10 @@ export function AssistantScreen() {
        {/* Bottom command row */}
        <form 
           onSubmit={handleSubmit} 
-          className="relative z-10 bg-[#11131A] border border-outline-variant/20 focus-within:border-indigo/30 rounded-xl p-1.5 shadow-md flex items-center shrink-0"
+          className="relative z-10 bg-[#0E152B] border border-outline-variant/20 focus-within:border-primary/30 rounded-xl p-1.5 shadow-md flex items-center shrink-0"
        >
           <div className="pl-2.5 text-on-surface-variant/40 shrink-0">
-             <Sparkles size={14} className="text-indigo opacity-75" />
+             <Sparkles size={14} className="text-primary opacity-75" />
           </div>
           <input
              ref={inputRef}
@@ -241,7 +241,7 @@ export function AssistantScreen() {
              whileTap={{ scale: 0.95 }}
              type="submit"
              disabled={!inputStr.trim() || isTyping}
-             className="w-8.5 h-8.5 rounded-lg bg-indigo text-white flex items-center justify-center transition-opacity disabled:opacity-40 shrink-0 shadow-sm shadow-indigo/10"
+             className="w-8.5 h-8.5 rounded-lg bg-primary text-white flex items-center justify-center transition-opacity disabled:opacity-40 shrink-0 shadow-sm shadow-primary/10"
           >
              <Send size={13} strokeWidth={2.5} className="ml-0.5" />
           </motion.button>

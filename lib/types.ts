@@ -17,11 +17,14 @@ export type User = {
 };
 
 export type WorkspaceType = 'Personal' | 'Business' | 'Family';
+export type WorkspaceMode = 'Individual' | 'Organization' | 'Branch' | 'Enterprise';
 
 export type Workspace = {
   id: string;
   name: string;
   type: WorkspaceType;
+  mode?: WorkspaceMode;
+  organizationId?: string | null;
   currency: string;
   isDefault: boolean;
 };
@@ -399,6 +402,7 @@ export type OrganizationListItem = {
   ownerCount: number;
   staffCount: number;
   estimatedMrr: number;
+  workspaceMode?: WorkspaceMode;
 };
 
 export type AdminOrganizationListResult = {

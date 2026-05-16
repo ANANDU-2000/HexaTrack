@@ -17,7 +17,7 @@ export function RecurringAlerts() {
     <section className="glass-card rounded-[28px] p-6 md:p-7">
       <div className="flex items-center gap-2 mb-5">
         <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/10">
-           <BellRing size={16} className="text-primary shadow-[0_0_10px_rgba(207,188,255,0.4)]" />
+           <BellRing size={16} className="text-primary shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
         </div>
         <h3 className="font-headline text-lg font-bold text-on-surface tracking-tight">Recurrent Bills</h3>
       </div>
@@ -31,7 +31,7 @@ export function RecurringAlerts() {
               className="flex items-center justify-between py-3 hover:bg-white/[0.02] px-1 rounded-xl transition-colors cursor-pointer group first:pt-0 last:pb-0"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 shrink-0 bg-[#111827] border border-white/[0.03] rounded-xl flex items-center justify-center text-on-surface-variant group-hover:text-primary group-hover:border-primary/20 transition-colors">
+                <div className="w-9 h-9 shrink-0 bg-[#0E152B] border border-white/[0.03] rounded-xl flex items-center justify-center text-on-surface-variant group-hover:text-primary group-hover:border-primary/20 transition-colors">
                   <CalendarClock size={16} />
                 </div>
                 <div className="min-w-0">

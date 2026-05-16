@@ -119,7 +119,7 @@ function parseBooleanFlag(value: string): boolean {
 function auditActionBadgeClasses(action: string): string {
   const act = action.toLowerCase();
   if (act.includes('create')) {
-    return 'bg-[rgba(168,85,247,0.2)] text-[#A855F7]';
+    return 'bg-[rgba(16,185,129,0.2)] text-[#A855F7]';
   }
   if (act.includes('delete')) {
     return 'bg-[#FF5C75]/20 text-[#FF5C75]';
@@ -878,7 +878,7 @@ function AdminDashboardContent() {
                     <button
                       type="button"
                       onClick={() => setCreateUserOpen(true)}
-                      className="flex items-center gap-2 rounded-xl bg-[#4F8CFF] px-4 py-2.5 text-sm font-semibold text-white transition shadow-[0_8px_20px_rgba(79,140,255,0.2)] hover:brightness-110"
+                      className="flex items-center gap-2 rounded-xl bg-[#4F8CFF] px-4 py-2.5 text-sm font-semibold text-white transition shadow-[0_8px_20px_rgba(79,140,255,0.2)] hover:brightness-105"
                     >
                       <UserPlus className="h-4 w-4" />
                       Create User
@@ -1573,7 +1573,7 @@ function AdminAuthPortal() {
           className="absolute -bottom-[10%] -left-[10%] h-[400px] w-[400px] rounded-full bg-[#1FD18B]/20 blur-[100px]"
           transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
         />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5" />
       </div>
 
       <motion.div
@@ -1663,7 +1663,7 @@ function AdminAuthPortal() {
             </AnimatePresence>
 
             <button
-              className="relative flex h-12 w-full items-center justify-center rounded-2xl bg-[#4F8CFF] font-semibold text-white shadow-[0_12px_24px_-8px_rgba(79,140,255,0.4)] transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+              className="relative flex h-12 w-full items-center justify-center rounded-2xl bg-[#4F8CFF] font-semibold text-white shadow-[0_12px_24px_-8px_rgba(79,140,255,0.4)] transition hover:brightness-105 active:scale-[0.98] disabled:opacity-50"
               disabled={loading}
               type="submit"
             >

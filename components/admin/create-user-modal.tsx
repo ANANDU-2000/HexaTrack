@@ -114,7 +114,7 @@ export function CreateUserModal({ open, onOpenChange, onCreated }: { open: boole
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-lg bg-[#111827] border border-white/[0.06] rounded-[32px] overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative flex flex-col max-h-[90vh]"
+        className="w-full max-w-lg bg-[#0E152B] border border-white/[0.06] rounded-[32px] overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative flex flex-col max-h-[90vh]"
       >
         
         {/* Fixed Header */}
@@ -124,11 +124,11 @@ export function CreateUserModal({ open, onOpenChange, onCreated }: { open: boole
                 {loadingLookup ? <Loader2 size={20} className="animate-spin" /> : <Shield size={20} />}
              </div>
              <div>
-               <h2 className="font-bold text-[#F9FAFB] tracking-tight text-xl">Initialize Operator</h2>
-               <p className="text-xs text-[#9CA3AF] font-medium mt-0.5">Generate Persistence Verified Identity</p>
+               <h2 className="font-bold text-[#E1E2EC] tracking-tight text-xl">Initialize Operator</h2>
+               <p className="text-xs text-[#C2C6D6] font-medium mt-0.5">Generate Persistence Verified Identity</p>
              </div>
           </div>
-          <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-white/[0.05] rounded-xl transition-colors text-[#9CA3AF]"><X size={20}/></button>
+          <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-white/[0.05] rounded-xl transition-colors text-[#C2C6D6]"><X size={20}/></button>
         </div>
 
         {/* Custom Bar */}
@@ -145,7 +145,7 @@ export function CreateUserModal({ open, onOpenChange, onCreated }: { open: boole
               <motion.div key="step1" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="space-y-5">
                 
                 <div>
-                  <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider mb-3 block">1. Corporate Role Layer</label>
+                  <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider mb-3 block">1. Corporate Role Layer</label>
                   <div className="grid grid-cols-2 gap-3">
                     {(['Owner', 'Staff'] as const).map(r => (
                       <button
@@ -153,7 +153,7 @@ export function CreateUserModal({ open, onOpenChange, onCreated }: { open: boole
                         type="button"
                         onClick={() => setSelectedRole(r)}
                         className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 text-center ${
-                          selectedRole === r ? 'bg-[#4F8CFF]/10 border-[#4F8CFF]/40 text-[#F9FAFB]' : 'bg-[#0B1015] border-white/[0.05] text-[#9CA3AF] hover:border-white/[0.15]'
+                          selectedRole === r ? 'bg-[#4F8CFF]/10 border-[#4F8CFF]/40 text-[#E1E2EC]' : 'bg-[#0B1015] border-white/[0.05] text-[#C2C6D6] hover:border-white/[0.15]'
                         }`}
                       >
                         <input type="radio" name="targetRole" value={r} checked={selectedRole === r} className="sr-only" readOnly />
@@ -166,15 +166,15 @@ export function CreateUserModal({ open, onOpenChange, onCreated }: { open: boole
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider block">2. Context Mapping</label>
+                  <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider block">2. Context Mapping</label>
                   <div className="grid grid-cols-1 gap-3">
                     <div className="relative">
-                       <Network className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
+                       <Network className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C2C6D6]/40 h-4 w-4" />
                        <select 
                           name="orgId" 
                           value={selectedOrgId}
                           onChange={(e) => setSelectedOrgId(e.target.value)}
-                          className="w-full h-11 pl-9 pr-8 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-bold text-[#F9FAFB] outline-none appearance-none cursor-pointer focus:border-[#4F8CFF]/40"
+                          className="w-full h-11 pl-9 pr-8 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-bold text-[#E1E2EC] outline-none appearance-none cursor-pointer focus:border-[#4F8CFF]/40"
                        >
                           <option value="">Assign Organization (Required for Owners)</option>
                           {organizations.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
@@ -183,15 +183,15 @@ export function CreateUserModal({ open, onOpenChange, onCreated }: { open: boole
                     
                     <div className="grid grid-cols-2 gap-3">
                        <div className="relative">
-                          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
-                          <select name="branchId" className="w-full h-11 pl-9 pr-8 bg-[#0B1015] border border-white/[0.05] rounded-xl text-xs font-medium text-[#F9FAFB] outline-none appearance-none cursor-pointer focus:border-[#4F8CFF]/40">
+                          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C2C6D6]/40 h-4 w-4" />
+                          <select name="branchId" className="w-full h-11 pl-9 pr-8 bg-[#0B1015] border border-white/[0.05] rounded-xl text-xs font-medium text-[#E1E2EC] outline-none appearance-none cursor-pointer focus:border-[#4F8CFF]/40">
                              <option value="">Default Branch</option>
                              {filteredBranches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                           </select>
                        </div>
                        <div className="relative">
-                          <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
-                          <select name="department" className="w-full h-11 pl-9 pr-8 bg-[#0B1015] border border-white/[0.05] rounded-xl text-xs font-medium text-[#F9FAFB] outline-none appearance-none cursor-pointer focus:border-[#4F8CFF]/40">
+                          <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C2C6D6]/40 h-4 w-4" />
+                          <select name="department" className="w-full h-11 pl-9 pr-8 bg-[#0B1015] border border-white/[0.05] rounded-xl text-xs font-medium text-[#E1E2EC] outline-none appearance-none cursor-pointer focus:border-[#4F8CFF]/40">
                              <option value="">General Dept.</option>
                              <option value="Finance">Finance</option>
                              <option value="Operations">Operations</option>
@@ -204,12 +204,12 @@ export function CreateUserModal({ open, onOpenChange, onCreated }: { open: boole
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider block">3. Financial Workspace Container</label>
+                  <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider block">3. Financial Workspace Container</label>
                   <input 
                     name="workspaceName"
                     placeholder="e.g. Main Corporate Ledger"
                     required
-                    className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#F9FAFB] outline-none focus:border-[#4F8CFF]/40"
+                    className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#E1E2EC] outline-none focus:border-[#4F8CFF]/40"
                   />
                 </div>
 
@@ -226,26 +226,26 @@ export function CreateUserModal({ open, onOpenChange, onCreated }: { open: boole
               <motion.div key="step2" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-4">
                 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">Operator Legal Name</label>
-                  <input name="fullName" required placeholder="John Doe" className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#F9FAFB] outline-none focus:border-[#4F8CFF]/40" />
+                  <label className="text-[10px] font-bold text-[#C2C6D6] uppercase tracking-wider">Operator Legal Name</label>
+                  <input name="fullName" required placeholder="John Doe" className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#E1E2EC] outline-none focus:border-[#4F8CFF]/40" />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">Authorization Email</label>
-                  <input name="email" type="email" required placeholder="name@domain.com" className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#F9FAFB] outline-none focus:border-[#4F8CFF]/40" />
+                  <label className="text-[10px] font-bold text-[#C2C6D6] uppercase tracking-wider">Authorization Email</label>
+                  <input name="email" type="email" required placeholder="name@domain.com" className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#E1E2EC] outline-none focus:border-[#4F8CFF]/40" />
                 </div>
 
                 <div className="space-y-1 relative">
-                  <label className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">Account Security Key</label>
+                  <label className="text-[10px] font-bold text-[#C2C6D6] uppercase tracking-wider">Account Security Key</label>
                   <input 
                     name="password" 
                     type={showPassword ? "text" : "password"} 
                     required
                     minLength={8}
                     placeholder="Minimum 8 characters"
-                    className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#F9FAFB] outline-none focus:border-[#4F8CFF]/40" 
+                    className="w-full h-11 px-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#E1E2EC] outline-none focus:border-[#4F8CFF]/40" 
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-[28px] text-[#9CA3AF] hover:text-white">
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-[28px] text-[#C2C6D6] hover:text-white">
                     {showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
                   </button>
                 </div>
@@ -257,12 +257,12 @@ export function CreateUserModal({ open, onOpenChange, onCreated }: { open: boole
                   </div>
                 )}
 
-                <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/[0.04] text-[11px] text-[#9CA3AF] leading-relaxed">
+                <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/[0.04] text-[11px] text-[#C2C6D6] leading-relaxed">
                    System locks into secure commit. Data generated directly resolves encryption layers instantly. Account becomes operational immediately upon successful response.
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-4 border-t border-white/[0.04]">
-                   <button type="button" onClick={handleBack} className="h-12 bg-white/[0.05] text-[#F9FAFB] rounded-2xl font-bold text-sm hover:bg-white/[0.08] transition-all">Go Back</button>
+                   <button type="button" onClick={handleBack} className="h-12 bg-white/[0.05] text-[#E1E2EC] rounded-2xl font-bold text-sm hover:bg-white/[0.08] transition-all">Go Back</button>
                    <button type="submit" disabled={submitting} className="h-12 bg-[#22C55E] text-white rounded-2xl font-bold text-sm shadow-[0_8px_20px_-5px_rgba(34,197,94,0.3)] flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50">
                      {submitting ? <Loader2 size={16} className="animate-spin"/> : 'Finalize Deployment'}
                    </button>

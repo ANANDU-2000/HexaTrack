@@ -25,9 +25,9 @@ export function FeatureToggleCard({ id, title, description, icon: Icon, isEnable
   };
 
   return (
-    <div className={`relative bg-[#111827] border border-white/[0.06] rounded-[28px] p-5 transition-all group hover:border-white/[0.12] ${!isEnabled && 'opacity-75'}`}>
+    <div className={`relative bg-[#0E152B] border border-white/[0.06] rounded-[28px] p-5 transition-all group hover:border-white/[0.12] ${!isEnabled && 'opacity-75'}`}>
       <div className="flex items-start justify-between gap-4 mb-4">
-        <div className="h-11 w-11 rounded-2xl bg-white/[0.03] flex items-center justify-center text-[#F9FAFB] border border-white/[0.05] shrink-0">
+        <div className="h-11 w-11 rounded-2xl bg-white/[0.03] flex items-center justify-center text-[#E1E2EC] border border-white/[0.05] shrink-0">
           <Icon size={20} />
         </div>
         
@@ -45,15 +45,15 @@ export function FeatureToggleCard({ id, title, description, icon: Icon, isEnable
       </div>
 
       <div className="space-y-1">
-        <h4 className="text-sm font-bold text-[#F9FAFB] tracking-tight flex items-center gap-2">
+        <h4 className="text-sm font-bold text-[#E1E2EC] tracking-tight flex items-center gap-2">
           {title}
           {isEnabled && <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />}
         </h4>
-        <p className="text-xs text-[#9CA3AF] leading-relaxed font-medium line-clamp-2">{description}</p>
+        <p className="text-xs text-[#C2C6D6] leading-relaxed font-medium line-clamp-2">{description}</p>
       </div>
 
       <div className="mt-4 pt-4 border-t border-white/[0.04] flex items-center justify-between">
-        <span className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">Requirement</span>
+        <span className="text-[10px] font-bold text-[#C2C6D6] uppercase tracking-wider">Requirement</span>
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase ${getPlanColor()}`}>
            {minPlan}+
         </span>

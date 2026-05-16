@@ -29,7 +29,7 @@ export function WelcomeHero({ role, userName, branchName, summaryText }: Welcome
   const activeSummary = summaryText || defaultSummaries[role];
 
   return (
-    <div className="relative w-full bg-[#111827] border border-white/[0.06] rounded-[32px] overflow-hidden p-6 md:p-8 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.4)]">
+    <div className="relative w-full bg-[#0E152B] border border-white/[0.06] rounded-[32px] overflow-hidden p-6 md:p-8 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.4)]">
       {/* Background Decoratives */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-[#4F8CFF]/10 blur-[100px] rounded-full -mr-20 -mt-20 pointer-events-none" />
 
@@ -45,11 +45,11 @@ export function WelcomeHero({ role, userName, branchName, summaryText }: Welcome
             <RoleBadge role={role} branchName={branchName} />
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-bold text-[#F9FAFB] tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#E1E2EC] tracking-tight">
             Welcome back, {userName}
           </h1>
           
-          <p className="text-sm text-[#9CA3AF] max-w-lg font-medium leading-relaxed">
+          <p className="text-sm text-[#C2C6D6] max-w-lg font-medium leading-relaxed">
             {activeSummary}
           </p>
         </div>
@@ -57,8 +57,8 @@ export function WelcomeHero({ role, userName, branchName, summaryText }: Welcome
         {/* High Energy Status Pill */}
         <div className="flex items-center bg-[#0B1015]/50 border border-white/[0.05] rounded-2xl px-4 py-3 gap-4 backdrop-blur-sm shrink-0">
            <div className="flex flex-col">
-             <span className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">Network Status</span>
-             <span className="text-sm font-bold text-[#F9FAFB] flex items-center gap-2 mt-0.5">
+             <span className="text-[10px] font-bold text-[#C2C6D6] uppercase tracking-widest">Network Status</span>
+             <span className="text-sm font-bold text-[#E1E2EC] flex items-center gap-2 mt-0.5">
                <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
                Active & Secure
              </span>

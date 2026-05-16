@@ -113,7 +113,7 @@ export function OrganizationNavigationHeader({
           <AdminBreadcrumbs items={breadcrumbs} className="mb-0.5" />
           <div className="flex items-center gap-2.5">
             {iconLetter && (
-              <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-[10px] shadow-lg shrink-0">
+              <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-600 to-primary flex items-center justify-center font-bold text-white text-[10px] shadow-lg shrink-0">
                 {iconLetter}
               </div>
             )}

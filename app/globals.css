@@ -4,8 +4,8 @@
 
 :root {
   color-scheme: dark;
-  --background: #0B0D11;
-  --surface: #11131A;
+  --background: #050816;
+  --surface: #0E152B;
   --foreground: #E1E2EC;
   --primary: #10B981;
   --primary-muted: rgba(16, 185, 129, 0.12);
@@ -56,8 +56,6 @@ body {
   font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
-  padding-left: var(--safe-left);
-  padding-right: var(--safe-right);
 }
 
 @supports (height: 100svh) {
@@ -69,6 +67,9 @@ body {
 body:has(.sheet-backdrop) {
   overflow: hidden;
 }
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 button,
 input,
@@ -115,7 +116,7 @@ video {
 
   .icon-button {
     @apply grid h-11 w-11 shrink-0 place-items-center rounded-xl text-on-surface transition duration-200 active:scale-95;
-    background: #191B22;
+    background: rgba(14, 21, 43, 0.8);
     border: 1px solid var(--border);
   }
 
@@ -125,12 +126,13 @@ video {
   }
 
   .input-finance {
-    @apply h-14 w-full rounded-xl border border-outline-variant/20 bg-[#191B22] px-4 text-sm font-semibold text-on-surface outline-none transition focus:border-primary/50;
+    @apply h-14 w-full rounded-xl border border-outline-variant/20 px-4 text-sm font-semibold text-on-surface outline-none transition focus:border-primary/50;
+    background: rgba(255, 255, 255, 0.02);
   }
 
   .field {
     @apply w-full rounded-xl px-4 py-4 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant;
-    background: #1D1F27;
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border);
   }
 
@@ -146,7 +148,7 @@ video {
 
   .glass-card {
     @apply border border-outline-variant/20;
-    background: rgba(29, 31, 39, 0.65);
+    background: rgba(14, 21, 43, 0.65);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
@@ -154,7 +156,7 @@ video {
 
   .glass-panel {
     @apply border border-outline-variant/20;
-    background: #11131A;
+    background: #0E152B;
   }
 
   .primary-button {
@@ -186,8 +188,14 @@ video {
     @apply text-on-surface-variant;
   }
 
+  /* Desktop only — mobile shell handles its own padding via inline styles */
   .mobile-page-bottom {
-    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+    padding-bottom: 2.5rem;
+  }
+  @media (min-width: 1024px) {
+    .mobile-page-bottom {
+      padding-bottom: 2.5rem;
+    }
   }
 
   .app-viewport-min {
@@ -252,7 +260,7 @@ video {
 }
 
 .glass-nav {
-  background: rgba(17, 19, 26, 0.75);
+  background: rgba(5, 8, 22, 0.85);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid rgba(140, 144, 159, 0.15);
@@ -260,7 +268,7 @@ video {
 }
 
 .hero-gradient {
-  background: radial-gradient(circle at 50% -20%, rgba(16, 185, 129, 0.15) 0%, #0B0D11 80%);
+  background: radial-gradient(circle at 50% -20%, rgba(16, 185, 129, 0.15) 0%, #050816 80%);
 }
 
 .accent-glow {

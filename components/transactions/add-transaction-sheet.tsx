@@ -123,7 +123,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
     <BottomSheet open={open} onClose={() => onOpenChange(false)} labelledBy="mobile-transaction-entry">
       
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-4 pb-3 mt-1 shrink-0 bg-[#11131A]">
+      <div className="flex items-center justify-between px-5 pt-4 pb-3 mt-1 shrink-0 bg-[#0E152B]">
          <div className="flex items-center gap-2.5">
             {isDetailedForm ? (
                <button 
@@ -149,7 +149,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
       {accounts.length === 0 ? (
          <div className="p-12 text-center text-xs text-on-surface-variant/70 font-semibold tracking-wider">Initializing ledger node accounts...</div>
       ) : (
-         <div className="flex-1 flex flex-col overflow-hidden relative bg-[#0B0D11]">
+         <div className="flex-1 flex flex-col overflow-hidden relative bg-background">
             
             <AnimatePresence initial={false} mode="wait">
                {!isDetailedForm ? (
@@ -164,7 +164,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                   >
                      {/* Top Segment Control for Type */}
                      <div className="flex-1 flex flex-col justify-center items-center py-4 px-5 select-none">
-                        <div className="grid grid-cols-2 w-44 mx-auto mb-4 rounded-xl border border-outline-variant/20 bg-[#11131A] p-0.5 shrink-0">
+                        <div className="grid grid-cols-2 w-44 mx-auto mb-4 rounded-xl border border-outline-variant/20 bg-[#0E152B] p-0.5 shrink-0">
                            {(['Expense', 'Income'] as const).map(m => (
                               <button
                                 key={m}
@@ -215,7 +215,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                                    className={`px-3 py-2 rounded-xl border whitespace-nowrap flex items-center gap-2 active:scale-[0.96] transition-all outline-none select-none text-xs font-bold ${
                                       isActive 
                                         ? 'bg-[#1D1F27] border-emerald/40 text-emerald shadow-sm' 
-                                        : 'bg-[#11131A] border-outline-variant/20 text-on-surface-variant hover:text-on-surface'
+                                        : 'bg-[#0E152B] border-outline-variant/20 text-on-surface-variant hover:text-on-surface'
                                    }`}
                                  >
                                     <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald shadow-[0_0_4px_#10B981]' : 'bg-on-surface-variant/30'}`} />
@@ -241,7 +241,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                                    className={`px-3 py-2 rounded-xl border whitespace-nowrap flex items-center gap-2 active:scale-[0.96] transition-all outline-none select-none text-xs font-bold ${
                                       isActive 
                                         ? 'bg-[#1D1F27] border-teal/40 text-teal shadow-sm' 
-                                        : 'bg-[#11131A] border-outline-variant/20 text-on-surface-variant hover:text-on-surface'
+                                        : 'bg-[#0E152B] border-outline-variant/20 text-on-surface-variant hover:text-on-surface'
                                    }`}
                                  >
                                     <span>{getEmojiForCategory(cat.name)}</span>
@@ -253,7 +253,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                      </div>
 
                      {/* Tactile Keypad Grid */}
-                     <div className="px-5 py-3 bg-[#11131A] border-t border-outline-variant/20 shrink-0">
+                     <div className="px-5 py-3 bg-[#0E152B] border-t border-outline-variant/20 shrink-0">
                         <div className="grid grid-cols-3 gap-1.5 text-center max-w-xs mx-auto select-none mb-4">
                            {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'back'].map(k => {
                               const isBack = k === 'back';
@@ -309,7 +309,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                     className="flex-1 flex flex-col overflow-hidden px-5 py-4"
                   >
                      <div className="flex-1 space-y-4 overflow-y-auto pb-4 hide-scrollbar pr-0.5">
-                        <div className="bg-[#11131A] border border-outline-variant/20 rounded-xl p-4 select-none flex justify-between items-center">
+                        <div className="bg-[#0E152B] border border-outline-variant/20 rounded-xl p-4 select-none flex justify-between items-center">
                            <div>
                               <p className="text-[9px] font-bold uppercase font-label-caps text-on-surface-variant/60 tracking-wider mb-0.5">Staged Amount</p>
                               <p className="text-xl font-extrabold text-emerald">${amountStr}</p>
@@ -330,7 +330,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                                 type="date"
                                 value={occurredOn}
                                 onChange={(e) => setOccurredOn(e.target.value)}
-                                className="w-full h-11 bg-[#11131A] border border-outline-variant/20 rounded-xl px-4 text-xs font-bold text-on-surface outline-none focus:border-emerald/30"
+                                className="w-full h-11 bg-[#0E152B] border border-outline-variant/20 rounded-xl px-4 text-xs font-bold text-on-surface outline-none focus:border-emerald/30"
                               />
                            </label>
 
@@ -343,7 +343,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                                 placeholder="e.g., AWS Logistics"
                                 value={merchant}
                                 onChange={(e) => setMerchant(e.target.value)}
-                                className="w-full h-11 bg-[#11131A] border border-outline-variant/20 rounded-xl px-4 text-xs font-bold text-on-surface placeholder:text-on-surface-variant/40 outline-none focus:border-emerald/30"
+                                className="w-full h-11 bg-[#0E152B] border border-outline-variant/20 rounded-xl px-4 text-xs font-bold text-on-surface placeholder:text-on-surface-variant/40 outline-none focus:border-emerald/30"
                               />
                            </label>
 
@@ -356,7 +356,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                                 value={note}
                                 onChange={(e) => setNote(e.target.value)}
                                 rows={3}
-                                className="w-full bg-[#11131A] border border-outline-variant/20 rounded-xl p-4 text-xs font-bold text-on-surface placeholder:text-on-surface-variant/40 outline-none focus:border-emerald/30 resize-none leading-relaxed"
+                                className="w-full bg-[#0E152B] border border-outline-variant/20 rounded-xl p-4 text-xs font-bold text-on-surface placeholder:text-on-surface-variant/40 outline-none focus:border-emerald/30 resize-none leading-relaxed"
                               />
                            </label>
                         </div>

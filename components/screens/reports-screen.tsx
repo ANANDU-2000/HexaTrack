@@ -53,7 +53,7 @@ const emptyReport: ReportSummary = {
 };
 
 // Operational Palette Design Tokens
-const CHART_COLORS = ['#10B981', '#0D9488', '#34D399', '#115E59', '#A7F3D0', '#6366F1'];
+const CHART_COLORS = ['#10B981', '#0D9488', '#34D399', '#115E59', '#A7F3D0', '#0D9488'];
 
 export function ReportsScreen() {
   const [period, setPeriod] = useState<Period>('month');
@@ -110,7 +110,7 @@ export function ReportsScreen() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col gap-5 pb-28 pt-4 select-none font-sans">
+    <div className="w-full max-w-md mx-auto flex flex-col gap-5 pt-4 select-none font-sans">
       
       {/* Header Block */}
       <div className="flex flex-col gap-4">
@@ -129,7 +129,7 @@ export function ReportsScreen() {
               onClick={() => setPeriod(key)}
               className={`px-4 py-1.5 rounded-lg font-bold text-[9px] font-label-caps tracking-wider uppercase whitespace-nowrap active:scale-[0.97] transition-all ${
                 period === key 
-                  ? 'bg-[#11131A] text-emerald shadow-sm border border-outline-variant/20' 
+                  ? 'bg-[#0E152B] text-emerald shadow-sm border border-outline-variant/20' 
                   : 'text-on-surface-variant/60 hover:text-on-surface'
               }`}
             >
@@ -140,7 +140,7 @@ export function ReportsScreen() {
       </div>
 
       {/* 1. ASSET VELOCITY AREA CHART */}
-      <div className="bg-[#11131A] rounded-2xl p-5 flex flex-col border border-outline-variant/20 relative overflow-hidden shadow-sm">
+      <div className="bg-[#0E152B] rounded-2xl p-5 flex flex-col border border-outline-variant/20 relative overflow-hidden shadow-sm">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald/5 blur-2xl rounded-full pointer-events-none" />
 
         <div className="flex justify-between items-start mb-6 z-10">
@@ -194,7 +194,7 @@ export function ReportsScreen() {
       </div>
 
       {/* 2. BREAKDOWN DONUT */}
-      <div className="bg-[#11131A] rounded-2xl p-5 flex flex-col border border-outline-variant/20 shadow-sm">
+      <div className="bg-[#0E152B] rounded-2xl p-5 flex flex-col border border-outline-variant/20 shadow-sm">
          <div className="flex flex-col mb-5">
             <p className="font-label-caps text-[9px] uppercase tracking-wider text-on-surface-variant/60 font-bold mb-0.5">Allocation Breakdown</p>
             <h3 className="font-extrabold text-on-surface text-[13px] tracking-wide">Direct Expense Ratio</h3>
@@ -246,7 +246,7 @@ export function ReportsScreen() {
       </div>
 
       {/* 3. OPERATIONAL HEATMAP ACTIVITY */}
-      <div className="bg-[#11131A] rounded-2xl p-5 flex flex-col border border-outline-variant/20 shadow-sm">
+      <div className="bg-[#0E152B] rounded-2xl p-5 flex flex-col border border-outline-variant/20 shadow-sm">
          <div className="flex justify-between items-center mb-5">
            <div>
               <p className="font-label-caps text-[9px] uppercase tracking-wider text-on-surface-variant/60 font-bold mb-0.5">Activity Cadence</p>
@@ -271,7 +271,7 @@ export function ReportsScreen() {
       </div>
 
       {/* 4. BUSINESS INTELLIGENCE SIGNAL */}
-      <div className="bg-[#11131A] rounded-2xl p-5 border border-outline-variant/20 flex items-start gap-4 shadow-sm relative overflow-hidden">
+      <div className="bg-[#0E152B] rounded-2xl p-5 border border-outline-variant/20 flex items-start gap-4 shadow-sm relative overflow-hidden">
         <div className="w-9 h-9 rounded-xl bg-teal/10 flex items-center justify-center shrink-0 text-teal mt-0.5 border border-teal/20">
            <Activity size={16} />
         </div>

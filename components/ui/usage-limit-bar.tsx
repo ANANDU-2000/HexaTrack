@@ -17,8 +17,8 @@ export function UsageLimitBar({ label, current, limit, unit = '' }: UsageLimitBa
   return (
     <div className="space-y-2.5 group">
       <div className="flex items-center justify-between text-xs font-bold tracking-tight">
-        <span className="text-[#9CA3AF] uppercase text-[10px] tracking-wider">{label}</span>
-        <span className="text-[#F9FAFB]">
+        <span className="text-[#C2C6D6] uppercase text-[10px] tracking-wider">{label}</span>
+        <span className="text-[#E1E2EC]">
           {current} / {limit} {unit}
         </span>
       </div>

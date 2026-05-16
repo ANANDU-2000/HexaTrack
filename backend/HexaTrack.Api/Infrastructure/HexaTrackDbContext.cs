@@ -33,6 +33,7 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
     public DbSet<AiUsageDaily> AiUsageDaily => Set<AiUsageDaily>();
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<Integration> Integrations => Set<Integration>();
+    public DbSet<OrganizationFeatureToggle> OrganizationFeatureToggles => Set<OrganizationFeatureToggle>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -73,6 +74,7 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
             entity.Property(x => x.SuspendReason).HasMaxLength(500);
             entity.HasIndex(x => x.Slug).IsUnique().HasFilter("\"Slug\" IS NOT NULL");
             entity.HasIndex(x => new { x.Plan, x.IsActive });
+            entity.HasIndex(x => x.WorkspaceMode);
         });
 
         modelBuilder.Entity<Branch>(entity =>
@@ -362,6 +364,16 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
         {
             entity.HasOne(x => x.Organization)
                 .WithMany()
+                .HasForeignKey(x => x.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OrganizationFeatureToggle>(entity =>
+        {
+            entity.HasIndex(x => new { x.OrganizationId, x.FeatureKey }).IsUnique();
+            entity.Property(x => x.FeatureKey).HasMaxLength(100);
+            entity.HasOne(x => x.Organization)
+                .WithMany(x => x.FeatureToggles)
                 .HasForeignKey(x => x.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

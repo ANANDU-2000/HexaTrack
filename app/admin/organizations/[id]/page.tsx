@@ -103,13 +103,13 @@ export default function OrganizationDetailPage() {
            <div className="absolute top-0 right-0 w-96 h-96 bg-[#4F8CFF] opacity-[0.03] blur-[100px] rounded-full pointer-events-none" />
            <div className="flex flex-col md:flex-row justify-between gap-6 relative z-10">
               <div className="flex gap-5">
-                 <div className="w-20 h-20 bg-gradient-to-br from-indigo-600 via-blue-600 to-sky-500 rounded-3xl flex items-center justify-center text-3xl font-black text-white shadow-xl border border-white/10">
+                 <div className="w-20 h-20 bg-gradient-to-br from-primary via-secondary to-teal rounded-3xl flex items-center justify-center text-3xl font-black text-white shadow-xl border border-white/10">
                    {details.info.name.substring(0,2).toUpperCase()}
                  </div>
                  <div>
                     <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
                       {details.info.name}
-                      <span className="px-2.5 py-0.5 bg-purple-500/20 border border-purple-500/30 text-purple-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                      <span className="px-2.5 py-0.5 bg-primary/20 border border-primary/30 text-primary rounded-lg text-[10px] font-black uppercase tracking-widest">
                         {details.info.plan}
                       </span>
                     </h1>
@@ -214,7 +214,7 @@ export default function OrganizationDetailPage() {
 
 function renderOverview(details: AdminOrganizationDetailsDto) {
   const metrics = [
-    { label: 'Branches Provisioned', value: details.branches.length, max: details.maxBranches, color: 'bg-purple-500' },
+    { label: 'Branches Provisioned', value: details.branches.length, max: details.maxBranches, color: 'bg-primary' },
     { label: 'Owner Nodes Active', value: details.owners.length, max: 50, color: 'bg-blue-500' }, // generic tech limit for view
     { label: 'Human Resources (Staff)', value: details.staff.length, max: details.maxStaff, color: 'bg-emerald-500' },
   ];
@@ -366,7 +366,7 @@ function renderStaff(details: AdminOrganizationDetailsDto) {
                      </div>
                   </td>
                   <td className="px-6 py-4">
-                     <span className="px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold rounded-md uppercase">{s.department || 'OPERATIONS'}</span>
+                     <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold rounded-md uppercase">{s.department || 'OPERATIONS'}</span>
                   </td>
                   <td className="px-6 py-4">
                      <BranchBadge name={s.branchName} />

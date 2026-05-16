@@ -68,7 +68,7 @@ export function OrganizationOverview() {
           </div>
           <h1 className="font-headline text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight">{data.name}</h1>
         </div>
-        <div className="text-[9px] text-on-surface-variant font-black uppercase font-label-caps tracking-widest bg-[#111827] border border-white/[0.04] px-4 py-2 rounded-full shadow-inner select-none">
+        <div className="text-[9px] text-on-surface-variant font-black uppercase font-label-caps tracking-widest bg-[#0E152B] border border-white/[0.04] px-4 py-2 rounded-full shadow-inner select-none">
            Synchronized {new Date().toLocaleTimeString()}
         </div>
       </div>
@@ -102,7 +102,7 @@ export function OrganizationOverview() {
       </div>
 
       {/* Flow Classification Visual Vector */}
-      <div className="bg-[#111827]/40 backdrop-blur-md border border-white/[0.04] rounded-[28px] p-6 md:p-8 relative overflow-hidden shadow-lg">
+      <div className="bg-[#0E152B]/40 backdrop-blur-md border border-white/[0.04] rounded-[28px] p-6 md:p-8 relative overflow-hidden shadow-lg">
         <div className="absolute top-0 right-0 w-36 h-36 bg-cyan/5 blur-3xl rounded-full pointer-events-none" />
         
         <div className="mb-8 relative z-10">
@@ -111,13 +111,13 @@ export function OrganizationOverview() {
         </div>
 
         {data.branchVelocity.length === 0 ? (
-           <div className="py-14 text-center text-on-surface-variant font-sans tracking-wide text-xs border border-dashed border-white/[0.08] rounded-[24px] bg-[#111827]/20 select-none">
+           <div className="py-14 text-center text-on-surface-variant font-sans tracking-wide text-xs border border-dashed border-white/[0.08] rounded-[24px] bg-[#0E152B]/20 select-none">
               System idle. No flow detected across assigned sub-nodes.
            </div>
         ) : (
           <div className="space-y-6 relative z-10">
             {data.branchVelocity.map((b, idx) => {
-               const colors = ["#06B6D4", "#10B981", "#6366F1", "#cfbcff", "#fca5a5"];
+               const colors = ["#10B981", "#10B981", "#0D9488", "#0D9488", "#fca5a5"];
                return (
                  <BranchVelocityRow 
                     key={b.name} 
@@ -137,7 +137,7 @@ export function OrganizationOverview() {
 
 function StatCard({ label, value, pct, up, icon: Icon, activeColor }: { label: string, value: string, pct: string, up: boolean, icon: any, activeColor: string }) {
   return (
-    <div className="bg-[#111827]/40 border border-white/[0.05] rounded-[28px] p-6 md:p-7 relative overflow-hidden group transition-all hover:border-cyan/20 shadow-md">
+    <div className="bg-[#0E152B]/40 border border-white/[0.05] rounded-[28px] p-6 md:p-7 relative overflow-hidden group transition-all hover:border-cyan/20 shadow-md">
        <div className="flex items-start justify-between relative z-10">
          <div>
            <p className="text-[10px] font-black font-label-caps text-on-surface-variant uppercase tracking-widest mb-2 flex items-center gap-2 opacity-70">
@@ -145,8 +145,8 @@ function StatCard({ label, value, pct, up, icon: Icon, activeColor }: { label: s
            </p>
            <p className="font-headline text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight leading-none">{value}</p>
          </div>
-         <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black tracking-wider uppercase font-label-caps flex items-center gap-1 border border-white/[0.05] bg-[#111827] text-cyan shadow-[0_0_8px_rgba(6,182,212,0.15)]`}>
-           <div className="w-1.5 h-1.5 rounded-full bg-cyan animate-pulse shadow-[0_0_6px_#06B6D4] mr-0.5" />
+         <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black tracking-wider uppercase font-label-caps flex items-center gap-1 border border-white/[0.05] bg-[#0E152B] text-cyan shadow-[0_0_8px_rgba(16,185,129,0.15)]`}>
+           <div className="w-1.5 h-1.5 rounded-full bg-cyan animate-pulse shadow-[0_0_6px_#10B981] mr-0.5" />
            {pct}
          </div>
        </div>
@@ -156,11 +156,11 @@ function StatCard({ label, value, pct, up, icon: Icon, activeColor }: { label: s
             <AreaChart data={MINI_DATA}>
                <defs>
                  <linearGradient id={`grad-${label.replace(/\s/g, '')}`} x1="0" y1="0" x2="0" y2="1">
-                   <stop offset="0%" stopColor="#06B6D4" stopOpacity={0.2}/>
-                   <stop offset="100%" stopColor="#06B6D4" stopOpacity={0}/>
+                   <stop offset="0%" stopColor="#10B981" stopOpacity={0.2}/>
+                   <stop offset="100%" stopColor="#10B981" stopOpacity={0}/>
                  </linearGradient>
                </defs>
-               <Area type="monotone" dataKey="v" stroke="#06B6D4" strokeWidth={2} fill={`url(#grad-${label.replace(/\s/g, '')})`} />
+               <Area type="monotone" dataKey="v" stroke="#10B981" strokeWidth={2} fill={`url(#grad-${label.replace(/\s/g, '')})`} />
             </AreaChart>
           </ResponsiveContainer>
        </div>
@@ -177,9 +177,9 @@ function BranchVelocityRow({ name, value, weight, color }: { name: string, value
            {value} <span className="opacity-40 text-[10px] font-label-caps font-black">({weight.toFixed(1)}%)</span>
          </span>
       </div>
-      <div className="h-2.5 w-full bg-[#111827] rounded-full overflow-hidden border border-white/[0.04] shadow-inner">
+      <div className="h-2.5 w-full bg-[#0E152B] rounded-full overflow-hidden border border-white/[0.04] shadow-inner">
          <div 
-           className="h-full rounded-full transition-all duration-1000 ease-out opacity-90 group-hover:brightness-110" 
+           className="h-full rounded-full transition-all duration-1000 ease-out opacity-90 group-hover:brightness-105" 
            style={{ width: `${Math.max(1, weight)}%`, backgroundColor: color, boxShadow: `0 0 15px -3px ${color}` }}
          />
       </div>

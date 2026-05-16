@@ -13,7 +13,8 @@ import {
   PieChart,
   ShoppingBag,
   DollarSign,
-  ArrowRight
+  ArrowRight,
+  Wallet as WalletIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { money } from '@/lib/format';
@@ -26,6 +27,7 @@ export function DashboardScreen({ onNavigate }: { compact?: boolean; onAddTransa
   const [timeframe, setTimeframe] = useState<Timeframe>('M');
   const user = useAuthStore(s => s.user);
   const accounts = useFinanceStore(s => s.accounts);
+  const categories = useFinanceStore(s => s.categories);
   const report = useFinanceStore(s => s.report);
   const transactions = useFinanceStore(s => s.transactions);
 
@@ -43,9 +45,9 @@ export function DashboardScreen({ onNavigate }: { compact?: boolean; onAddTransa
   const sparkLine = "M0,20 Q10,25 20,15 T40,20 T60,10 T80,15 T100,5";
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col gap-5 pb-28 pt-4 select-none font-sans">
+    <div className="w-full max-w-md mx-auto flex flex-col gap-5 pt-4 select-none font-sans">
       
-      <header className="flex items-center justify-between px-1">
+      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-xl flex items-center justify-between px-1 pt-4 pb-3 -mx-1">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-[#1D1F27] border border-outline-variant/20 flex-shrink-0 flex items-center justify-center">
             <span className="text-emerald text-xs font-black tracking-tighter">{greetingName.slice(0, 2).toUpperCase()}</span>
@@ -62,7 +64,7 @@ export function DashboardScreen({ onNavigate }: { compact?: boolean; onAddTransa
         </button>
       </header>
 
-      <section className="relative bg-[#11131A] rounded-2xl p-6 border border-outline-variant/20 overflow-hidden flex flex-col gap-6 shadow-sm group">
+      <section className="relative bg-[#0E152B] rounded-2xl p-6 border border-outline-variant/20 overflow-hidden flex flex-col gap-6 shadow-sm group">
          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-emerald/5 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald/10 transition-all duration-500" />
          
          <div className="flex justify-between items-start relative z-10">
@@ -77,7 +79,7 @@ export function DashboardScreen({ onNavigate }: { compact?: boolean; onAddTransa
                      onClick={() => setTimeframe(t)}
                      className={`px-2.5 py-1 rounded-md text-[9px] font-bold font-label-caps tracking-wider transition-all ${
                         timeframe === t 
-                          ? 'bg-[#11131A] text-emerald shadow-sm border border-outline-variant/20' 
+                          ? 'bg-[#0E152B] text-emerald shadow-sm border border-outline-variant/20' 
                           : 'text-on-surface-variant/60 hover:text-on-surface'
                      }`}
                   >
@@ -128,13 +130,13 @@ export function DashboardScreen({ onNavigate }: { compact?: boolean; onAddTransa
          onClick={() => onNavigate?.('assistant')}
          className="bg-[#1D1F27]/40 rounded-xl p-4 border border-outline-variant/20 flex gap-4 items-start shadow-sm cursor-pointer active:scale-[0.99] transition-transform"
       >
-         <div className="w-9 h-9 rounded-xl bg-indigo/10 flex items-center justify-center text-indigo flex-shrink-0 mt-0.5">
+         <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
             <Lightbulb size={18} />
          </div>
          <div className="flex-grow flex flex-col gap-1">
             <div className="flex items-center gap-2">
-               <span className="text-[9px] font-black font-label-caps text-indigo uppercase tracking-widest leading-none">AI Insight Signal</span>
-               <span className="w-1 h-1 rounded-full bg-indigo animate-ping" />
+               <span className="text-[9px] font-black font-label-caps text-primary uppercase tracking-widest leading-none">AI Insight Signal</span>
+               <span className="w-1 h-1 rounded-full bg-primary animate-ping" />
             </div>
             <p className="text-[11px] text-on-surface-variant font-medium leading-relaxed">
                Operational costs are trending 8% lower this cycle. Capital reserves are optimized for deployment.
@@ -144,53 +146,64 @@ export function DashboardScreen({ onNavigate }: { compact?: boolean; onAddTransa
       </motion.section>
 
       <section className="grid grid-cols-2 gap-3">
-         <div className="bg-[#11131A] rounded-xl p-4 border border-outline-variant/20 flex flex-col gap-2 relative overflow-hidden shadow-sm group hover:border-emerald/30 transition-colors">
+         <div className="bg-[#0E152B] h-[92px] rounded-[22px] p-4 border border-outline-variant/20 flex flex-col justify-between relative overflow-hidden shadow-sm group hover:border-emerald/30 transition-colors">
             <div className="absolute -right-4 -bottom-4 w-14 h-14 bg-emerald/5 rounded-full blur-xl group-hover:bg-emerald/10 transition-all" />
             <div className="flex justify-between items-center relative z-10">
-               <span className="text-[9px] font-bold font-label-caps text-on-surface-variant uppercase tracking-wider">Revenue</span>
-               <TrendingUp size={14} className="text-emerald opacity-75" />
+               <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-emerald/10 flex items-center justify-center text-emerald">
+                     <WalletIcon size={12} strokeWidth={2.5} />
+                  </div>
+                  <span className="text-[10px] font-bold font-label-caps text-on-surface-variant uppercase tracking-wider">Balance</span>
+               </div>
+               <span className="text-[9px] font-bold text-emerald">+2.4%</span>
             </div>
-            <span className="text-base font-extrabold text-on-surface mt-1.5 relative z-10">{money(report.income)}</span>
+            <span className="text-lg font-extrabold text-on-surface relative z-10 tracking-tight">{money(totalBalance)}</span>
          </div>
 
-         <div className="bg-[#11131A] rounded-xl p-4 border border-outline-variant/20 flex flex-col gap-2 relative overflow-hidden shadow-sm group hover:border-danger/30 transition-colors">
-            <div className="absolute -right-4 -bottom-4 w-14 h-14 bg-danger/5 rounded-full blur-xl group-hover:bg-danger/10 transition-all" />
-            <div className="flex justify-between items-center relative z-10">
-               <span className="text-[9px] font-bold font-label-caps text-on-surface-variant uppercase tracking-wider">Expenses</span>
-               <TrendingDown size={14} className="text-danger opacity-75" />
-            </div>
-            <span className="text-base font-extrabold text-on-surface mt-1.5 relative z-10">{money(report.expense)}</span>
-         </div>
-
-         <div className="bg-[#11131A] rounded-xl p-4 border border-outline-variant/20 flex flex-col gap-2 relative overflow-hidden shadow-sm group hover:border-teal/30 transition-colors">
+         <div className="bg-[#0E152B] h-[92px] rounded-[22px] p-4 border border-outline-variant/20 flex flex-col justify-between relative overflow-hidden shadow-sm group hover:border-teal/30 transition-colors">
             <div className="absolute -right-4 -bottom-4 w-14 h-14 bg-teal/5 rounded-full blur-xl group-hover:bg-teal/10 transition-all" />
             <div className="flex justify-between items-center relative z-10">
-               <span className="text-[9px] font-bold font-label-caps text-on-surface-variant uppercase tracking-wider">Net Margin</span>
-               <DollarSign size={14} className="text-teal opacity-75" />
+               <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-teal/10 flex items-center justify-center text-teal">
+                     <TrendingUp size={12} strokeWidth={2.5} />
+                  </div>
+                  <span className="text-[10px] font-bold font-label-caps text-on-surface-variant uppercase tracking-wider">Income</span>
+               </div>
+               <span className="text-[9px] font-bold text-teal">+5.1%</span>
             </div>
-            <span className={`text-base font-extrabold mt-1.5 relative z-10 ${report.net >= 0 ? 'text-emerald' : 'text-danger'}`}>{money(report.net)}</span>
+            <span className="text-lg font-extrabold text-on-surface relative z-10 tracking-tight">{money(report.income)}</span>
          </div>
 
-         <div className="bg-[#11131A] rounded-xl p-4 border border-outline-variant/20 flex flex-col gap-2 relative overflow-hidden shadow-sm group hover:border-indigo/30 transition-colors">
+         <div className="bg-[#0E152B] h-[92px] rounded-[22px] p-4 border border-outline-variant/20 flex flex-col justify-between relative overflow-hidden shadow-sm group hover:border-danger/30 transition-colors">
+            <div className="absolute -right-4 -bottom-4 w-14 h-14 bg-danger/5 rounded-full blur-xl group-hover:bg-danger/10 transition-all" />
             <div className="flex justify-between items-center relative z-10">
-               <span className="text-[9px] font-bold font-label-caps text-on-surface-variant uppercase tracking-wider">Op-Budget</span>
-               <PieChart size={14} className="text-indigo opacity-75" />
-            </div>
-            <div className="flex flex-col gap-2 mt-1.5 relative z-10">
-               <span className="text-base font-extrabold text-on-surface leading-none">{Math.round(budgetUsedPct)}%</span>
-               <div className="h-1 w-full bg-[#1D1F27] rounded-full overflow-hidden">
-                  <motion.div 
-                     initial={{ width: 0 }}
-                     animate={{ width: `${budgetUsedPct}%` }}
-                     transition={{ duration: 0.8, delay: 0.2 }}
-                     className="h-full bg-indigo rounded-full" 
-                  />
+               <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-danger/10 flex items-center justify-center text-danger">
+                     <TrendingDown size={12} strokeWidth={2.5} />
+                  </div>
+                  <span className="text-[10px] font-bold font-label-caps text-on-surface-variant uppercase tracking-wider">Expenses</span>
                </div>
+               <span className="text-[9px] font-bold text-danger">-1.2%</span>
             </div>
+            <span className="text-lg font-extrabold text-on-surface relative z-10 tracking-tight">{money(report.expense)}</span>
+         </div>
+
+         <div className="bg-[#0E152B] h-[92px] rounded-[22px] p-4 border border-outline-variant/20 flex flex-col justify-between relative overflow-hidden shadow-sm group hover:border-primary/30 transition-colors">
+            <div className="absolute -right-4 -bottom-4 w-14 h-14 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-all" />
+            <div className="flex justify-between items-center relative z-10">
+               <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                     <PieChart size={12} strokeWidth={2.5} />
+                  </div>
+                  <span className="text-[10px] font-bold font-label-caps text-on-surface-variant uppercase tracking-wider">Savings</span>
+               </div>
+               <span className="text-[9px] font-bold text-primary">+8.4%</span>
+            </div>
+            <span className="text-lg font-extrabold text-on-surface relative z-10 tracking-tight">{money(report.net)}</span>
          </div>
       </section>
 
-      <section className="bg-[#11131A] rounded-xl p-5 border border-outline-variant/20 flex flex-col gap-4 shadow-sm">
+      <section className="bg-[#0E152B] rounded-xl p-5 border border-outline-variant/20 flex flex-col gap-4 shadow-sm">
          <div className="flex justify-between items-center">
             <h3 className="text-[13px] font-extrabold text-on-surface tracking-wide">Operational Mix</h3>
             <button onClick={() => onNavigate?.('reports')} className="text-[9px] font-black font-label-caps text-emerald uppercase tracking-wider flex items-center gap-1">
@@ -253,7 +266,7 @@ export function DashboardScreen({ onNavigate }: { compact?: boolean; onAddTransa
             </button>
          </div>
          
-         <div className="flex flex-col border border-outline-variant/20 rounded-xl overflow-hidden bg-[#11131A] shadow-sm">
+         <div className="flex flex-col border border-outline-variant/20 rounded-xl overflow-hidden bg-[#0E152B] shadow-sm">
             {recentTransactions.length > 0 ? (
                recentTransactions.map((tx, idx) => {
                   const isExpense = tx.type === 'Expense';
@@ -264,8 +277,12 @@ export function DashboardScreen({ onNavigate }: { compact?: boolean; onAddTransa
                               {isExpense ? <ShoppingBag size={16} /> : <TrendingUp size={16} />}
                            </div>
                            <div className="min-w-0 flex flex-col">
-                              <span className="text-xs font-bold text-on-surface truncate leading-tight">{tx.merchant || 'Log Entry'}</span>
-                              <span className="text-[9px] font-bold font-label-caps text-on-surface-variant/60 tracking-wide uppercase mt-0.5 truncate">{tx.type}</span>
+                              <span className="text-xs font-bold text-on-surface truncate leading-tight">{tx.merchant || categories.find(c => c.id === tx.categoryId)?.name || 'Log Entry'}</span>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                 <span className="text-[9px] font-bold font-label-caps text-on-surface-variant/60 tracking-wide uppercase truncate">{tx.type}</span>
+                                 <span className="text-[9px] text-on-surface-variant/30">•</span>
+                                 <span className="text-[9px] font-bold font-label-caps text-on-surface-variant/50 tracking-wide uppercase truncate">{accounts.find(a => a.id === tx.accountId)?.name || 'Account'}</span>
+                              </div>
                            </div>
                         </div>
                         <span className={`text-xs font-extrabold tracking-tight shrink-0 ${isExpense ? 'text-on-surface' : 'text-emerald'}`}>

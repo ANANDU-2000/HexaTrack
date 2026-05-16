@@ -8,6 +8,8 @@ public sealed class Workspace
     public Guid OwnerUserId { get; set; }
     public required string Name { get; set; }
     public WorkspaceType Type { get; set; } = WorkspaceType.Personal;
+    public WorkspaceMode Mode { get; set; } = WorkspaceMode.Individual;
+    public Guid? OrganizationId { get; set; }
     public string Currency { get; set; } = "USD";
     public bool IsDefault { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

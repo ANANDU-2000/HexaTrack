@@ -327,6 +327,12 @@ namespace HexaTrack.Api.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)");
 
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("ManagerUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -688,12 +694,18 @@ namespace HexaTrack.Api.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<long>("OwnerPermissions")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("Plan")
                         .HasColumnType("integer");
 
                     b.Property<string>("Slug")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<long>("StaffPermissions")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("SuspendReason")
                         .HasMaxLength(500)
@@ -705,15 +717,48 @@ namespace HexaTrack.Api.Migrations
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("WorkspaceMode")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Slug")
                         .IsUnique()
                         .HasFilter("\"Slug\" IS NOT NULL");
 
+                    b.HasIndex("WorkspaceMode");
+
                     b.HasIndex("Plan", "IsActive");
 
                     b.ToTable("Organizations");
+                });
+
+            modelBuilder.Entity("HexaTrack.Api.Domain.Entities.OrganizationFeatureToggle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FeatureKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "FeatureKey")
+                        .IsUnique();
+
+                    b.ToTable("OrganizationFeatureToggles");
                 });
 
             modelBuilder.Entity("HexaTrack.Api.Domain.Entities.RecurringTransaction", b =>
@@ -987,6 +1032,9 @@ namespace HexaTrack.Api.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
+                    b.Property<long?>("PermissionOverrides")
+                        .HasColumnType("bigint");
+
                     b.Property<Guid?>("RouteId")
                         .HasColumnType("uuid");
 
@@ -1065,10 +1113,16 @@ namespace HexaTrack.Api.Migrations
                     b.Property<bool>("IsDefault")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("Mode")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("OwnerUserId")
                         .HasColumnType("uuid");
@@ -1300,6 +1354,17 @@ namespace HexaTrack.Api.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("HexaTrack.Api.Domain.Entities.OrganizationFeatureToggle", b =>
+                {
+                    b.HasOne("HexaTrack.Api.Domain.Entities.Organization", "Organization")
+                        .WithMany("FeatureToggles")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("HexaTrack.Api.Domain.Entities.RecurringTransaction", b =>
                 {
                     b.HasOne("HexaTrack.Api.Domain.Entities.Workspace", "Workspace")
@@ -1482,6 +1547,8 @@ namespace HexaTrack.Api.Migrations
             modelBuilder.Entity("HexaTrack.Api.Domain.Entities.Organization", b =>
                 {
                     b.Navigation("Branches");
+
+                    b.Navigation("FeatureToggles");
 
                     b.Navigation("Members");
                 });

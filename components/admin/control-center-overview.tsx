@@ -110,7 +110,7 @@ export function ControlCenterOverview({
          <div>
             <div className="flex items-center gap-2 mb-2">
                <p className="font-label-caps text-[11px] text-cyan tracking-widest uppercase font-black">Control Substrate</p>
-               <div className="w-1.5 h-1.5 rounded-full bg-cyan shadow-[0_0_8px_#06B6D4]" />
+               <div className="w-1.5 h-1.5 rounded-full bg-cyan shadow-[0_0_8px_#10B981]" />
             </div>
             <h2 className="font-headline text-3xl md:text-4xl text-on-surface font-extrabold tracking-tight">Command Center</h2>
             <p className="text-[11px] font-sans text-on-surface-variant font-semibold mt-2 flex items-center gap-2">
@@ -125,13 +125,13 @@ export function ControlCenterOverview({
          </div>
 
          <div className="flex items-center gap-3">
-            <div className="bg-[#111827] border border-white/[0.04] p-1.5 rounded-[20px] flex gap-1 shadow-sm">
+            <div className="bg-[#0E152B] border border-white/[0.04] p-1.5 rounded-[20px] flex gap-1 shadow-sm">
                {RANGE_OPTIONS.map(opt => (
                   <button
                     key={opt.days}
                     onClick={() => onChartDaysChange(opt.days)}
                     className={`px-4 py-2 rounded-xl font-black text-[9px] font-label-caps tracking-widest whitespace-nowrap active:scale-95 transition-all ${
-                       chartDays === opt.days ? 'bg-white/5 text-cyan shadow-[0_0_10px_rgba(6,182,212,0.2)] border border-white/[0.03]' : 'text-on-surface-variant opacity-60 hover:opacity-100'
+                       chartDays === opt.days ? 'bg-white/5 text-cyan shadow-[0_0_10px_rgba(16,185,129,0.2)] border border-white/[0.03]' : 'text-on-surface-variant opacity-60 hover:opacity-100'
                     }`}
                   >
                      {opt.label}
@@ -141,7 +141,7 @@ export function ControlCenterOverview({
             <button 
               onClick={onRefresh}
               disabled={overviewLoading}
-              className="w-[42px] h-[42px] rounded-[18px] bg-[#111827] border border-white/[0.04] flex items-center justify-center text-on-surface-variant hover:text-cyan hover:border-cyan/20 active:scale-95 transition-all disabled:opacity-50 shadow-inner"
+              className="w-[42px] h-[42px] rounded-[18px] bg-[#0E152B] border border-white/[0.04] flex items-center justify-center text-on-surface-variant hover:text-cyan hover:border-cyan/20 active:scale-95 transition-all disabled:opacity-50 shadow-inner"
             >
                <RefreshCw size={15} className={overviewLoading ? 'animate-spin' : ''} />
             </button>
@@ -155,7 +155,7 @@ export function ControlCenterOverview({
                <AlertCircle size={22} className="text-danger" />
                <p className="text-sm font-bold text-danger font-sans tracking-wide">Subsystem Offline: {err}</p>
             </div>
-            <button onClick={onRetry} className="px-5 py-2.5 bg-danger text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-danger/20 font-label-caps border border-white/[0.1]">Reboot Link</button>
+            <button onClick={onRetry} className="px-5 py-2.5 bg-danger text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:brightness-105 active:scale-95 transition-all shadow-lg shadow-danger/20 font-label-caps border border-white/[0.1]">Reboot Link</button>
          </div>
       )}
 
@@ -181,7 +181,7 @@ export function ControlCenterOverview({
            initial={{ opacity: 0, y: 15 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ delay: 0.3 }}
-           className="glass-card rounded-[28px] p-6.5 border border-white/[0.05] bg-[#111827]/20 shadow-lg mt-6"
+           className="glass-card rounded-[28px] p-6.5 border border-white/[0.05] bg-[#0E152B]/20 shadow-lg mt-6"
         >
            <EnterpriseAnalyticsPanel dashboard={dashboard} chartDays={chartDays} />
         </motion.div>

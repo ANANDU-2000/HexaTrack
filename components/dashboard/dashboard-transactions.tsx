@@ -33,7 +33,7 @@ export function DashboardTransactions() {
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105 ${
                   isIncome 
                     ? 'bg-emerald/10 text-emerald border border-emerald/10' 
-                    : 'bg-[#111827] text-on-surface-variant border border-white/[0.03]'
+                    : 'bg-[#0E152B] text-on-surface-variant border border-white/[0.03]'
                 }`}>
                   {isIncome ? <ArrowDownLeft size={18} strokeWidth={2.5} /> : <ArrowUpRight size={18} strokeWidth={2.5} />}
                 </div>

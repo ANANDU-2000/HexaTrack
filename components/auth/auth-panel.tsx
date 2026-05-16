@@ -46,10 +46,10 @@ export function AuthPanel() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#0B0D11] overflow-hidden relative font-sans select-none">
+    <div className="min-h-screen flex bg-background overflow-hidden relative font-sans select-none">
       
       {/* Left Visual Panel for Desktop */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden bg-[#0B0D11] border-r border-outline-variant/20">
+      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden bg-background border-r border-outline-variant/20">
         
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:3rem_3rem]" />
@@ -86,7 +86,7 @@ export function AuthPanel() {
             Fast, operational, and designed for modern accounting teams to manage enterprise capital workflows seamlessly.
           </p>
 
-          <div className="flex items-center gap-3.5 px-4.5 py-3 bg-[#11131A] border border-outline-variant/20 rounded-xl shadow-sm w-fit">
+          <div className="flex items-center gap-3.5 px-4.5 py-3 bg-[#0E152B] border border-outline-variant/20 rounded-xl shadow-sm w-fit">
             <div className="w-8 h-8 rounded-lg bg-emerald/10 flex items-center justify-center text-emerald border border-emerald/20">
               <ShieldCheck size={16} />
             </div>
@@ -99,7 +99,7 @@ export function AuthPanel() {
       </div>
 
       {/* Right Auth Modal Context */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 bg-[#0B0D11]">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 bg-background">
         <div className="absolute top-[-10%] right-[-10%] w-72 h-72 bg-emerald/5 blur-3xl rounded-full lg:hidden pointer-events-none" />
         
         <div className="lg:hidden mb-8 flex flex-col items-center">
@@ -110,7 +110,7 @@ export function AuthPanel() {
         <motion.div 
           initial={{ opacity: 0, scale: 0.98, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="w-full max-w-[400px] bg-[#11131A] border border-outline-variant/20 rounded-xl shadow-lg p-8 md:p-10 relative overflow-hidden"
+          className="w-full max-w-[400px] bg-[#0E152B] border border-outline-variant/20 rounded-xl shadow-lg p-8 md:p-10 relative overflow-hidden"
         >
           <div className="mb-8">
             <div className="flex items-center gap-1.5 mb-1.5">

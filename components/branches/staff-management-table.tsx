@@ -72,7 +72,7 @@ export function StaffManagementTable() {
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="h-11 px-5.5 bg-cyan text-black rounded-full font-black font-label-caps tracking-widest text-[10px] uppercase shadow-md shadow-cyan/20 flex items-center gap-2 hover:brightness-110 transition-all active:scale-98 shrink-0 border border-white/[0.1]"
+          className="h-11 px-5.5 bg-cyan text-black rounded-full font-black font-label-caps tracking-widest text-[10px] uppercase shadow-md shadow-cyan/20 flex items-center gap-2 hover:brightness-105 transition-all active:scale-98 shrink-0 border border-white/[0.1]"
         >
           <UserPlus size={14} /> Add Node Operator
         </button>
@@ -89,7 +89,7 @@ export function StaffManagementTable() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Filter by name, access link, branch, cluster..."
-            className="w-full h-13 bg-[#111827]/60 border border-white/[0.05] rounded-[20px] pl-12 pr-5 text-xs text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-cyan/30 transition-all shadow-inner font-medium"
+            className="w-full h-13 bg-[#0E152B]/60 border border-white/[0.05] rounded-[20px] pl-12 pr-5 text-xs text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-cyan/30 transition-all shadow-inner font-medium"
           />
         </div>
         <BranchFilterDropdown branches={branches} value={selectedBranchId} onChange={setSelectedBranchId} />
@@ -104,7 +104,7 @@ export function StaffManagementTable() {
       </div>
 
       {/* Tabular Engine */}
-      <div className="bg-[#111827]/40 backdrop-blur-md border border-white/[0.05] rounded-[28px] overflow-hidden shadow-lg relative min-h-[320px] hidden md:block">
+      <div className="bg-[#0E152B]/40 backdrop-blur-md border border-white/[0.05] rounded-[28px] overflow-hidden shadow-lg relative min-h-[320px] hidden md:block">
         {loading && staff.length === 0 ? (
            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0B1020]/90 backdrop-blur-md z-30">
              <Loader2 className="animate-spin h-7 w-7 text-cyan mb-3" />
@@ -115,7 +115,7 @@ export function StaffManagementTable() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/[0.04] bg-[#111827]/50">
+              <tr className="border-b border-white/[0.04] bg-[#0E152B]/50">
                 <th className="px-6 py-4 text-[9px] font-black font-label-caps text-on-surface-variant uppercase tracking-widest">Identity Vector</th>
                 <th className="px-6 py-4 text-[9px] font-black font-label-caps text-on-surface-variant uppercase tracking-widest">Sector</th>
                 <th className="px-6 py-4 text-[9px] font-black font-label-caps text-on-surface-variant uppercase tracking-widest">Assigned Node</th>
@@ -125,10 +125,10 @@ export function StaffManagementTable() {
             </thead>
             <tbody className="divide-y divide-white/[0.03]">
               {filtered.map((s) => (
-                <tr key={s.id} className="group hover:bg-[#111827]/50 transition-colors">
+                <tr key={s.id} className="group hover:bg-[#0E152B]/50 transition-colors">
                   <td className="px-6 py-4.5">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-10.5 h-10.5 rounded-xl bg-[#111827] flex items-center justify-center text-cyan font-black shadow-inner border border-cyan/15 shrink-0">
+                      <div className="w-10.5 h-10.5 rounded-xl bg-[#0E152B] flex items-center justify-center text-cyan font-black shadow-inner border border-cyan/15 shrink-0">
                         {(s.displayName || s.email).charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
@@ -159,10 +159,10 @@ export function StaffManagementTable() {
                   </td>
                   <td className="px-6 py-4.5 text-right">
                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <button onClick={() => setReassigning(s)} className="h-8 px-3 bg-[#111827] border border-white/[0.04] hover:border-cyan/20 rounded-lg text-on-surface-variant hover:text-cyan transition-all text-[10px] font-black font-label-caps tracking-widest uppercase" title="Reroute Node">Reroute</button>
-                        <button className="h-8 w-8 bg-[#111827] border border-white/[0.04] hover:border-cyan/20 rounded-lg text-on-surface-variant hover:text-cyan flex items-center justify-center transition-all" title="Reset Signature"><KeyRound size={13} /></button>
-                        <button className="h-8 w-8 bg-[#111827] border border-white/[0.04] hover:border-danger/20 rounded-lg text-on-surface-variant hover:text-danger flex items-center justify-center transition-all" title="Revoke Authority"><Trash2 size={13} /></button>
-                        <button className="h-8 w-8 bg-[#111827] border border-white/[0.04] hover:border-white/[0.1] rounded-lg text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-all"><MoreHorizontal size={13} /></button>
+                        <button onClick={() => setReassigning(s)} className="h-8 px-3 bg-[#0E152B] border border-white/[0.04] hover:border-cyan/20 rounded-lg text-on-surface-variant hover:text-cyan transition-all text-[10px] font-black font-label-caps tracking-widest uppercase" title="Reroute Node">Reroute</button>
+                        <button className="h-8 w-8 bg-[#0E152B] border border-white/[0.04] hover:border-cyan/20 rounded-lg text-on-surface-variant hover:text-cyan flex items-center justify-center transition-all" title="Reset Signature"><KeyRound size={13} /></button>
+                        <button className="h-8 w-8 bg-[#0E152B] border border-white/[0.04] hover:border-danger/20 rounded-lg text-on-surface-variant hover:text-danger flex items-center justify-center transition-all" title="Revoke Authority"><Trash2 size={13} /></button>
+                        <button className="h-8 w-8 bg-[#0E152B] border border-white/[0.04] hover:border-white/[0.1] rounded-lg text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-all"><MoreHorizontal size={13} /></button>
                      </div>
                   </td>
                 </tr>
@@ -177,14 +177,14 @@ export function StaffManagementTable() {
           {!loading && staff.length === 0 && (
             <div className="py-24 flex flex-col items-center justify-center text-center px-6 select-none">
                <div className="w-20 h-20 bg-cyan/5 rounded-[28px] flex items-center justify-center border border-cyan/15 mb-6 shadow-inner relative overflow-hidden">
-                  <UsersFull size={32} className="text-cyan drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" />
+                  <UsersFull size={32} className="text-cyan drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
                </div>
                <h3 className="text-xl font-extrabold text-on-surface tracking-wide font-sans">Deploy New Personnel Subnode</h3>
                <p className="text-[13px] text-on-surface-variant max-w-sm mt-2 font-medium leading-relaxed tracking-wide">No operational operators have been provisioned inside this tenant cluster. Recruit the first agent below.</p>
                
                <button 
                  onClick={() => setIsModalOpen(true)}
-                 className="mt-8 h-12 px-7 bg-cyan text-black font-black text-[10px] font-label-caps tracking-widest uppercase rounded-full shadow-md shadow-cyan/15 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 border border-white/[0.1]"
+                 className="mt-8 h-12 px-7 bg-cyan text-black font-black text-[10px] font-label-caps tracking-widest uppercase rounded-full shadow-md shadow-cyan/15 hover:brightness-105 active:scale-95 transition-all flex items-center gap-2 border border-white/[0.1]"
                >
                   <UserPlus size={15} /> Initialize Recruitment Pipeline <ArrowRight size={15} />
                </button>
@@ -276,14 +276,14 @@ function CreateStaffModal({ branches, onClose, onSuccess }: { branches: LightBra
       >
         <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
         
-        <div className="p-6 border-b border-white/[0.04] flex justify-between items-center bg-[#111827]/20">
+        <div className="p-6 border-b border-white/[0.04] flex justify-between items-center bg-[#0E152B]/20">
            <div>
              <h3 className="font-black text-lg text-on-surface font-sans tracking-wide">Recruit Subnode Operator</h3>
              <p className="text-[9px] text-cyan font-black font-label-caps mt-1 uppercase tracking-widest flex items-center gap-1.5">
                <Shield size={11} className="text-cyan animate-pulse"/> VALIDATED INTERFACE LINK
              </p>
            </div>
-           <button onClick={onClose} className="w-8 h-8 rounded-xl bg-[#111827] border border-white/[0.04] text-on-surface-variant hover:text-cyan flex items-center justify-center transition-all active:scale-90">
+           <button onClick={onClose} className="w-8 h-8 rounded-xl bg-[#0E152B] border border-white/[0.04] text-on-surface-variant hover:text-cyan flex items-center justify-center transition-all active:scale-90">
              <X size={15} />
            </button>
         </div>
@@ -303,7 +303,7 @@ function CreateStaffModal({ branches, onClose, onSuccess }: { branches: LightBra
                 value={form.fullName}
                 onChange={(e) => setForm({...form, fullName: e.target.value})}
                 placeholder="Ex: Alexander Vance"
-                className="w-full h-12 px-4.5 bg-[#111827] border border-white/[0.05] rounded-[18px] text-xs text-on-surface font-medium focus:border-cyan/30 outline-none transition-all shadow-inner"
+                className="w-full h-12 px-4.5 bg-[#0E152B] border border-white/[0.05] rounded-[18px] text-xs text-on-surface font-medium focus:border-cyan/30 outline-none transition-all shadow-inner"
               />
            </div>
 
@@ -315,7 +315,7 @@ function CreateStaffModal({ branches, onClose, onSuccess }: { branches: LightBra
                 value={form.email}
                 onChange={(e) => setForm({...form, email: e.target.value})}
                 placeholder="operator@entity.corp"
-                className="w-full h-12 px-4.5 bg-[#111827] border border-white/[0.05] rounded-[18px] text-xs text-on-surface font-medium focus:border-cyan/30 outline-none transition-all shadow-inner"
+                className="w-full h-12 px-4.5 bg-[#0E152B] border border-white/[0.05] rounded-[18px] text-xs text-on-surface font-medium focus:border-cyan/30 outline-none transition-all shadow-inner"
               />
            </div>
 
@@ -334,7 +334,7 @@ function CreateStaffModal({ branches, onClose, onSuccess }: { branches: LightBra
                  <select 
                    value={form.department}
                    onChange={(e) => setForm({...form, department: e.target.value})}
-                   className="w-full h-12 px-4 bg-[#111827] border border-white/[0.05] rounded-[18px] text-xs text-cyan font-bold tracking-wide focus:border-cyan/30 outline-none appearance-none cursor-pointer shadow-inner select-none"
+                   className="w-full h-12 px-4 bg-[#0E152B] border border-white/[0.05] rounded-[18px] text-xs text-cyan font-bold tracking-wide focus:border-cyan/30 outline-none appearance-none cursor-pointer shadow-inner select-none"
                  >
                     {['Finance', 'Operations', 'Sales', 'HR', 'Management'].map(d => (
                        <option key={d} value={d} className="bg-[#0B1020] text-on-surface font-medium">{d}</option>
@@ -351,18 +351,18 @@ function CreateStaffModal({ branches, onClose, onSuccess }: { branches: LightBra
                 value={form.password}
                 onChange={(e) => setForm({...form, password: e.target.value})}
                 placeholder="••••••••"
-                className="w-full h-12 px-4.5 bg-[#111827] border border-white/[0.05] rounded-[18px] text-xs text-cyan tracking-widest focus:border-cyan/30 outline-none transition-all shadow-inner"
+                className="w-full h-12 px-4.5 bg-[#0E152B] border border-white/[0.05] rounded-[18px] text-xs text-cyan tracking-widest focus:border-cyan/30 outline-none transition-all shadow-inner"
               />
            </div>
 
            <div className="pt-5 border-t border-white/[0.04] flex gap-3 relative z-10">
-              <button type="button" onClick={onClose} className="flex-1 h-12 bg-[#111827] border border-white/[0.04] hover:border-white/[0.1] rounded-full text-[10px] font-black font-label-caps tracking-widest uppercase text-on-surface-variant hover:text-on-surface transition-all active:scale-[0.98]">
+              <button type="button" onClick={onClose} className="flex-1 h-12 bg-[#0E152B] border border-white/[0.04] hover:border-white/[0.1] rounded-full text-[10px] font-black font-label-caps tracking-widest uppercase text-on-surface-variant hover:text-on-surface transition-all active:scale-[0.98]">
                 Abort Seq
               </button>
               <button 
                  type="submit" 
                  disabled={saving || branches.length === 0} 
-                 className="flex-1 h-12 bg-cyan text-black font-black text-[10px] font-label-caps tracking-widest uppercase rounded-full shadow-md shadow-cyan/10 border border-white/[0.05] flex items-center justify-center gap-2 hover:brightness-110 disabled:opacity-50 active:scale-[0.98] transition-all"
+                 className="flex-1 h-12 bg-cyan text-black font-black text-[10px] font-label-caps tracking-widest uppercase rounded-full shadow-md shadow-cyan/10 border border-white/[0.05] flex items-center justify-center gap-2 hover:brightness-105 disabled:opacity-50 active:scale-[0.98] transition-all"
               >
                 {saving ? <Loader2 className="animate-spin" size={15} /> : 'Provision Cell'}
               </button>

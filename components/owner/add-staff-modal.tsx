@@ -22,7 +22,7 @@ export function AddStaffModal({ open, onOpenChange }: { open: boolean; onOpenCha
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-md bg-[#111827] border border-white/[0.06] rounded-[32px] overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative flex flex-col"
+        className="w-full max-w-md bg-[#0E152B] border border-white/[0.06] rounded-[32px] overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative flex flex-col"
       >
         {/* Header */}
         <div className="p-6 border-b border-white/[0.05] flex items-center justify-between bg-white/[0.01]">
@@ -31,37 +31,37 @@ export function AddStaffModal({ open, onOpenChange }: { open: boolean; onOpenCha
                 <UserPlus size={20} />
              </div>
              <div>
-               <h2 className="font-bold text-[#F9FAFB] tracking-tight text-xl">Provision Staff</h2>
-               <p className="text-xs text-[#9CA3AF] font-medium mt-0.5">Invite restricted operational associates</p>
+               <h2 className="font-bold text-[#E1E2EC] tracking-tight text-xl">Provision Staff</h2>
+               <p className="text-xs text-[#C2C6D6] font-medium mt-0.5">Invite restricted operational associates</p>
              </div>
           </div>
-          <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-white/[0.05] rounded-xl transition-colors text-[#9CA3AF]"><X size={20}/></button>
+          <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-white/[0.05] rounded-xl transition-colors text-[#C2C6D6]"><X size={20}/></button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Full Identity (Name)</label>
+            <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider">Full Identity (Name)</label>
             <div className="relative">
-               <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
-               <input required placeholder="Enter full name" className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#F9FAFB] outline-none" />
+               <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C2C6D6]/40 h-4 w-4" />
+               <input required placeholder="Enter full name" className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#E1E2EC] outline-none" />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Corporate Communication (Email)</label>
+            <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider">Corporate Communication (Email)</label>
             <div className="relative">
-               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
-               <input type="email" required placeholder="name@organization.com" className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#F9FAFB] outline-none" />
+               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C2C6D6]/40 h-4 w-4" />
+               <input type="email" required placeholder="name@organization.com" className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-sm font-medium text-[#E1E2EC] outline-none" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Target Department</label>
+              <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider">Target Department</label>
               <div className="relative">
-                 <Layers className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
-                 <select required className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-xs font-bold text-[#F9FAFB] outline-none appearance-none">
+                 <Layers className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C2C6D6]/40 h-4 w-4" />
+                 <select required className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-xs font-bold text-[#E1E2EC] outline-none appearance-none">
                     <option>Finance</option>
                     <option>Operations</option>
                     <option>Sales</option>
@@ -70,10 +70,10 @@ export function AddStaffModal({ open, onOpenChange }: { open: boolean; onOpenCha
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider">Role Tier</label>
+              <label className="text-[11px] font-bold text-[#C2C6D6] uppercase tracking-wider">Role Tier</label>
               <div className="relative">
-                 <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]/40 h-4 w-4" />
-                 <select disabled className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-xs font-bold text-[#9CA3AF] outline-none cursor-not-allowed">
+                 <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C2C6D6]/40 h-4 w-4" />
+                 <select disabled className="w-full h-11 pl-9 pr-4 bg-[#0B1015] border border-white/[0.05] rounded-xl text-xs font-bold text-[#C2C6D6] outline-none cursor-not-allowed">
                     <option>STAFF</option>
                  </select>
               </div>

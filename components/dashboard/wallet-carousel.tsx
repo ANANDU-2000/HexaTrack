@@ -12,8 +12,8 @@ export function WalletCarousel() {
 
   if (!accounts || accounts.length === 0) {
     return (
-      <div className="w-full h-44 rounded-[28px] border border-dashed border-white/[0.1] bg-[#111827]/40 flex flex-col items-center justify-center gap-3 px-6 text-center">
-         <div className="w-10 h-10 rounded-2xl bg-[#111827] flex items-center justify-center text-cyan border border-cyan/10 shadow-inner">
+      <div className="w-full h-44 rounded-[28px] border border-dashed border-white/[0.1] bg-[#0E152B]/40 flex flex-col items-center justify-center gap-3 px-6 text-center">
+         <div className="w-10 h-10 rounded-2xl bg-[#0E152B] flex items-center justify-center text-cyan border border-cyan/10 shadow-inner">
            <Wallet size={18} />
          </div>
          <p className="text-xs text-on-surface-variant font-semibold tracking-wide">Initialize a Liquidity Node to map metrics.</p>
@@ -70,7 +70,7 @@ export function WalletCarousel() {
               const gradients = [
                 'from-[#1E293B] via-[#0F172A] to-[#020617]', // Space Black
                 'from-[#0F172A] via-[#1E1B4B] to-[#030712]', // Deep Indigo
-                'from-[#111827] via-[#022C22] to-[#050505]', // Emerald Matrix
+                'from-[#0E152B] via-[#022C22] to-[#050505]', // Emerald Matrix
                 'from-[#1F2937] via-[#311111] to-[#0B0F19]', // Deep Crimson
               ];
               const activeGradient = gradients[idx % gradients.length];
@@ -140,7 +140,7 @@ export function WalletCarousel() {
              key={i}
              onClick={() => setActiveIndex(i)}
              className={`h-1.5 rounded-full transition-all duration-300 ${
-               activeIndex === i ? 'w-4 bg-cyan shadow-[0_0_6px_rgba(6,182,212,0.6)]' : 'w-1.5 bg-white/10 hover:bg-white/20'
+               activeIndex === i ? 'w-4 bg-cyan shadow-[0_0_6px_rgba(16,185,129,0.6)]' : 'w-1.5 bg-white/10 hover:bg-white/20'
              }`}
            />
          ))}

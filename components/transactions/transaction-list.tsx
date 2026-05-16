@@ -50,7 +50,7 @@ export function TransactionList({ categories, transactions }: { categories: Cate
   if (transactions.length === 0) {
     return (
       <div className="glass-card rounded-3xl p-12 text-center flex flex-col items-center animate-in fade-in border border-white/[0.03]">
-        <div className="w-14 h-14 rounded-2xl bg-[#111827]/50 border border-white/[0.04] flex items-center justify-center text-cyan mb-4 shadow-inner">
+        <div className="w-14 h-14 rounded-2xl bg-[#0E152B]/50 border border-white/[0.04] flex items-center justify-center text-cyan mb-4 shadow-inner">
           <Receipt size={22} />
         </div>
         <p className="text-base font-extrabold text-on-surface tracking-tight">Zero activity traces</p>
@@ -110,7 +110,7 @@ function SwipeableTransactionItem({ transaction, categories }: { transaction: Tr
    if (isArchived) return null;
 
    return (
-      <div className="relative w-full select-none rounded-2xl group overflow-hidden bg-[#111827]/20 border border-white/[0.03]">
+      <div className="relative w-full select-none rounded-2xl group overflow-hidden bg-[#0E152B]/20 border border-white/[0.03]">
          
          {/* BACKDROP ACTIONS LAYER */}
          <div className="absolute inset-0 flex justify-between items-center z-0 px-4 select-none pointer-events-none">
@@ -142,7 +142,7 @@ function SwipeableTransactionItem({ transaction, categories }: { transaction: Tr
                   // Action: triggers metadata popup/details view, currently visual snap
                }
             }}
-            className="relative z-10 w-full bg-[#111827] border-y border-transparent group-hover:border-white/[0.03] rounded-2xl p-4 flex items-center justify-between touch-pan-x cursor-grab active:cursor-grabbing shadow-md transition-colors duration-200"
+            className="relative z-10 w-full bg-[#0E152B] border-y border-transparent group-hover:border-white/[0.03] rounded-2xl p-4 flex items-center justify-between touch-pan-x cursor-grab active:cursor-grabbing shadow-md transition-colors duration-200"
          >
             <div className="flex items-center gap-3.5 min-w-0 select-none">
                {/* Large Iconic Badge */}

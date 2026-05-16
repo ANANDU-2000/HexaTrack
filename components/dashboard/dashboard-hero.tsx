@@ -18,7 +18,7 @@ export function DashboardHero() {
   return (
     <div className="glass-card rounded-[28px] p-6 md:p-8 relative overflow-hidden flex flex-col justify-between h-full min-h-[240px]">
         {/* Dynamic Gradient Mesh Background */}
-        <div className="absolute -top-12 -right-12 w-64 h-64 bg-indigo/10 blur-3xl rounded-full pointer-events-none" />
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-primary/10 blur-3xl rounded-full pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-primary-container/15 blur-3xl rounded-full pointer-events-none" />
         
         <div>

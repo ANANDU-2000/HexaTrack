@@ -187,7 +187,7 @@ export default function OrganizationsManager() {
                              <tr key={org.id} className="hover:bg-white/[0.02] transition-colors group">
                                 <td className="px-6 py-4">
                                    <div className="flex items-center gap-3">
-                                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-bold shadow-inner shadow-white/20">
+                                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-primary flex items-center justify-center text-white font-bold shadow-inner shadow-white/20">
                                          {org.name.charAt(0)}
                                       </div>
                                       <div>
@@ -211,7 +211,7 @@ export default function OrganizationsManager() {
                                 </td>
                                 <td className="px-6 py-4">
                                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md border ${
-                                      org.plan.toLowerCase().includes('enterprise') ? 'bg-purple-500/10 border-purple-500/30 text-purple-400' : 
+                                      org.plan.toLowerCase().includes('enterprise') ? 'bg-primary/10 border-primary/30 text-primary' : 
                                       org.plan.toLowerCase().includes('pro') ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
                                       'bg-blue-500/10 border-blue-500/30 text-blue-400'
                                    }`}>
@@ -339,7 +339,7 @@ function SubscriptionUsageCard({ analytics }: { analytics: AdminOrganizationAnal
 
       <div className="space-y-4">
          <ProgressBar label="Owners Active" cur={analytics?.totalOwners || 0} max={100} color="bg-blue-500" />
-         <ProgressBar label="Scale Limit (Branches)" cur={analytics?.activeBranches || 0} max={200} color="bg-purple-500" />
+         <ProgressBar label="Scale Limit (Branches)" cur={analytics?.activeBranches || 0} max={200} color="bg-primary" />
          <ProgressBar label="Scale Limit (Staff)" cur={analytics?.totalStaff || 0} max={5000} color="bg-emerald-500" />
       </div>
 
@@ -643,7 +643,7 @@ export function AddStaffModal({ onClose, onComplete, organizations }: { onClose:
           />
           <FormInput label="Access Password" required type="password" value={formData.password} onChange={(e:any) => setFormData({...formData, password: e.target.value})} placeholder="••••••••" />
           <div className="pt-4">
-             <button type="submit" disabled={saving || !formData.organizationId || !formData.branchId} className="w-full h-11 rounded-xl bg-indigo-500 text-white font-bold text-sm shadow-lg hover:bg-indigo-600 flex items-center justify-center disabled:opacity-50">
+             <button type="submit" disabled={saving || !formData.organizationId || !formData.branchId} className="w-full h-11 rounded-xl bg-primary text-white font-bold text-sm shadow-lg hover:bg-primary flex items-center justify-center disabled:opacity-50">
                 {saving ? <Loader2 size={18} className="animate-spin"/> : 'Finalize Node Deployment'}
              </button>
           </div>

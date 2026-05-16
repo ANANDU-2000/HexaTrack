@@ -13,6 +13,8 @@ public sealed class Branch
     public string? Timezone { get; set; }
     public string? Address { get; set; }
     public string? Phone { get; set; }
+    public bool IsEnabled { get; set; } = true;
+    public Guid? ManagerUserId { get; set; }
     public Guid? WorkspaceId { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 

@@ -63,7 +63,7 @@ export function IntegrationsHub() {
     <div className="space-y-8 animate-in fade-in duration-700 pb-16 font-sans">
        <div>
           <div className="flex items-center gap-2 mb-2">
-             <div className="w-1.5 h-1.5 rounded-full bg-cyan shadow-[0_0_6px_#06B6D4]" />
+             <div className="w-1.5 h-1.5 rounded-full bg-cyan shadow-[0_0_6px_#10B981]" />
              <span className="text-[10px] font-black font-label-caps tracking-widest text-cyan uppercase">Synchronous Subsystem</span>
           </div>
           <h1 className="font-headline text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight">Integrations Cluster</h1>
@@ -72,8 +72,8 @@ export function IntegrationsHub() {
 
        <div className="bg-gradient-to-r from-cyan/10 via-cyan/[0.02] to-transparent border border-cyan/20 p-6 rounded-[24px] flex flex-col sm:flex-row sm:items-center gap-4.5 relative overflow-hidden shadow-md">
           <div className="absolute -right-6 -top-6 opacity-[0.03] pointer-events-none"><Zap size={160} className="text-cyan" /></div>
-          <div className="w-12 h-12 bg-[#111827] rounded-2xl flex items-center justify-center text-cyan border border-cyan/15 shadow-inner shrink-0">
-             <ShieldCheck size={22} className="drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]" />
+          <div className="w-12 h-12 bg-[#0E152B] rounded-2xl flex items-center justify-center text-cyan border border-cyan/15 shadow-inner shrink-0">
+             <ShieldCheck size={22} className="drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
           </div>
           <div className="min-w-0">
              <h4 className="text-on-surface font-extrabold text-base tracking-wide">Encrypted Bridge Pipeline</h4>
@@ -86,10 +86,10 @@ export function IntegrationsHub() {
              const isConn = connected.includes(app.id);
              const isBusy = acting === app.id;
              return (
-                <div key={app.id} className="bg-[#111827]/40 border border-white/[0.05] rounded-[24px] p-6 relative group transition-all flex flex-col justify-between min-h-[230px] shadow-sm hover:border-cyan/15 hover:bg-[#111827]/60 backdrop-blur-md">
+                <div key={app.id} className="bg-[#0E152B]/40 border border-white/[0.05] rounded-[24px] p-6 relative group transition-all flex flex-col justify-between min-h-[230px] shadow-sm hover:border-cyan/15 hover:bg-[#0E152B]/60 backdrop-blur-md">
                    <div>
                       <div className="flex justify-between items-start">
-                         <div className="w-12 h-12 bg-[#111827] rounded-2xl border border-white/[0.04] flex items-center justify-center text-cyan shadow-inner group-hover:scale-105 transition-transform">
+                         <div className="w-12 h-12 bg-[#0E152B] rounded-2xl border border-white/[0.04] flex items-center justify-center text-cyan shadow-inner group-hover:scale-105 transition-transform">
                             {getIconForApp(app.id)}
                          </div>
                          {isConn ? (
@@ -108,10 +108,10 @@ export function IntegrationsHub() {
                    <div className="mt-6 pt-4 border-t border-white/[0.04]">
                       {isConn ? (
                          <div className="flex items-center gap-2">
-                            <button className="flex-1 h-10.5 bg-[#111827] border border-white/[0.04] rounded-xl text-on-surface text-xs font-extrabold hover:border-cyan/20 hover:text-cyan transition-all flex items-center justify-center gap-2 shadow-sm font-sans active:scale-98">
+                            <button className="flex-1 h-10.5 bg-[#0E152B] border border-white/[0.04] rounded-xl text-on-surface text-xs font-extrabold hover:border-cyan/20 hover:text-cyan transition-all flex items-center justify-center gap-2 shadow-sm font-sans active:scale-98">
                                <Settings size={13} /> Configure
                             </button>
-                            <button className="w-10.5 h-10.5 flex items-center justify-center bg-[#111827] border border-white/[0.04] rounded-xl text-on-surface-variant hover:text-cyan hover:border-cyan/20 shadow-sm transition-all active:scale-95" title="Recalibrate">
+                            <button className="w-10.5 h-10.5 flex items-center justify-center bg-[#0E152B] border border-white/[0.04] rounded-xl text-on-surface-variant hover:text-cyan hover:border-cyan/20 shadow-sm transition-all active:scale-95" title="Recalibrate">
                                <RefreshCcw size={13}/>
                             </button>
                          </div>
@@ -119,7 +119,7 @@ export function IntegrationsHub() {
                          <button 
                            onClick={() => handleConnect(app.id)} 
                            disabled={isBusy}
-                           className="w-full h-10.5 bg-cyan text-black rounded-full text-[10px] font-black font-label-caps tracking-widest uppercase flex items-center justify-center gap-2 shadow-md hover:brightness-110 disabled:opacity-50 active:scale-[0.98] transition-all"
+                           className="w-full h-10.5 bg-cyan text-black rounded-full text-[10px] font-black font-label-caps tracking-widest uppercase flex items-center justify-center gap-2 shadow-md hover:brightness-105 disabled:opacity-50 active:scale-[0.98] transition-all"
                          >
                            {isBusy ? <Loader2 className="animate-spin" size={14}/> : <><Link2 size={13}/> Authorize Pipeline</>}
                          </button>

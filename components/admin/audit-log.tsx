@@ -38,9 +38,9 @@ export function AuditLogPanel({ events }: { events?: AuditItem[] }) {
   };
 
   return (
-    <div className="bg-[#111827]/40 backdrop-blur-md border border-white/[0.04] rounded-[32px] overflow-hidden flex flex-col h-full relative">
+    <div className="bg-[#0E152B]/40 backdrop-blur-md border border-white/[0.04] rounded-[32px] overflow-hidden flex flex-col h-full relative">
        
-       <div className="px-8 py-6 border-b border-white/[0.04] flex items-center justify-between bg-[#111827]/20">
+       <div className="px-8 py-6 border-b border-white/[0.04] flex items-center justify-between bg-[#0E152B]/20">
           <h3 className="font-bold text-[#F5F7FA] text-lg tracking-tight flex items-center gap-2">
              <Activity size={18} className="text-emerald-400" /> Neural Activity Log
           </h3>

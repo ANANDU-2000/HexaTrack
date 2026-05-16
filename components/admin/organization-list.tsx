@@ -28,15 +28,15 @@ export function OrganizationList({ orgs, loading, onViewDetail }: OrganizationLi
 
   const getPlanStyles = (plan: string) => {
      switch(plan) {
-        case 'Enterprise': return 'bg-purple-500/10 border-purple-500/20 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]';
+        case 'Enterprise': return 'bg-primary/10 border-primary/20 text-primary shadow-[0_0_15px_rgba(16,185,129,0.15)]';
         case 'Pro': return 'bg-blue-500/10 border-blue-500/20 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.15)]';
         default: return 'bg-white/5 border-white/10 text-on-surface-variant';
      }
   };
 
   return (
-    <div className="bg-[#111827]/40 backdrop-blur-md border border-white/[0.04] rounded-[32px] overflow-hidden flex flex-col h-full">
-       <div className="px-8 py-6 border-b border-white/[0.04] flex items-center justify-between bg-[#111827]/20">
+    <div className="bg-[#0E152B]/40 backdrop-blur-md border border-white/[0.04] rounded-[32px] overflow-hidden flex flex-col h-full">
+       <div className="px-8 py-6 border-b border-white/[0.04] flex items-center justify-between bg-[#0E152B]/20">
           <h3 className="font-bold text-[#F5F7FA] text-lg tracking-tight flex items-center gap-2">
              <Building2 size={18} className="text-on-surface-variant opacity-60" /> Global Entities
           </h3>

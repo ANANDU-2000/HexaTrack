@@ -14,20 +14,20 @@ export function RecurringScreen() {
   [recurring]);
 
   return (
-    <div className="space-y-10 pb-28 lg:pb-10 px-container-margin lg:px-gutter pt-6 font-sans animate-in fade-in duration-500">
+    <div className="space-y-10 px-container-margin lg:px-gutter pt-6 font-sans animate-in fade-in duration-500">
       
       {/* Header Configuration */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
            <div className="flex items-center gap-2 mb-2">
               <p className="font-label-caps text-[11px] text-cyan tracking-widest uppercase font-black">Automation Loop</p>
-              <div className="w-1.5 h-1.5 rounded-full bg-cyan shadow-[0_0_8px_#06B6D4]" />
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan shadow-[0_0_8px_#10B981]" />
            </div>
            <h2 className="font-headline text-3xl md:text-4xl text-on-surface font-extrabold tracking-tight">Recurring Protocol</h2>
         </div>
         <button 
           onClick={() => setIsAdding(true)}
-          className="bg-indigo text-white hover:brightness-110 active:scale-95 px-6 py-3.5 rounded-full text-xs font-black tracking-widest uppercase shadow-lg shadow-indigo/20 flex items-center gap-2 transition-all w-fit font-label-caps border border-white/[0.1]"
+          className="bg-primary text-white hover:brightness-105 active:scale-95 px-6 py-3.5 rounded-full text-xs font-black tracking-widest uppercase shadow-lg shadow-primary/20 flex items-center gap-2 transition-all w-fit font-label-caps border border-white/[0.1]"
         >
           <Plus size={16} strokeWidth={3} /> New Recurring Loop
         </button>
@@ -36,11 +36,11 @@ export function RecurringScreen() {
       {/* 1. ADVANCED AI BANNER */}
       <section className="glass-card rounded-[28px] p-6.5 relative overflow-hidden border-l-4 border-l-cyan border-y border-r border-white/[0.05] shadow-lg">
          <div className="absolute -top-10 -right-10 w-52 h-52 bg-cyan/10 blur-[60px] rounded-full pointer-events-none" />
-         <div className="absolute inset-0 opacity-5 bg-[radial-gradient(rgba(6,182,212,0.4)_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+         <div className="absolute inset-0 opacity-5 bg-[radial-gradient(rgba(16,185,129,0.4)_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
          
          <div className="flex flex-col sm:flex-row items-start gap-6 relative z-10">
             <div className="w-14 h-14 rounded-2xl bg-cyan/10 flex items-center justify-center shrink-0 border border-cyan/20 shadow-inner shadow-cyan/5">
-               <Sparkles size={24} className="text-cyan drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]" />
+               <Sparkles size={24} className="text-cyan drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
             </div>
             <div>
                <h3 className="font-headline text-lg text-on-surface font-extrabold mb-1 tracking-tight">Algorithmic Yield Leak</h3>
@@ -58,7 +58,7 @@ export function RecurringScreen() {
         <div className="lg:col-span-7 flex flex-col">
            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <h3 className="font-headline text-lg text-on-surface font-bold tracking-tight">Imminent Deployments</h3>
-              <div className="bg-[#111827] px-4 py-2 rounded-xl border border-white/[0.04] font-label-caps text-[9px] font-black text-on-surface-variant opacity-80 tracking-widest uppercase w-fit shadow-sm">
+              <div className="bg-[#0E152B] px-4 py-2 rounded-xl border border-white/[0.04] font-label-caps text-[9px] font-black text-on-surface-variant opacity-80 tracking-widest uppercase w-fit shadow-sm">
                  Current Scan Interval
               </div>
            </div>
@@ -72,7 +72,7 @@ export function RecurringScreen() {
                        
                        {/* Timeline Tracker Bubble */}
                        <div className="absolute -left-[31px] top-3 w-5 h-5 rounded-full bg-[#0B1020] border-2 border-[#0b1020] flex items-center justify-center z-20">
-                          <div className={`w-2 h-2 rounded-full shadow-sm transition-all ${item.isActive ? 'bg-cyan shadow-[0_0_8px_#06B6D4]' : 'bg-on-surface-variant/30'}`} />
+                          <div className={`w-2 h-2 rounded-full shadow-sm transition-all ${item.isActive ? 'bg-cyan shadow-[0_0_8px_#10B981]' : 'bg-on-surface-variant/30'}`} />
                        </div>
 
                        <div className="flex flex-col">
@@ -81,7 +81,7 @@ export function RecurringScreen() {
                           </span>
 
                           <div className={`glass-card p-4.5 rounded-[24px] flex items-center gap-4 border border-white/[0.03] transition-all hover:bg-white/[0.01] hover:border-cyan/20 group ${!item.isActive ? 'opacity-60 grayscale' : ''}`}>
-                             <div className="w-12 h-12 rounded-xl bg-[#111827] border border-white/[0.04] flex items-center justify-center text-cyan shrink-0 shadow-inner">
+                             <div className="w-12 h-12 rounded-xl bg-[#0E152B] border border-white/[0.04] flex items-center justify-center text-cyan shrink-0 shadow-inner">
                                 <CalendarClock size={22} className="group-hover:scale-105 transition-transform" />
                              </div>
 
@@ -121,8 +121,8 @@ export function RecurringScreen() {
         <div className="lg:col-span-5 flex flex-col gap-6 lg:gap-stack-lg">
            
            {/* Consolidated Burn Widget */}
-           <div className="glass-card p-6 md:p-7 rounded-[28px] bg-gradient-to-br from-[#111827] to-[#0b1020] relative border border-white/[0.06] overflow-hidden">
-              <div className="absolute bottom-0 right-0 w-36 h-36 bg-[#cfbcff]/5 blur-3xl rounded-full pointer-events-none" />
+           <div className="glass-card p-6 md:p-7 rounded-[28px] bg-gradient-to-br from-[#0E152B] to-[#0b1020] relative border border-white/[0.06] overflow-hidden">
+              <div className="absolute bottom-0 right-0 w-36 h-36 bg-[#0D9488]/5 blur-3xl rounded-full pointer-events-none" />
               <p className="font-label-caps text-[10px] font-black uppercase tracking-widest text-cyan mb-2">Aggregated Runrate Value</p>
               <h3 className="text-display-balance text-3xl font-extrabold text-on-surface tracking-tight font-headline">{money(upcomingTotal)}<span className="text-sm text-on-surface-variant font-semibold font-sans lowercase"> / cycle</span></h3>
               <div className="mt-6 flex items-center justify-between border-t border-white/[0.05] pt-4.5">
@@ -148,10 +148,10 @@ export function RecurringScreen() {
                  {[0.4, 0.5, 0.3, 0.8, 0.6, 0.9, 0.5, 0.4, 0.7, 0.5, 0.6, 0.8].map((val, i) => (
                     <div 
                       key={i} 
-                      className="flex-1 bg-cyan/15 hover:bg-cyan/60 hover:shadow-[0_0_10px_rgba(6,182,212,0.2)] transition-all border-t border-cyan/20 rounded-t-md group relative cursor-crosshair"
+                      className="flex-1 bg-cyan/15 hover:bg-cyan/60 hover:shadow-[0_0_10px_rgba(16,185,129,0.2)] transition-all border-t border-cyan/20 rounded-t-md group relative cursor-crosshair"
                       style={{ height: `${val * 100}%` }}
                     >
-                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-[9px] font-black text-on-surface bg-[#111827] px-2 py-0.5 border border-white/[0.05] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-label-caps pointer-events-none tracking-widest">
+                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-[9px] font-black text-on-surface bg-[#0E152B] px-2 py-0.5 border border-white/[0.05] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-label-caps pointer-events-none tracking-widest">
                           T-{i+1}
                        </div>
                     </div>

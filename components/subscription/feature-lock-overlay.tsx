@@ -22,13 +22,13 @@ export function FeatureLockOverlay({ children, isLocked, requiredPlan = 'Profess
 
       {/* The Floating Access layer */}
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center bg-black/10 backdrop-blur-[2px]">
-        <div className="w-14 h-14 rounded-2xl bg-[#111827] border border-white/[0.08] shadow-[0_12px_32px_rgba(0,0,0,0.4)] flex items-center justify-center text-[#F59E0B] mb-4 animate-in zoom-in duration-300">
+        <div className="w-14 h-14 rounded-2xl bg-[#0E152B] border border-white/[0.08] shadow-[0_12px_32px_rgba(0,0,0,0.4)] flex items-center justify-center text-[#F59E0B] mb-4 animate-in zoom-in duration-300">
           <Lock size={22} />
         </div>
         
         <div className="space-y-1 mb-5">
-          <h4 className="text-base font-bold text-[#F9FAFB] tracking-tight">Premium Sub-Module Locked</h4>
-          <p className="text-xs text-[#9CA3AF] font-medium">Requires {requiredPlan} architectural tier.</p>
+          <h4 className="text-base font-bold text-[#E1E2EC] tracking-tight">Premium Sub-Module Locked</h4>
+          <p className="text-xs text-[#C2C6D6] font-medium">Requires {requiredPlan} architectural tier.</p>
         </div>
 
         <button 

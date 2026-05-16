@@ -41,7 +41,7 @@ export function SettingsScreen() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col gap-5 pb-28 pt-4 select-none font-sans">
+    <div className="w-full max-w-md mx-auto flex flex-col gap-5 pt-4 select-none font-sans">
       
       {/* Clean Page Head */}
       <div className="px-1">
@@ -53,7 +53,7 @@ export function SettingsScreen() {
       </div>
 
       {/* Active Profile Summary */}
-      <div className="bg-[#11131A] border border-outline-variant/20 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+      <div className="bg-[#0E152B] border border-outline-variant/20 rounded-xl p-4 flex items-center gap-4 shadow-sm">
          <div className="w-11 h-11 rounded-xl bg-[#1D1F27] border border-outline-variant/20 flex items-center justify-center text-emerald shrink-0 overflow-hidden">
             <User size={20} />
          </div>
@@ -70,7 +70,7 @@ export function SettingsScreen() {
       <div className="flex flex-col gap-2.5">
          <span className="px-1 text-[9px] font-black uppercase font-label-caps tracking-wider text-on-surface-variant/60">Corporate Actions</span>
          
-         <div className="bg-[#11131A] border border-outline-variant/20 rounded-xl overflow-hidden divide-y divide-outline-variant/10 shadow-sm">
+         <div className="bg-[#0E152B] border border-outline-variant/20 rounded-xl overflow-hidden divide-y divide-outline-variant/10 shadow-sm">
             
             {/* 1. Staff Management Accordion */}
             <AccordionItem 
@@ -168,7 +168,7 @@ export function SettingsScreen() {
       <div className="flex flex-col gap-2.5">
          <span className="px-1 text-[9px] font-black uppercase font-label-caps tracking-wider text-on-surface-variant/60">Interface Configuration</span>
          
-         <div className="bg-[#11131A] border border-outline-variant/20 rounded-xl overflow-hidden divide-y divide-outline-variant/10 shadow-sm">
+         <div className="bg-[#0E152B] border border-outline-variant/20 rounded-xl overflow-hidden divide-y divide-outline-variant/10 shadow-sm">
             <AccordionItem 
               id="categories"
               title="Taxonomy Categories"
@@ -211,7 +211,7 @@ export function SettingsScreen() {
       </div>
 
       {/* Terminate Authority */}
-      <div className="bg-[#11131A] border border-outline-variant/20 rounded-xl overflow-hidden shadow-sm mt-2 cursor-pointer group active:scale-[0.98] transition-transform" onClick={logout}>
+      <div className="bg-[#0E152B] border border-outline-variant/20 rounded-xl overflow-hidden shadow-sm mt-2 cursor-pointer group active:scale-[0.98] transition-transform" onClick={logout}>
          <div className="flex items-center justify-between p-4 bg-danger/5 hover:bg-danger/10 transition-all">
             <div className="flex items-center gap-3.5">
                <div className="w-8.5 h-8.5 rounded-lg bg-danger/10 border border-danger/20 flex items-center justify-center text-danger group-hover:scale-105 transition-transform shadow-sm">
