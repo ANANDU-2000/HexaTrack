@@ -79,6 +79,15 @@ public enum WorkspaceMode
     Enterprise = 4
 }
 
+public enum UserMode
+{
+    Individual = 1,
+    OrganizationOwner = 2,
+    OrganizationStaff = 3,
+    BranchManager = 4,
+    SuperAdmin = 5
+}
+
 public enum WorkspaceRole
 {
     Owner = 1,

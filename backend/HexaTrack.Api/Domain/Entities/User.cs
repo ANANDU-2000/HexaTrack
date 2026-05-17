@@ -8,6 +8,7 @@ public sealed class User
     public string? GoogleSubject { get; set; }
     public required string DisplayName { get; set; }
     public bool IsSuperAdmin { get; set; }
+    public UserMode Mode { get; set; } = UserMode.Individual;
     public bool IsLocked { get; set; }
     public Guid? OrganizationId { get; set; }
     public Guid? BranchId { get; set; }

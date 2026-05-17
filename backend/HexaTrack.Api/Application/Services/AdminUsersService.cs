@@ -106,12 +106,26 @@ public sealed class AdminUsersService(HexaTrackDbContext db, IAdminAuditService 
             string currency = request.Currency.Trim().ToUpperInvariant();
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
+            // Derive UserMode from request properties
+            HexaTrack.Api.Domain.UserMode mode;
+            if (request.IsSuperAdmin)
+                mode = HexaTrack.Api.Domain.UserMode.SuperAdmin;
+            else if (request.OrganizationId.HasValue && request.OrganizationRole?.Equals("Owner", StringComparison.OrdinalIgnoreCase) == true)
+                mode = HexaTrack.Api.Domain.UserMode.OrganizationOwner;
+            else if (request.OrganizationId.HasValue && request.BranchId.HasValue)
+                mode = HexaTrack.Api.Domain.UserMode.BranchManager;
+            else if (request.OrganizationId.HasValue)
+                mode = HexaTrack.Api.Domain.UserMode.OrganizationStaff;
+            else
+                mode = HexaTrack.Api.Domain.UserMode.Individual;
+
             var user = new User
             {
                 Email = email,
                 DisplayName = fullName,
                 PasswordHash = passwordHash,
                 IsSuperAdmin = request.IsSuperAdmin,
+                Mode = mode,
                 OrganizationId = request.OrganizationId,
                 BranchId = request.BranchId,
                 OrganizationRole = request.OrganizationRole,
@@ -128,12 +142,13 @@ public sealed class AdminUsersService(HexaTrackDbContext db, IAdminAuditService 
                 email = user.Email,
                 workspace = workspaceName,
                 isSuperAdmin = user.IsSuperAdmin,
+                userMode = mode.ToString(),
                 currency,
                 workspaceRole = membershipRole.ToString(),
             });
             await audit.LogAsync(actorUserId, "user.create", "User", user.Id, meta, ct);
 
-            return new AdminCreateUserResponse(user.Id, user.Email, user.DisplayName, user.IsSuperAdmin);
+            return new AdminCreateUserResponse(user.Id, user.Email, user.DisplayName, user.IsSuperAdmin, request.Password);
         }, cancellationToken);
 
     public async Task SetSuperAdminAsync(Guid targetUserId, bool isSuperAdmin, Guid actorUserId, CancellationToken cancellationToken)

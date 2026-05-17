@@ -34,6 +34,7 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<Integration> Integrations => Set<Integration>();
     public DbSet<OrganizationFeatureToggle> OrganizationFeatureToggles => Set<OrganizationFeatureToggle>();
+    public DbSet<PricingConfiguration> PricingConfigurations => Set<PricingConfiguration>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,6 +49,7 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
             entity.Property(x => x.DisplayName).HasMaxLength(160);
             entity.Property(x => x.OrganizationRole).HasMaxLength(50);
             entity.Property(x => x.Department).HasMaxLength(100);
+            entity.HasIndex(x => x.Mode);
             
             entity.HasOne(x => x.Organization)
                 .WithMany(x => x.Members)
@@ -193,6 +195,9 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
             entity.HasIndex(x => new { x.WorkspaceId, x.OccurredOn });
             entity.HasIndex(x => new { x.UserId, x.CategoryId, x.OccurredOn });
             entity.HasIndex(x => new { x.AccountId, x.OccurredOn });
+            entity.HasIndex(x => x.OrganizationId).HasFilter("\"OrganizationId\" IS NOT NULL");
+            entity.HasIndex(x => x.BranchId).HasFilter("\"BranchId\" IS NOT NULL");
+            entity.HasIndex(x => x.CreatedAt);
             entity.HasIndex(x => new { x.UserId, x.IdempotencyKey }).IsUnique().HasFilter("\"IdempotencyKey\" IS NOT NULL");
             entity.HasIndex(x => x.TransferId).HasFilter("\"TransferId\" IS NOT NULL");
             entity.Property(x => x.Amount).HasPrecision(18, 2);
@@ -376,6 +381,15 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
                 .WithMany(x => x.FeatureToggles)
                 .HasForeignKey(x => x.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PricingConfiguration>(entity =>
+        {
+            entity.Property(x => x.PlanName).HasMaxLength(50);
+            entity.Property(x => x.Currency).HasMaxLength(3);
+            entity.Property(x => x.MonthlyPrice).HasPrecision(18, 2);
+            entity.Property(x => x.YearlyPrice).HasPrecision(18, 2);
+            entity.HasIndex(x => new { x.PlanName, x.IsActive });
         });
     }
 }

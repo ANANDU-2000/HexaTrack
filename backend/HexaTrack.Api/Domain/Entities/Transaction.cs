@@ -6,6 +6,8 @@ public sealed class Transaction
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid WorkspaceId { get; set; }
+    public Guid? OrganizationId { get; set; }
+    public Guid? BranchId { get; set; }
     public Guid UserId { get; set; }
     public Guid AccountId { get; set; }
     public Guid CategoryId { get; set; }

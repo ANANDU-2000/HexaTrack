@@ -22,8 +22,8 @@ public interface IAccountService
 public sealed class AccountService(HexaTrackDbContext db, IUserScopedRepository<Account> accounts, IUserScopedRepository<AccountTransfer> transfers, ICurrentUser currentUser, ICurrentWorkspace currentWorkspace, IUnitOfWork unitOfWork) : IAccountService
 {
     public async Task<IReadOnlyCollection<AccountDto>> ListAsync(CancellationToken cancellationToken)
-        => await accounts.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
-            .Where(x => !x.IsArchived)
+        => await db.Accounts.AsNoTracking()
+            .Where(x => x.WorkspaceId == currentWorkspace.WorkspaceId && !x.IsArchived)
             .OrderBy(x => x.Type).ThenBy(x => x.Name)
             .Select(x => new AccountDto(x.Id, x.Name, x.Type, x.Currency, x.Balance))
             .ToListAsync(cancellationToken);

@@ -8,16 +8,16 @@ import { ToggleLeft, ToggleRight, Cpu, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const FEATURE_KEYS = [
-  { key: 'branch_management', label: 'Branch Management', description: 'Enable multi-branch organization support' },
-  { key: 'advanced_reports', label: 'Advanced Reports', description: 'Detailed financial analytics and reports' },
-  { key: 'payroll', label: 'Payroll', description: 'Staff payroll management module' },
-  { key: 'multi_currency', label: 'Multi Currency', description: 'Support for multiple currencies' },
-  { key: 'inventory', label: 'Inventory', description: 'Inventory tracking and management' },
-  { key: 'ai_insights', label: 'AI Insights', description: 'AI-powered financial insights' },
-  { key: 'approval_workflows', label: 'Approval Workflows', description: 'Transaction approval pipelines' },
-  { key: 'recurring_transactions', label: 'Recurring Transactions', description: 'Automated recurring entries' },
-  { key: 'tax_management', label: 'Tax Management', description: 'Tax calculation and reporting' },
-  { key: 'receipt_ocr', label: 'Receipt OCR', description: 'Automatic receipt scanning' },
+  { key: 'EnableOrganizations', label: 'Enable Organizations', description: 'Enable multi-tenant organization support' },
+  { key: 'EnableBranches', label: 'Enable Branches', description: 'Enable branch-level finance and manager mapping' },
+  { key: 'EnableAI', label: 'AI Insights & OCR', description: 'AI-powered financial insights and receipt scanning' },
+  { key: 'EnableAnalytics', label: 'Analytics Dashboard', description: 'Detailed financial charts and metrics' },
+  { key: 'EnableBudgets', label: 'Budgets & Limits', description: 'Set and track budget limits' },
+  { key: 'EnableRecurringTransactions', label: 'Recurring Transactions', description: 'Automated recurring income and expenses' },
+  { key: 'EnableInvoices', label: 'Invoices', description: 'Generate and send invoices to clients' },
+  { key: 'EnablePayroll', label: 'Payroll Management', description: 'Staff payroll calculation and execution' },
+  { key: 'EnableInventory', label: 'Inventory Tracking', description: 'Track assets and physical inventory' },
+  { key: 'EnableAdvancedReports', label: 'Advanced Reports', description: 'Export tax and custom ledger reports' },
 ];
 
 export default function SystemConfigPage() {

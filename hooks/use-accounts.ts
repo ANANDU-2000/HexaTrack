@@ -1,17 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
 import { hexaTrackApi } from '@/lib/api';
+import { useWorkspaceStore } from '@/store/workspace-store';
 import type { Account } from '@/lib/types';
 
 export function useAccounts() {
+  const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
   return useQuery<Account[]>({
-    queryKey: ['accounts', 'list'],
+    queryKey: ['accounts', 'list', activeWorkspaceId],
     queryFn: () => hexaTrackApi.accounts.list(),
+    enabled: !!activeWorkspaceId,
   });
 }
 
 export function useBranchAccounts(branchId?: string) {
+  const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
   return useQuery<Account[]>({
-    queryKey: ['accounts', 'available', branchId || 'current'],
+    queryKey: ['accounts', 'available', branchId || 'current', activeWorkspaceId],
     queryFn: () => hexaTrackApi.accounts.available(branchId),
+    enabled: !!activeWorkspaceId,
   });
 }

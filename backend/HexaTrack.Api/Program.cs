@@ -256,6 +256,7 @@ builder.Services.AddScoped<IAdminRoutesService, AdminRoutesService>();
 builder.Services.AddScoped<IOwnerService, OwnerService>();
 builder.Services.AddScoped<IAdminAnalyticsService, AdminAnalyticsService>();
 builder.Services.AddScoped<IAdminAiUsageService, AdminAiUsageService>();
+builder.Services.AddScoped<IAdminPricingService, AdminPricingService>();
 builder.Services.AddScoped<IWorkspaceInviteService, WorkspaceInviteService>();
 
 builder.Services.AddHostedService<SuperAdminBootstrapHostedService>();
@@ -286,11 +287,57 @@ using (var scope = app.Services.CreateScope())
                     DisplayName = "System Administrator",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin132!hexA"),
                     IsSuperAdmin = true,
+                    Mode = HexaTrack.Api.Domain.UserMode.SuperAdmin,
                     CreatedAt = DateTimeOffset.UtcNow
                 };
                 context.Set<User>().Add(newAdmin);
                 await context.SaveChangesAsync();
             }
+
+            // Seed default feature flags if not present
+            var defaultFlags = new Dictionary<string, string>
+            {
+                ["EnableOrganizations"] = "true",
+                ["EnableBranches"] = "true",
+                ["EnableAI"] = "false",
+                ["EnableAnalytics"] = "true",
+                ["EnableBudgets"] = "true",
+                ["EnableRecurringTransactions"] = "true",
+                ["EnableInvoices"] = "false",
+                ["EnablePayroll"] = "false",
+                ["EnableInventory"] = "false",
+                ["EnableAdvancedReports"] = "false",
+            };
+
+            foreach (var (key, value) in defaultFlags)
+            {
+                bool exists = await context.Set<HexaTrack.Api.Domain.Entities.GlobalFeatureFlag>()
+                    .AnyAsync(f => f.Key == key);
+                if (!exists)
+                {
+                    context.Set<HexaTrack.Api.Domain.Entities.GlobalFeatureFlag>().Add(
+                        new HexaTrack.Api.Domain.Entities.GlobalFeatureFlag
+                        {
+                            Key = key,
+                            Value = value,
+                            UpdatedAt = DateTimeOffset.UtcNow,
+                        });
+                }
+            }
+
+            // Seed default pricing if not present
+            bool hasPricing = await context.Set<HexaTrack.Api.Domain.Entities.PricingConfiguration>().AnyAsync();
+            if (!hasPricing)
+            {
+                context.Set<HexaTrack.Api.Domain.Entities.PricingConfiguration>().AddRange(
+                    new HexaTrack.Api.Domain.Entities.PricingConfiguration { PlanName = "Free", MonthlyPrice = 0, YearlyPrice = 0, Currency = "USD", TrialDays = 0, MaxUsers = 1, MaxBranches = 0, MaxTransactionsPerMonth = 100, IsActive = true },
+                    new HexaTrack.Api.Domain.Entities.PricingConfiguration { PlanName = "Basic", MonthlyPrice = 9.99m, YearlyPrice = 99.99m, Currency = "USD", TrialDays = 14, MaxUsers = 5, MaxBranches = 1, MaxTransactionsPerMonth = 1000, IsActive = true },
+                    new HexaTrack.Api.Domain.Entities.PricingConfiguration { PlanName = "Pro", MonthlyPrice = 29.99m, YearlyPrice = 299.99m, Currency = "USD", TrialDays = 14, MaxUsers = 25, MaxBranches = 5, MaxTransactionsPerMonth = 10000, IsActive = true },
+                    new HexaTrack.Api.Domain.Entities.PricingConfiguration { PlanName = "Enterprise", MonthlyPrice = 99.99m, YearlyPrice = 999.99m, Currency = "USD", TrialDays = 30, MaxUsers = 100, MaxBranches = 50, MaxTransactionsPerMonth = 100000, IsActive = true }
+                );
+            }
+
+            await context.SaveChangesAsync();
         }
     }
     catch (Exception ex)
@@ -315,6 +362,7 @@ app.UseAuthentication();
 app.UseMiddleware<WorkspaceContextMiddleware>();
 app.UseAuthorization();
 app.UseRateLimiter();
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTimeOffset.UtcNow }));
 app.MapControllers();
 
 IRecurringJobManager recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();

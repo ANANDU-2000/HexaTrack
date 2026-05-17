@@ -51,7 +51,8 @@ import type {
   CreateOwnerStaffRequest,
   StaffDashboardDto,
   StaffTask,
-  StaffNotification
+  StaffNotification,
+  PricingConfiguration
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:5014';
@@ -439,6 +440,13 @@ export const hexaTrackApi = {
         method: 'PUT',
         body: { value },
       }),
+    pricing: {
+      list: () => apiRequest<PricingConfiguration[]>('/api/admin/pricing'),
+      upsert: (payload: Partial<PricingConfiguration> & { planName: string; monthlyPrice: number; yearlyPrice: number; currency: string; trialDays: number; maxUsers: number; maxBranches: number; maxTransactionsPerMonth: number; isActive: boolean }) =>
+        apiRequest<PricingConfiguration>('/api/admin/pricing', { method: 'POST', body: payload }),
+      delete: (id: string) =>
+        apiRequest<void>(`/api/admin/pricing/${id}`, { method: 'DELETE' }),
+    },
     organizations: (query?: string, page = 1, pageSize = 20) => {
       const p = new URLSearchParams();
       if (query) p.set('query', query);

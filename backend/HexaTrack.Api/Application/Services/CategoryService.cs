@@ -31,8 +31,8 @@ public sealed class CategoryService(
     IUnitOfWork unitOfWork) : ICategoryService
 {
     public async Task<IReadOnlyCollection<CategoryDto>> ListAsync(CancellationToken cancellationToken)
-        => await categories.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
-            .Where(x => !x.IsArchived)
+        => await db.Categories.AsNoTracking()
+            .Where(x => x.WorkspaceId == currentWorkspace.WorkspaceId && !x.IsArchived)
             .OrderBy(x => x.Type).ThenBy(x => x.ParentCategoryId).ThenBy(x => x.Name)
             .Select(x => new CategoryDto(x.Id, x.ParentCategoryId, x.Name, x.Type, x.Color, x.Icon))
             .ToListAsync(cancellationToken);

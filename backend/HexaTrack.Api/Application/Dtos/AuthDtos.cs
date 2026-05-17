@@ -8,6 +8,7 @@ public sealed record UserDto(
     Guid Id, 
     string Email, 
     string DisplayName, 
+    string UserMode,
     Guid? OrganizationId = null, 
     Guid? BranchId = null, 
     string? OrganizationRole = null,

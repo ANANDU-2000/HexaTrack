@@ -151,7 +151,9 @@ public sealed class TransactionService(
                 throw new InvalidOperationException("Amount must be greater than zero.");
             }
 
-            Account account = await accounts.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId).SingleOrDefaultAsync(x => x.Id == request.AccountId && !x.IsArchived, ct)
+            // Use workspace-scoped query so org staff can use accounts created by org owner
+            Account account = await db.Accounts
+                .SingleOrDefaultAsync(x => x.WorkspaceId == currentWorkspace.WorkspaceId && x.Id == request.AccountId && !x.IsArchived, ct)
                 ?? throw new KeyNotFoundException("Account not found.");
 
             string? idempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey) ? null : request.IdempotencyKey.Trim();
@@ -167,15 +169,16 @@ public sealed class TransactionService(
                 }
             }
 
-            Category? categoryRow = await categories.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
-                .SingleOrDefaultAsync(x => x.Id == request.CategoryId && x.Type == request.Type && !x.IsArchived, ct);
+            // Use workspace-scoped query so org staff can use categories created by org owner
+            Category? categoryRow = await db.Categories
+                .SingleOrDefaultAsync(x => x.WorkspaceId == currentWorkspace.WorkspaceId && x.Id == request.CategoryId && x.Type == request.Type && !x.IsArchived, ct);
             if (categoryRow is null)
             {
                 throw new InvalidOperationException("Category is invalid for this transaction type.");
             }
 
-            bool categoryHasSubcategories = await categories.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
-                .AnyAsync(x => x.ParentCategoryId == request.CategoryId && !x.IsArchived, ct);
+            bool categoryHasSubcategories = await db.Categories
+                .AnyAsync(x => x.WorkspaceId == currentWorkspace.WorkspaceId && x.ParentCategoryId == request.CategoryId && !x.IsArchived, ct);
             if (categoryHasSubcategories)
             {
                 throw new InvalidOperationException("Choose a subcategory for this category.");
@@ -186,6 +189,8 @@ public sealed class TransactionService(
             var transaction = new DomainTransaction
             {
                 WorkspaceId = currentWorkspace.WorkspaceId,
+                OrganizationId = currentUser.OrganizationId,
+                BranchId = null, // will be populated from user's branch if applicable
                 UserId = currentUser.UserId,
                 AccountId = account.Id,
                 CategoryId = request.CategoryId,

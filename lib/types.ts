@@ -3,11 +3,14 @@ export type TransactionType = 'Income' | 'Expense' | 'Transfer';
 export type RecurrenceFrequency = 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
 export type SplitMethod = 'Equal' | 'Custom' | 'Percentage';
 
+export type UserMode = 'Individual' | 'OrganizationOwner' | 'OrganizationStaff' | 'BranchManager' | 'SuperAdmin';
+
 export type User = {
   id: string;
   email: string;
   name?: string;
   displayName: string;
+  userMode: UserMode;
   isSuperAdmin?: boolean;
   organizationId?: string | null;
   branchId?: string | null;
@@ -94,6 +97,7 @@ export type AdminCreateUserResponse = {
   email: string;
   displayName: string;
   isSuperAdmin: boolean;
+  plaintextPassword?: string | null;
 };
 
 export type AdminWorkspaceListItem = {
@@ -599,5 +603,18 @@ export type CreateOwnerStaffRequest = {
   password: string;
   branchId: string;
   department: string;
+};
+
+export type PricingConfiguration = {
+  id: string;
+  planName: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  currency: string;
+  trialDays: number;
+  isActive: boolean;
+  maxUsers: number;
+  maxBranches: number;
+  maxTransactionsPerMonth: number;
 };
 

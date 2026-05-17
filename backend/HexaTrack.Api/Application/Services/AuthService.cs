@@ -210,7 +210,7 @@ public sealed class AuthService(
             throw new UnauthorizedAccessException("Account locked.");
         }
 
-        return new AuthMeResponse(new UserDto(user.Id, user.Email, user.DisplayName, user.OrganizationId, user.BranchId, user.OrganizationRole, user.Branch?.Name, user.Department), user.IsSuperAdmin);
+        return new AuthMeResponse(new UserDto(user.Id, user.Email, user.DisplayName, user.Mode.ToString(), user.OrganizationId, user.BranchId, user.OrganizationRole, user.Branch?.Name, user.Department), user.IsSuperAdmin);
     }
 
     public Task<AuthResponse> AcceptWorkspaceInviteAsync(InviteAcceptRequest request, CancellationToken cancellationToken)
@@ -281,7 +281,7 @@ public sealed class AuthService(
             expires: expiresAt.UtcDateTime,
             signingCredentials: credentials);
 
-        return new AuthResponse(new JwtSecurityTokenHandler().WriteToken(token), expiresAt, new UserDto(user.Id, user.Email, user.DisplayName, user.OrganizationId, user.BranchId, user.OrganizationRole, user.Branch?.Name, user.Department));
+        return new AuthResponse(new JwtSecurityTokenHandler().WriteToken(token), expiresAt, new UserDto(user.Id, user.Email, user.DisplayName, user.Mode.ToString(), user.OrganizationId, user.BranchId, user.OrganizationRole, user.Branch?.Name, user.Department));
     }
 }
 

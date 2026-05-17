@@ -17,6 +17,7 @@ public interface IDashboardService
 }
 
 public sealed class DashboardService(
+    HexaTrackDbContext db,
     IUserScopedRepository<Account> accounts,
     IUserScopedRepository<DomainTransaction> transactions,
     IUserScopedRepository<RecurringTransaction> recurringTransactions,
@@ -50,8 +51,8 @@ public sealed class DashboardService(
             // Redis slow/unavailable; continue without cache.
         }
 
-        decimal totalBalance = await accounts.ForUser(currentUser.UserId).InWorkspace(currentWorkspace.WorkspaceId)
-            .Where(x => !x.IsArchived)
+        decimal totalBalance = await db.Accounts.AsNoTracking()
+            .Where(x => x.WorkspaceId == currentWorkspace.WorkspaceId && !x.IsArchived)
             .SumAsync(x => x.Balance, cancellationToken);
 
         ReportSummary report = await reportsService.GetSummaryAsync(from, to, cancellationToken);
