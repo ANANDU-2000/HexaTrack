@@ -109,7 +109,17 @@ function getCatIcon(name: string): React.ElementType {
 
 type QuickAddStep = 'menu' | 'form' | 'create-category' | 'create-subcategory';
 
-export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+export function AddTransactionSheet({ 
+  open, 
+  onOpenChange,
+  defaultType,
+  initialStep
+}: { 
+  open: boolean; 
+  onOpenChange: (v: boolean) => void;
+  defaultType?: TransactionType;
+  initialStep?: QuickAddStep;
+}) {
   const accounts = useFinanceStore((s) => s.accounts);
   const categories = useFinanceStore((s) => s.categories);
   const addTransaction = useFinanceStore((s) => s.addTransaction);
@@ -170,10 +180,13 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
   }, [accounts]);
 
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      if (defaultType) setType(defaultType);
+      if (initialStep) setStep(initialStep);
+    } else {
       resetForm();
     }
-  }, [open, resetForm]);
+  }, [open, defaultType, initialStep, resetForm]);
 
   useEffect(() => {
     if (open && accounts.length > 0 && !selectedAccountId) {
@@ -267,10 +280,6 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
       setLocalError('Enter a valid positive amount');
       return;
     }
-    if (!selectedAccountId) {
-      setLocalError('Please select a payment method / account');
-      return;
-    }
     if (!selectedCategoryId) {
       setLocalError('Please select a transaction category');
       return;
@@ -286,6 +295,8 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
       }
     }
 
+    const finalAccountId = selectedAccountId || '00000000-0000-0000-0000-000000000000';
+
     setSubmitting(true);
     clearFinanceError();
     setLocalError('');
@@ -293,7 +304,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
     try {
       // 1. Persist Transaction
       await addTransaction({
-        accountId: selectedAccountId,
+        accountId: finalAccountId,
         categoryId: selectedSubcategoryId || selectedCategoryId, // route to subcategory if selected!
         type,
         amount: parsedAmount,
@@ -307,7 +318,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
       if (isRecurring) {
         try {
           await useFinanceStore.getState().addRecurring({
-            accountId: selectedAccountId,
+            accountId: finalAccountId,
             categoryId: selectedCategoryId,
             type,
             frequency,
@@ -519,27 +530,7 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                     </div>
                   </div>
 
-                  {/* Account / Wallet Select */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
-                      Account / Wallet
-                    </label>
-                    <div className="flex items-center gap-3 px-4 h-13 rounded-2xl bg-white/[0.02] border border-white/[0.06] focus-within:border-primary/20 transition-all">
-                      <WalletIcon size={18} className="text-on-surface-variant/30" />
-                      <select
-                        value={selectedAccountId}
-                        onChange={(e) => setSelectedAccountId(e.target.value)}
-                        className="w-full bg-transparent outline-none text-sm font-bold text-on-surface"
-                      >
-                        <option value="" disabled className="bg-[#0E152B]">Select Account</option>
-                        {accounts.map((acc) => (
-                          <option key={acc.id} value={acc.id} className="bg-[#0E152B]">
-                            {acc.name} ({currencySymbol}{acc.balance.toLocaleString()})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+
 
                   {/* Dynamic Category List & Inline Creator */}
                   <div className="space-y-2">

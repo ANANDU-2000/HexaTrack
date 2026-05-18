@@ -104,7 +104,6 @@ public sealed class CreateTransactionRequestValidator : AbstractValidator<Create
 {
     public CreateTransactionRequestValidator()
     {
-        RuleFor(x => x.AccountId).NotEmpty();
         RuleFor(x => x.CategoryId).NotEmpty();
         RuleFor(x => x.Type).IsInEnum();
         RuleFor(x => x.Amount).GreaterThan(0).WithMessage("Amount must be positive.");

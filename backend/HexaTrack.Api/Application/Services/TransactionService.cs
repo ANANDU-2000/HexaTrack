@@ -152,10 +152,40 @@ public sealed class TransactionService(
             }
 
             // Use repository so multi-tenant scoping and access rules are strictly applied
-            Account account = await accounts.ForUser(currentUser.UserId)
-                .InWorkspace(currentWorkspace.WorkspaceId)
-                .SingleOrDefaultAsync(x => x.Id == request.AccountId && !x.IsArchived, ct)
-                ?? throw new KeyNotFoundException("Account not found.");
+            Account? account = null;
+            if (request.AccountId != Guid.Empty)
+            {
+                account = await accounts.ForUser(currentUser.UserId)
+                    .InWorkspace(currentWorkspace.WorkspaceId)
+                    .SingleOrDefaultAsync(x => x.Id == request.AccountId && !x.IsArchived, ct);
+            }
+
+            if (account is null)
+            {
+                account = await accounts.ForUser(currentUser.UserId)
+                    .InWorkspace(currentWorkspace.WorkspaceId)
+                    .FirstOrDefaultAsync(x => !x.IsArchived, ct);
+
+                if (account is null)
+                {
+                    account = new Account
+                    {
+                        Id = Guid.NewGuid(),
+                        WorkspaceId = currentWorkspace.WorkspaceId,
+                        OrganizationId = currentUser.OrganizationId,
+                        BranchId = currentUser.BranchId,
+                        UserId = currentUser.UserId,
+                        Name = "System Vault",
+                        Type = AccountType.Cash,
+                        Currency = string.IsNullOrWhiteSpace(request.Currency) ? "USD" : request.Currency.Trim().ToUpperInvariant(),
+                        Balance = 0,
+                        IsArchived = false,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    db.Accounts.Add(account);
+                    await db.SaveChangesAsync(ct);
+                }
+            }
 
             string? idempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey) ? null : request.IdempotencyKey.Trim();
             if (idempotencyKey is not null)

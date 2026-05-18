@@ -157,10 +157,16 @@ export default function Home() {
   }
 
   return (
-    <AppShell activeScreen={screen} onAddTransaction={() => setIsAdding(true)} onNavigate={setScreen} transactionCount={transactions.length}>
+    <AppShell 
+      activeScreen={screen} 
+      onAddTransaction={() => {
+        window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Expense' } }));
+      }} 
+      onNavigate={setScreen} 
+      transactionCount={transactions.length}
+    >
       <StatusBanner error={error} loading={loading} onDismiss={clearError} />
       <AnimatePresence animationKey={screen}>{content}</AnimatePresence>
-      <AddTransactionSheet open={isAdding} onOpenChange={setIsAdding} />
     </AppShell>
   );
 }

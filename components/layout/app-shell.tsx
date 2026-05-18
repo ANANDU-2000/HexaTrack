@@ -110,19 +110,7 @@ export function AppShell({ activeScreen, children, onAddTransaction, onNavigate,
           {children}
         </main>
 
-        {/* Desktop Floating Action Button (FAB) */}
-        <div className="fixed bottom-8 right-8 z-50">
-          <div className="absolute rounded-full pointer-events-none w-16 h-16 bg-primary/20 blur-md -translate-x-1 -translate-y-1" style={{ top: -4, left: -4 }} />
-          <button
-            onClick={onAddTransaction}
-            className="relative flex items-center justify-center rounded-full bg-gradient-to-tr from-primary to-emerald shadow-[0_8px_32px_rgba(16,185,129,0.3)] border border-white/20 transition-all hover:scale-105 active:scale-95 duration-200"
-            style={{ width: 56, height: 56 }}
-            type="button"
-            aria-label="Quick Add Transaction"
-          >
-            <Plus size={24} className="text-white" strokeWidth={2.5} />
-          </button>
-        </div>
+
       </div>
 
       {/* ─── MOBILE LAYOUT (below lg): fixed shell with scroll area ─── */}

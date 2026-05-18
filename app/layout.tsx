@@ -56,6 +56,7 @@ export const viewport: Viewport = {
 };
 
 import { PwaProvider } from '@/components/pwa/pwa-provider';
+import { UnifiedQuickAdd } from '@/components/ui/unified-quick-add';
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           {children}
           <ToastContainer />
           <PwaProvider />
+          <UnifiedQuickAdd />
         </QueryProvider>
       </body>
     </html>

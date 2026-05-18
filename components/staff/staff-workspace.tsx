@@ -106,12 +106,15 @@ export function StaffWorkspace({ view }: { view: StaffView }) {
                 <BrandMark tone="dark" />
                 <BranchIdentityBadge branchName={dashboard?.branchName ?? user.branchName} department={dashboard?.department ?? user.department} />
               </div>
-              <StaffQuickActions onExpense={() => setModalType('Expense')} onIncome={() => setModalType('Income')} />
+              <StaffQuickActions 
+                onExpense={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Expense' } }))} 
+                onIncome={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Income' } }))} 
+              />
             </div>
           </header>
           <section className="mx-auto max-w-7xl space-y-8 p-8 animate-in fade-in duration-500">
             {error ? <ErrorCard message={error} onRetry={load} /> : null}
-            {loading ? <StaffSkeleton /> : dashboard ? renderView(view, dashboard, transactions, setTransactions, setModalType) : <EmptyState title="Node workspace not provisioned." action="Pending direct assignment from master owner." />}
+            {loading ? <StaffSkeleton /> : dashboard ? renderView(view, dashboard, transactions, setTransactions, (type) => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type } }))) : <EmptyState title="Node workspace not provisioned." action="Pending direct assignment from master owner." />}
           </section>
         </main>
       </div>
@@ -157,7 +160,7 @@ export function StaffWorkspace({ view }: { view: StaffView }) {
         >
           <section className="space-y-6">
             {error ? <ErrorCard message={error} onRetry={load} /> : null}
-            {loading ? <StaffSkeleton /> : dashboard ? renderView(view, dashboard, transactions, setTransactions, setModalType) : <EmptyState title="Node workspace not provisioned." action="Pending direct assignment from master owner." />}
+            {loading ? <StaffSkeleton /> : dashboard ? renderView(view, dashboard, transactions, setTransactions, (type) => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type } }))) : <EmptyState title="Node workspace not provisioned." action="Pending direct assignment from master owner." />}
           </section>
         </main>
 
@@ -193,7 +196,7 @@ export function StaffWorkspace({ view }: { view: StaffView }) {
               <motion.button
                 whileTap={{ scale: 0.90 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                onClick={() => setModalType('Expense')}
+                onClick={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Expense' } }))}
                 className="relative z-10 flex items-center justify-center rounded-full overflow-hidden"
                 style={{
                   width: 68,
@@ -223,8 +226,7 @@ export function StaffWorkspace({ view }: { view: StaffView }) {
         </div>
       </div>
 
-      {/* Transaction Modal — shared between mobile and desktop */}
-      {modalType && dashboard ? <StaffTransactionModal type={modalType} dashboard={dashboard} onClose={() => setModalType(null)} onSaved={load} /> : null}
+
     </>
   );
 }

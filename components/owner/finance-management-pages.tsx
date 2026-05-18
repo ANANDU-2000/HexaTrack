@@ -137,7 +137,7 @@ function OwnerFinanceShell({ kind }: { kind: FinanceKind }) {
               {kind !== 'analytics' && kind !== 'ledger' ? (
                 <button
                   type="button"
-                  onClick={() => setQuickOpen(kind === 'expenses' ? 'Expense' : 'Income')}
+                  onClick={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: kind === 'expenses' ? 'Expense' : 'Income' } }))}
                   className="h-11 rounded-[18px] bg-[#10B981] px-5 text-sm font-bold text-white active:scale-95"
                 >
                   <Plus className="mr-2 inline h-4 w-4" />
@@ -170,7 +170,7 @@ function OwnerFinanceShell({ kind }: { kind: FinanceKind }) {
             {kind !== 'analytics' && kind !== 'ledger' ? (
               <button
                 type="button"
-                onClick={() => setQuickOpen(kind === 'expenses' ? 'Expense' : 'Income')}
+                onClick={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: kind === 'expenses' ? 'Expense' : 'Income' } }))}
                 className="h-9 px-3 rounded-xl bg-[#10B981] text-[11px] font-bold text-white flex items-center gap-1.5 active:scale-95 shrink-0"
               >
                 <Plus size={14} /> Add
@@ -196,10 +196,12 @@ function OwnerFinanceShell({ kind }: { kind: FinanceKind }) {
         </main>
 
         {/* Fixed Bottom Navigation */}
-        <OwnerBottomNav activeTab={kind === 'transactions' ? 'history' : kind === 'analytics' ? 'reports' : 'home'} onAdd={() => setQuickOpen(kind === 'expenses' ? 'Expense' : 'Income')} disabled={!activeWorkspaceId} />
+        <OwnerBottomNav 
+          activeTab={kind === 'transactions' ? 'history' : kind === 'analytics' ? 'reports' : 'home'} 
+          onAdd={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: kind === 'expenses' ? 'Expense' : 'Income' } }))} 
+          disabled={!activeWorkspaceId} 
+        />
       </div>
-
-      {quickOpen ? <QuickTransactionModal type={quickOpen} onClose={() => setQuickOpen(null)} /> : null}
     </>
   );
 }

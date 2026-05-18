@@ -35,7 +35,7 @@ const PUSH_PROMPT_DISMISSED_KEY = 'hexatrack.push-prompt.dismissed.v1';
 
 function isStandaloneDisplay() {
   if (typeof window === 'undefined') return false;
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  return window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
 }
 
 // Custom sample seeds matching requested Fintech alerts
