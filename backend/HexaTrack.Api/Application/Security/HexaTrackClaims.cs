@@ -8,4 +8,6 @@ public static class HexaTrackClaims
     public const string OrganizationId = "org_id";
     public const string BranchId = "branch_id";
     public const string UserMode = "user_mode";
+    public const string WorkspaceId = "workspace_id";
+    public const string Role = "role";
 }

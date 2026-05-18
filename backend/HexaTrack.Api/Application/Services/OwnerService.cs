@@ -1,4 +1,5 @@
 using HexaTrack.Api.Application.Dtos;
+using HexaTrack.Api.Domain;
 using HexaTrack.Api.Domain.Entities;
 using HexaTrack.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -123,11 +124,21 @@ public sealed class OwnerService(HexaTrackDbContext db) : IOwnerService
         };
 
         db.Users.Add(staff);
+
+        // Fetch target branch to link workspace membership
+        var branch = await db.Branches.FirstOrDefaultAsync(b => b.Id == request.BranchId, ct);
+        if (branch != null && branch.WorkspaceId.HasValue)
+        {
+            db.WorkspaceMembers.Add(new WorkspaceMember
+            {
+                WorkspaceId = branch.WorkspaceId.Value,
+                UserId = staff.Id,
+                Role = WorkspaceRole.Member
+            });
+        }
+
         await db.SaveChangesAsync(ct);
-        string branchName = await db.Branches
-            .Where(b => b.Id == request.BranchId)
-            .Select(b => b.Name)
-            .SingleAsync(ct);
+        string branchName = branch?.Name ?? "Assigned Branch";
 
         return new AdminUserListItemDto(
             staff.Id,
@@ -164,6 +175,25 @@ public sealed class OwnerService(HexaTrackDbContext db) : IOwnerService
         }
 
         staff.BranchId = request.BranchId;
+
+        if (request.BranchId.HasValue)
+        {
+            var targetBranch = await db.Branches.FirstOrDefaultAsync(b => b.Id == request.BranchId.Value, ct);
+            if (targetBranch != null && targetBranch.WorkspaceId.HasValue)
+            {
+                bool exists = await db.WorkspaceMembers.AnyAsync(m => m.WorkspaceId == targetBranch.WorkspaceId.Value && m.UserId == userId, ct);
+                if (!exists)
+                {
+                    db.WorkspaceMembers.Add(new WorkspaceMember
+                    {
+                        WorkspaceId = targetBranch.WorkspaceId.Value,
+                        UserId = userId,
+                        Role = WorkspaceRole.Member
+                    });
+                }
+            }
+        }
+
         if (!string.IsNullOrWhiteSpace(request.Department))
         {
             staff.Department = request.Department.Trim();

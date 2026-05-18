@@ -21,8 +21,26 @@ public sealed class WorkspaceService(HexaTrackDbContext db, ICurrentUser current
     public async Task<IReadOnlyCollection<WorkspaceDto>> ListAsync(CancellationToken cancellationToken)
     {
         Guid uid = currentUser.UserId;
-        return await db.Workspaces.AsNoTracking()
-            .Where(w => w.OwnerUserId == uid || w.Members.Any(m => m.UserId == uid))
+        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == uid, cancellationToken);
+        if (user == null) return Array.Empty<WorkspaceDto>();
+
+        IQueryable<Workspace> query = db.Workspaces.AsNoTracking();
+
+        if (!user.IsSuperAdmin)
+        {
+            if (user.OrganizationId != null)
+            {
+                query = query.Where(w => w.OwnerUserId == uid || 
+                                         w.Members.Any(m => m.UserId == uid) || 
+                                         w.OrganizationId == user.OrganizationId);
+            }
+            else
+            {
+                query = query.Where(w => w.OwnerUserId == uid || w.Members.Any(m => m.UserId == uid));
+            }
+        }
+
+        return await query
             .OrderByDescending(w => w.IsDefault)
             .ThenBy(w => w.Name)
             .Select(w => new WorkspaceDto(w.Id, w.Name, w.Type, w.Currency, w.IsDefault))

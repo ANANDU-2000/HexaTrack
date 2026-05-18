@@ -89,6 +89,12 @@ export const useAuthStore = create<AuthState>((set, get) => {
       loading: false,
       error: null,
     });
+    // Dynamically retrieve and seed active workspace ID upon successful login
+    try {
+      await useWorkspaceStore.getState().ensureActiveWorkspace();
+    } catch (e) {
+      console.warn("Failed to automatically assign active workspace on session start:", e);
+    }
   }
 
   return {

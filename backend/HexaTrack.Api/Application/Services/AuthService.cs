@@ -279,6 +279,20 @@ public sealed class AuthService(
         }
         claims.Add(new Claim(HexaTrackClaims.UserMode, user.Mode.ToString()));
 
+        // Resolve primary or default accessible workspace to embed inside the JWT claims
+        var defaultWorkspace = dbContext.Workspaces.AsNoTracking()
+            .Where(w => w.OwnerUserId == user.Id || w.Members.Any(m => m.UserId == user.Id) || (user.OrganizationId != null && w.OrganizationId == user.OrganizationId))
+            .OrderByDescending(w => w.IsDefault)
+            .FirstOrDefault();
+
+        if (defaultWorkspace != null)
+        {
+            claims.Add(new Claim(HexaTrackClaims.WorkspaceId, defaultWorkspace.Id.ToString()));
+        }
+
+        string userRole = user.IsSuperAdmin ? "SuperAdmin" : (user.OrganizationRole ?? "Individual");
+        claims.Add(new Claim(HexaTrackClaims.Role, userRole));
+
         var token = new JwtSecurityToken(
             issuer: options.Issuer,
             audience: options.Audience,

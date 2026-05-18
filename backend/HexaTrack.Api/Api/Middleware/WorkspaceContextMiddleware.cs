@@ -50,8 +50,52 @@ public sealed class WorkspaceContextMiddleware(RequestDelegate next)
             return;
         }
 
-        bool allowed = await db.Set<WorkspaceMember>()
-            .AnyAsync(m => m.WorkspaceId == workspaceId && m.UserId == userId, context.RequestAborted);
+        // 1. Fetch user to verify status
+        var user = await db.Set<User>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == userId, context.RequestAborted);
+
+        if (user == null)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsJsonAsync(new { error = "Invalid authentication context." });
+            return;
+        }
+
+        // Super Admin always allowed access
+        bool allowed = user.IsSuperAdmin;
+
+        if (!allowed)
+        {
+            // Explicit WorkspaceMember check
+            bool isExplicitMember = await db.Set<WorkspaceMember>()
+                .AnyAsync(m => m.WorkspaceId == workspaceId && m.UserId == userId, context.RequestAborted);
+
+            if (isExplicitMember)
+            {
+                allowed = true;
+            }
+        }
+
+        if (!allowed)
+        {
+            // Workspace ownership or Organization scoping check
+            var workspace = await db.Set<Workspace>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(w => w.Id == workspaceId, context.RequestAborted);
+
+            if (workspace != null)
+            {
+                if (workspace.OwnerUserId == userId)
+                {
+                    allowed = true;
+                }
+                else if (user.OrganizationId != null && workspace.OrganizationId == user.OrganizationId)
+                {
+                    allowed = true;
+                }
+            }
+        }
 
         if (!allowed)
         {
