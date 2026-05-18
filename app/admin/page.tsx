@@ -19,6 +19,7 @@ import {
   EyeOff,
   Flag,
   Globe,
+  Key,
   Loader2,
   Lock,
   LockKeyhole,
@@ -45,11 +46,13 @@ import type {
   GlobalSettingDto,
   SubscriptionPlan,
   WorkspaceType,
+  LightOrganization,
 } from '@/lib/types';
 import { useAuthStore } from '@/store/auth-store';
 import { AdminCommandPalette, type AdminCommandItem } from '@/components/admin/admin-command-palette';
 import { ControlCenterOverview } from '@/components/admin/control-center-overview';
 import { CreateUserModal } from '@/components/admin/create-user-modal';
+import { ResetPasswordModal } from '@/components/admin/reset-password-modal';
 import OrganizationsManager from '@/components/admin/organizations-manager';
 import { BrandMark } from '@/components/ui/brand';
 
@@ -190,6 +193,17 @@ function AdminDashboardContent() {
   const [flagsError, setFlagsError] = useState<string | null>(null);
   const [flagDrafts, setFlagDrafts] = useState<Record<string, string>>({});
   const [flagSavingKey, setFlagSavingKey] = useState<string | null>(null);
+
+  const [flagsSubTab, setFlagsSubTab] = useState<'global' | 'org' | 'user'>('global');
+  const [orgFlagsOrgId, setOrgFlagsOrgId] = useState<string>('');
+  const [orgFlagsData, setOrgFlagsData] = useState<Record<string, boolean>>({});
+  const [orgFlagsLoading, setOrgFlagsLoading] = useState(false);
+  
+  const [userFlagsUserId, setUserFlagsUserId] = useState<string>('');
+  const [userFlagsData, setUserFlagsData] = useState<Record<string, boolean>>({});
+  const [userFlagsLoading, setUserFlagsLoading] = useState(false);
+  const [flagsOrgs, setFlagsOrgs] = useState<LightOrganization[]>([]);
+  const [flagsUsers, setFlagsUsers] = useState<any[]>([]);
   const [auditData, setAuditData] = useState<AdminAuditListResult | null>(null);
   const [auditPage, setAuditPage] = useState(1);
   const [auditLoading, setAuditLoading] = useState(false);
@@ -222,6 +236,9 @@ function AdminDashboardContent() {
     kind: 'lock' | 'delete' | 'plan' | 'superadmin';
   } | null>(null);
   const [createUserOpen, setCreateUserOpen] = useState(false);
+  const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
+  const [resetPasswordUserId, setResetPasswordUserId] = useState<string | null>(null);
+  const [resetPasswordUserEmail, setResetPasswordUserEmail] = useState<string | null>(null);
 
   const router = useRouter();
   const [isMac, setIsMac] = useState(false);
@@ -451,6 +468,97 @@ function AdminDashboardContent() {
     if (!flagsData) return;
     setFlagDrafts(Object.fromEntries(flagsData.map((f) => [f.key, f.value])));
   }, [flagsData]);
+
+  const loadOrgFlags = useCallback(async (orgId: string) => {
+    if (!orgId) return;
+    setOrgFlagsLoading(true);
+    try {
+      const res = await hexaTrackApi.admin.orgFeatureFlags(orgId);
+      const dict: Record<string, boolean> = {};
+      const flagsList = ['EnableOrganizations', 'EnableBranches', 'EnableAI', 'EnableAnalytics', 'EnableBudgets', 'EnableRecurringTransactions'];
+      flagsList.forEach(k => {
+        dict[k] = false;
+      });
+      res.forEach(item => {
+        dict[item.featureKey] = item.isEnabled;
+      });
+      setOrgFlagsData(dict);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setOrgFlagsLoading(false);
+    }
+  }, []);
+
+  const loadUserFlags = useCallback(async (userId: string) => {
+    if (!userId) return;
+    setUserFlagsLoading(true);
+    try {
+      const res = await hexaTrackApi.admin.userFeatureFlags(userId);
+      const dict: Record<string, boolean> = {};
+      const flagsList = ['EnableOrganizations', 'EnableBranches', 'EnableAI', 'EnableAnalytics', 'EnableBudgets', 'EnableRecurringTransactions'];
+      flagsList.forEach(k => {
+        dict[k] = false;
+      });
+      res.forEach(item => {
+        dict[item.featureKey] = item.isEnabled;
+      });
+      setUserFlagsData(dict);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUserFlagsLoading(false);
+    }
+  }, []);
+
+  const handleToggleOrgFlag = async (key: string, isEnabled: boolean) => {
+    if (!orgFlagsOrgId) return;
+    try {
+      await hexaTrackApi.admin.setOrgFeatureFlag(orgFlagsOrgId, key, isEnabled);
+      setOrgFlagsData(prev => ({ ...prev, [key]: isEnabled }));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleToggleUserFlag = async (key: string, isEnabled: boolean) => {
+    if (!userFlagsUserId) return;
+    try {
+      await hexaTrackApi.admin.setUserFeatureFlag(userFlagsUserId, key, isEnabled);
+      setUserFlagsData(prev => ({ ...prev, [key]: isEnabled }));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    if (orgFlagsOrgId) {
+      void loadOrgFlags(orgFlagsOrgId);
+    }
+  }, [orgFlagsOrgId, loadOrgFlags]);
+
+  useEffect(() => {
+    if (userFlagsUserId) {
+      void loadUserFlags(userFlagsUserId);
+    }
+  }, [userFlagsUserId, loadUserFlags]);
+
+  useEffect(() => {
+    if (section !== 'flags') return;
+    async function loadLookups() {
+      try {
+        const [orgs, usersRes] = await Promise.all([
+          hexaTrackApi.admin.allOrganizations(),
+          hexaTrackApi.admin.users(undefined, 1, 200),
+        ]);
+        setFlagsOrgs(orgs);
+        setFlagsUsers(usersRes.items);
+      } catch (e) {
+        console.error("Lookups failed in flags tab", e);
+      }
+    }
+    void loadLookups();
+  }, [section]);
 
   const loadAudit = useCallback(async () => {
     if (!hydrated || !user || !isSuperAdmin) return;
@@ -891,6 +999,13 @@ function AdminDashboardContent() {
                     onCreated={() => void loadUsers()}
                   />
 
+                  <ResetPasswordModal
+                    open={resetPasswordOpen}
+                    onOpenChange={setResetPasswordOpen}
+                    userId={resetPasswordUserId}
+                    userEmail={resetPasswordUserEmail}
+                  />
+
                   <div className="relative w-full max-w-md">
                     <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8B9BB4]" />
                     <input
@@ -1008,13 +1123,26 @@ function AdminDashboardContent() {
                                       )}
                                       
                                       <button
-                                        disabled={row.isSuperAdmin || isBusy}
-                                        onClick={() => void handleToggleLock(row)}
-                                        title={row.isLocked ? 'Unlock' : 'Lock'}
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.06] text-[#8B9BB4] hover:bg-white/[0.06] disabled:opacity-30"
-                                      >
-                                        {row.isLocked ? <Unlock size={14} /> : <Lock size={14} />}
-                                      </button>
+                                         disabled={isBusy}
+                                         onClick={() => {
+                                           setResetPasswordUserId(row.id);
+                                           setResetPasswordUserEmail(row.email);
+                                           setResetPasswordOpen(true);
+                                         }}
+                                         title="Reset Password"
+                                         className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.06] text-[#4F8CFF] hover:bg-[#4F8CFF]/10 disabled:opacity-30"
+                                       >
+                                         <Key size={14} />
+                                       </button>
+
+                                       <button
+                                         disabled={row.isSuperAdmin || isBusy}
+                                         onClick={() => void handleToggleLock(row)}
+                                         title={row.isLocked ? 'Unlock' : 'Lock'}
+                                         className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.06] text-[#8B9BB4] hover:bg-white/[0.06] disabled:opacity-30"
+                                       >
+                                         {row.isLocked ? <Unlock size={14} /> : <Lock size={14} />}
+                                       </button>
 
                                       <button
                                         disabled={row.isSuperAdmin || isSelf || isBusy}
@@ -1156,81 +1284,234 @@ function AdminDashboardContent() {
 
           {section === 'flags' && (
             <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-[#F5F7FA]">Feature Flags</h2>
-                <p className="text-sm text-[#8B9BB4]">Dynamically toggle system-wide features and experiments.</p>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-[#F5F7FA]">Feature Flags</h2>
+                  <p className="text-sm text-[#8B9BB4]">Dynamically toggle system-wide features, organization access, and user overrides.</p>
+                </div>
+                
+                {/* Clean glassmorphic sub-tabs */}
+                <div className="flex rounded-xl bg-white/[0.02] border border-white/[0.04] p-1 shrink-0 self-start sm:self-auto">
+                  {(['global', 'org', 'user'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setFlagsSubTab(tab)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        flagsSubTab === tab 
+                          ? 'bg-[#4F8CFF] text-white shadow-md' 
+                          : 'text-[#8B9BB4] hover:text-[#E1E2EC]'
+                      }`}
+                    >
+                      {tab === 'global' && 'Global System'}
+                      {tab === 'org' && 'Organization Toggles'}
+                      {tab === 'user' && 'User Overrides'}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {flagsError && (
-                <div className="flex items-center justify-between rounded-xl border border-[#FF5C75]/20 bg-[#FF5C75]/10 p-4 text-sm text-[#FF5C75]">
-                  <span>{flagsError}</span>
-                  <button onClick={() => void loadFlags()} className="font-bold hover:underline">Retry</button>
+              {flagsSubTab === 'global' && (
+                <>
+                  {flagsError && (
+                    <div className="flex items-center justify-between rounded-xl border border-[#FF5C75]/20 bg-[#FF5C75]/10 p-4 text-sm text-[#FF5C75]">
+                      <span>{flagsError}</span>
+                      <button onClick={() => void loadFlags()} className="font-bold hover:underline">Retry</button>
+                    </div>
+                  )}
+
+                  <div className="rounded-2xl border border-white/[0.06] bg-[#121A22] overflow-hidden">
+                    {flagsLoading && !flagsData ? (
+                      <TableSkeleton />
+                    ) : flagsData && flagsData.length === 0 ? (
+                      <div className="flex flex-col items-center py-16 text-[#8B9BB4]">
+                        <Flag className="h-10 w-10 opacity-50 mb-2" />
+                        <p className="text-sm">No feature flags configured</p>
+                      </div>
+                    ) : flagsData ? (
+                      <ul className="divide-y divide-white/[0.04]">
+                        {flagsData.map((f) => {
+                          const saving = flagSavingKey === f.key;
+                          const boolFlag = isBooleanFlagValue(f.value);
+                          const on = boolFlag && parseBooleanFlag(f.value);
+                          const draft = flagDrafts[f.key] ?? f.value;
+                          const textDirty = !boolFlag && draft !== f.value;
+
+                          return (
+                            <li key={f.key} className="flex flex-col gap-4 p-6 transition hover:bg-white/[0.01] sm:flex-row sm:items-center sm:justify-between">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-mono text-sm font-bold tracking-tight text-[#4F8CFF]">{f.key}</p>
+                                <p className="mt-1 text-xs text-[#8B9BB4]">Last updated {formatAdminDate(f.updatedAt)}</p>
+                              </div>
+
+                              <div className="flex items-center shrink-0">
+                                {boolFlag ? (
+                                  <div className="flex items-center gap-3">
+                                    {saving && <Loader2 className="h-4 w-4 animate-spin text-[#4F8CFF]" />}
+                                    <span className={`text-xs font-medium ${on ? 'text-[#1FD18B]' : 'text-[#8B9BB4]'}`}>{on ? 'Enabled' : 'Disabled'}</span>
+                                    <button
+                                      type="button"
+                                      disabled={saving}
+                                      onClick={() => void handleFlagBoolToggle(f.key, !on)}
+                                      className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none ${on ? 'bg-[#4F8CFF]' : 'bg-white/[0.1]'}`}
+                                    >
+                                      <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${on ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="flex gap-3 w-full sm:w-auto">
+                                    <input
+                                      type="text"
+                                      value={draft}
+                                      disabled={saving}
+                                      onChange={(e) => setFlagDrafts((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                                      className="h-9 px-3 rounded-lg border border-white/[0.06] bg-[#0B1015] text-sm text-[#F5F7FA] outline-none focus:border-[#4F8CFF]/50 w-full sm:w-64"
+                                    />
+                                    <button
+                                      disabled={!textDirty || saving}
+                                      onClick={() => void handleFlagTextSave(f.key)}
+                                      className="h-9 px-4 flex items-center justify-center rounded-lg bg-white/[0.06] text-xs font-semibold text-[#F5F7FA] transition hover:bg-white/[0.1] disabled:opacity-50"
+                                    >
+                                      {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : null}
+                  </div>
+                </>
+              )}
+
+              {flagsSubTab === 'org' && (
+                <div className="space-y-4">
+                  <div className="bg-[#121A22] border border-white/[0.06] p-6 rounded-2xl flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="max-w-xs">
+                      <label className="text-[10px] font-bold text-[#8B9BB4] uppercase tracking-wider block mb-2">Selected Scope Context</label>
+                      <select
+                        value={orgFlagsOrgId}
+                        onChange={(e) => setOrgFlagsOrgId(e.target.value)}
+                        className="w-full h-11 px-3 bg-[#0B1015] border border-white/[0.06] rounded-xl text-sm font-bold text-[#E1E2EC] outline-none focus:border-[#4F8CFF]/40 cursor-pointer"
+                      >
+                        <option value="">Select Organization...</option>
+                        {flagsOrgs.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                      </select>
+                    </div>
+                    <div className="text-xs text-[#8B9BB4] leading-relaxed max-w-md">
+                      Hierarchical override layers target specific tenants. If an organization toggle is configured, it replaces the global state value for all users inside that organization.
+                    </div>
+                  </div>
+
+                  {orgFlagsOrgId ? (
+                    <div className="rounded-2xl border border-white/[0.06] bg-[#121A22] overflow-hidden">
+                      {orgFlagsLoading ? (
+                        <TableSkeleton />
+                      ) : (
+                        <ul className="divide-y divide-white/[0.04]">
+                          {['EnableOrganizations', 'EnableBranches', 'EnableAI', 'EnableAnalytics', 'EnableBudgets', 'EnableRecurringTransactions'].map((key) => {
+                            const on = orgFlagsData[key] ?? false;
+                            return (
+                              <li key={key} className="flex flex-col gap-4 p-6 transition hover:bg-white/[0.01] sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-mono text-sm font-bold tracking-tight text-[#E1E2EC]">{key}</p>
+                                  <p className="mt-1 text-xs text-[#8B9BB4]">
+                                    {key === 'EnableOrganizations' && 'Enables multi-tenant business structures'}
+                                    {key === 'EnableBranches' && 'Allows branch and department isolation'}
+                                    {key === 'EnableAI' && 'Enables AI insights and ledger assistant'}
+                                    {key === 'EnableAnalytics' && 'Allows access to advanced charts and visual velocity trackers'}
+                                    {key === 'EnableBudgets' && 'Allows establishing monthly spending bounds'}
+                                    {key === 'EnableRecurringTransactions' && 'Allows scheduled automated transaction seeding'}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-3 shrink-0">
+                                  <span className={`text-xs font-medium ${on ? 'text-[#1FD18B]' : 'text-[#8B9BB4]'}`}>{on ? 'Override Enabled' : 'Global Default'}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => void handleToggleOrgFlag(key, !on)}
+                                    className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none ${on ? 'bg-[#1FD18B]' : 'bg-white/[0.1]'}`}
+                                  >
+                                    <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${on ? 'translate-x-6' : 'translate-x-1'}`} />
+                                  </button>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="bg-[#121A22] border border-white/[0.05] border-dashed p-12 text-center text-[#8B9BB4] rounded-2xl">
+                      Select an organization to load and toggle its tenant-scoped features.
+                    </div>
+                  )}
                 </div>
               )}
 
-              <div className="rounded-2xl border border-white/[0.06] bg-[#121A22] overflow-hidden">
-                {flagsLoading && !flagsData ? (
-                  <TableSkeleton />
-                ) : flagsData && flagsData.length === 0 ? (
-                  <div className="flex flex-col items-center py-16 text-[#8B9BB4]">
-                    <Flag className="h-10 w-10 opacity-50 mb-2" />
-                    <p className="text-sm">No feature flags configured</p>
+              {flagsSubTab === 'user' && (
+                <div className="space-y-4">
+                  <div className="bg-[#121A22] border border-white/[0.06] p-6 rounded-2xl flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="max-w-xs">
+                      <label className="text-[10px] font-bold text-[#8B9BB4] uppercase tracking-wider block mb-2">Selected User Context</label>
+                      <select
+                        value={userFlagsUserId}
+                        onChange={(e) => setUserFlagsUserId(e.target.value)}
+                        className="w-full h-11 px-3 bg-[#0B1015] border border-white/[0.06] rounded-xl text-sm font-bold text-[#E1E2EC] outline-none focus:border-[#4F8CFF]/40 cursor-pointer"
+                      >
+                        <option value="">Select User...</option>
+                        {flagsUsers.map(u => <option key={u.id} value={u.id}>{u.displayName} ({u.email})</option>)}
+                      </select>
+                    </div>
+                    <div className="text-xs text-[#8B9BB4] leading-relaxed max-w-md">
+                      Granular user overrides supersede BOTH the organization-scoped toggles and global flag defaults. Useful for early testing, beta programs, or specialized personnel tiers.
+                    </div>
                   </div>
-                ) : flagsData ? (
-                  <ul className="divide-y divide-white/[0.04]">
-                    {flagsData.map((f) => {
-                      const saving = flagSavingKey === f.key;
-                      const boolFlag = isBooleanFlagValue(f.value);
-                      const on = boolFlag && parseBooleanFlag(f.value);
-                      const draft = flagDrafts[f.key] ?? f.value;
-                      const textDirty = !boolFlag && draft !== f.value;
 
-                      return (
-                        <li key={f.key} className="flex flex-col gap-4 p-6 transition hover:bg-white/[0.01] sm:flex-row sm:items-center sm:justify-between">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-mono text-sm font-bold tracking-tight text-[#4F8CFF]">{f.key}</p>
-                            <p className="mt-1 text-xs text-[#8B9BB4]">Last updated {formatAdminDate(f.updatedAt)}</p>
-                          </div>
-
-                          <div className="flex items-center shrink-0">
-                            {boolFlag ? (
-                              <div className="flex items-center gap-3">
-                                {saving && <Loader2 className="h-4 w-4 animate-spin text-[#4F8CFF]" />}
-                                <span className={`text-xs font-medium ${on ? 'text-[#1FD18B]' : 'text-[#8B9BB4]'}`}>{on ? 'Enabled' : 'Disabled'}</span>
-                                <button
-                                  type="button"
-                                  disabled={saving}
-                                  onClick={() => void handleFlagBoolToggle(f.key, !on)}
-                                  className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none ${on ? 'bg-[#4F8CFF]' : 'bg-white/[0.1]'}`}
-                                >
-                                  <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${on ? 'translate-x-6' : 'translate-x-1'}`} />
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex gap-3 w-full sm:w-auto">
-                                <input
-                                  type="text"
-                                  value={draft}
-                                  disabled={saving}
-                                  onChange={(e) => setFlagDrafts((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                                  className="h-9 px-3 rounded-lg border border-white/[0.06] bg-[#0B1015] text-sm text-[#F5F7FA] outline-none focus:border-[#4F8CFF]/50 w-full sm:w-64"
-                                />
-                                <button
-                                  disabled={!textDirty || saving}
-                                  onClick={() => void handleFlagTextSave(f.key)}
-                                  className="h-9 px-4 flex items-center justify-center rounded-lg bg-white/[0.06] text-xs font-semibold text-[#F5F7FA] transition hover:bg-white/[0.1] disabled:opacity-50"
-                                >
-                                  {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : null}
-              </div>
+                  {userFlagsUserId ? (
+                    <div className="rounded-2xl border border-white/[0.06] bg-[#121A22] overflow-hidden">
+                      {userFlagsLoading ? (
+                        <TableSkeleton />
+                      ) : (
+                        <ul className="divide-y divide-white/[0.04]">
+                          {['EnableOrganizations', 'EnableBranches', 'EnableAI', 'EnableAnalytics', 'EnableBudgets', 'EnableRecurringTransactions'].map((key) => {
+                            const on = userFlagsData[key] ?? false;
+                            return (
+                              <li key={key} className="flex flex-col gap-4 p-6 transition hover:bg-white/[0.01] sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-mono text-sm font-bold tracking-tight text-[#E1E2EC]">{key}</p>
+                                  <p className="mt-1 text-xs text-[#8B9BB4]">
+                                    {key === 'EnableOrganizations' && 'Enables multi-tenant business structures'}
+                                    {key === 'EnableBranches' && 'Allows branch and department isolation'}
+                                    {key === 'EnableAI' && 'Enables AI insights and ledger assistant'}
+                                    {key === 'EnableAnalytics' && 'Allows access to advanced charts and visual velocity trackers'}
+                                    {key === 'EnableBudgets' && 'Allows establishing monthly spending bounds'}
+                                    {key === 'EnableRecurringTransactions' && 'Allows scheduled automated transaction seeding'}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-3 shrink-0">
+                                  <span className={`text-xs font-medium ${on ? 'text-pink-400' : 'text-[#8B9BB4]'}`}>{on ? 'Override Enabled' : 'No Override'}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => void handleToggleUserFlag(key, !on)}
+                                    className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none ${on ? 'bg-pink-500' : 'bg-white/[0.1]'}`}
+                                  >
+                                    <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${on ? 'translate-x-6' : 'translate-x-1'}`} />
+                                  </button>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="bg-[#121A22] border border-white/[0.05] border-dashed p-12 text-center text-[#8B9BB4] rounded-2xl">
+                      Select a user to load and toggle their individual override settings.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

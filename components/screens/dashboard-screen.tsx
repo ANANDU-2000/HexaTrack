@@ -58,7 +58,10 @@ export function DashboardScreen({ onNavigate }: { compact?: boolean; onAddTransa
           </div>
         </div>
         
-        <button className="w-10 h-10 rounded-xl bg-[#191B22] border border-outline-variant/10 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-95 transition-all relative">
+        <button 
+          onClick={() => window.dispatchEvent(new CustomEvent('pwa-open-notifications'))}
+          className="w-10 h-10 rounded-xl bg-[#191B22] border border-outline-variant/10 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-95 transition-all relative"
+        >
            <Bell size={18} strokeWidth={2.2} />
            <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_4px_#10B981]" />
         </button>

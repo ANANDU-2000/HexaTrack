@@ -7,6 +7,8 @@ public sealed class Account
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid WorkspaceId { get; set; }
     public Guid UserId { get; set; }
+    public Guid? OrganizationId { get; set; }
+    public Guid? BranchId { get; set; }
     public required string Name { get; set; }
     public AccountType Type { get; set; }
     public string Currency { get; set; } = "USD";
@@ -17,5 +19,7 @@ public sealed class Account
 
     public User? User { get; set; }
     public Workspace? Workspace { get; set; }
+    public Organization? Organization { get; set; }
+    public Branch? Branch { get; set; }
 }
 

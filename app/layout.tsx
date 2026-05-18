@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import QueryProvider from '@/components/providers/query-provider';
+import { ToastContainer } from '@/components/ui/toast';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://hexatrack.app'),
@@ -54,6 +55,8 @@ export const viewport: Viewport = {
   themeColor: '#050816',
 };
 
+import { PwaProvider } from '@/components/pwa/pwa-provider';
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html className="dark" lang="en">
@@ -64,18 +67,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="bg-background text-on-surface antialiased">
         <QueryProvider>
           {children}
+          <ToastContainer />
+          <PwaProvider />
         </QueryProvider>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `,
-          }}
-        />
       </body>
     </html>
   );

@@ -31,6 +31,8 @@ import type {
   AdminOrganizationListResult,
   AdminOrganizationAnalytics,
   LightOrganization,
+  OrganizationFeatureToggleDto,
+  UserFeatureToggleDto,
   LightBranch,
   AdminOrganizationDetailsDto,
   CreateOrganizationRequest,
@@ -105,8 +107,6 @@ function pathNeedsWorkspaceHeader(path: string): boolean {
   if (p.startsWith('/api/groups')) return false;
   if (p.startsWith('/api/owner')) return false;
   if (p.startsWith('/api/staff')) return false;
-  if (p.startsWith('/api/ledger')) return false;
-  if (p.startsWith('/api/analytics')) return false;
   const normalized = p.replace(/\/$/, '') || '/';
   if (normalized === '/api/workspaces') return false;
   const singleWorkspace = /^\/api\/workspaces\/([^/]+)$/.exec(normalized);
@@ -244,6 +244,7 @@ export const hexaTrackApi = {
         body: payload,
       }),
   },
+  featureFlags: () => apiRequest<Record<string, boolean>>('/api/feature-flags'),
   accounts: {
     list: () => apiRequest<Account[]>('/api/accounts'),
     available: (branchId?: string) =>
@@ -396,6 +397,11 @@ export const hexaTrackApi = {
         method: 'PUT',
         body: { plan },
       }),
+    resetPassword: (userId: string, newPassword: string) =>
+      apiRequest<void>(`/api/admin/users/${userId}/reset-password`, {
+        method: 'PUT',
+        body: { password: newPassword },
+      }),
     setSuperAdmin: (userId: string, isSuperAdmin: boolean) =>
       apiRequest<void>(`/api/admin/users/${userId}/superadmin`, {
         method: 'PUT',
@@ -413,6 +419,20 @@ export const hexaTrackApi = {
       apiRequest<void>(`/api/admin/feature-flags/${encodeURIComponent(key)}`, {
         method: 'PUT',
         body: { value },
+      }),
+    orgFeatureFlags: (orgId: string) =>
+      apiRequest<OrganizationFeatureToggleDto[]>(`/api/admin/feature-flags/organizations/${orgId}`),
+    setOrgFeatureFlag: (orgId: string, key: string, isEnabled: boolean) =>
+      apiRequest<void>(`/api/admin/feature-flags/organizations/${orgId}/${encodeURIComponent(key)}`, {
+        method: 'PUT',
+        body: { isEnabled },
+      }),
+    userFeatureFlags: (userId: string) =>
+      apiRequest<UserFeatureToggleDto[]>(`/api/admin/feature-flags/users/${userId}`),
+    setUserFeatureFlag: (userId: string, key: string, isEnabled: boolean) =>
+      apiRequest<void>(`/api/admin/feature-flags/users/${userId}/${encodeURIComponent(key)}`, {
+        method: 'PUT',
+        body: { isEnabled },
       }),
     auditLog: (page = 1, pageSize = 50) => {
       const params = new URLSearchParams();

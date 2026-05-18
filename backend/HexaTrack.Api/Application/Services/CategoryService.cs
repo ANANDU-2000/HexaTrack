@@ -31,7 +31,7 @@ public sealed class CategoryService(
     IUnitOfWork unitOfWork) : ICategoryService
 {
     public async Task<IReadOnlyCollection<CategoryDto>> ListAsync(CancellationToken cancellationToken)
-        => await db.Categories.AsNoTracking()
+        => await categories.ForUser(currentUser.UserId).AsNoTracking()
             .Where(x => x.WorkspaceId == currentWorkspace.WorkspaceId && !x.IsArchived)
             .OrderBy(x => x.Type).ThenBy(x => x.ParentCategoryId).ThenBy(x => x.Name)
             .Select(x => new CategoryDto(x.Id, x.ParentCategoryId, x.Name, x.Type, x.Color, x.Icon))
@@ -60,7 +60,7 @@ public sealed class CategoryService(
             workspaceId = currentWorkspace.WorkspaceId;
         }
 
-        var q = db.Categories.AsNoTracking()
+        var q = categories.ForUser(currentUser.UserId).AsNoTracking()
             .Where(x => x.WorkspaceId == workspaceId && !x.IsArchived);
 
         if (type.HasValue)
@@ -91,6 +91,8 @@ public sealed class CategoryService(
             {
                 WorkspaceId = currentWorkspace.WorkspaceId,
                 UserId = currentUser.UserId,
+                OrganizationId = currentUser.OrganizationId,
+                BranchId = currentUser.BranchId,
                 Name = request.Name.Trim(),
                 Type = request.Type,
                 ParentCategoryId = request.ParentCategoryId,
@@ -160,6 +162,8 @@ public sealed class CategoryService(
             {
                 WorkspaceId = currentWorkspace.WorkspaceId,
                 UserId = currentUser.UserId,
+                OrganizationId = currentUser.OrganizationId,
+                BranchId = currentUser.BranchId,
                 ParentCategoryId = parent.Id,
                 Name = request.Name.Trim(),
                 Type = parent.Type,

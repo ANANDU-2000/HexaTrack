@@ -17,6 +17,7 @@ public interface IAdminUsersService
     Task DeleteAsync(Guid targetUserId, Guid actorUserId, CancellationToken cancellationToken);
     Task SetLockedAsync(Guid targetUserId, bool locked, Guid actorUserId, CancellationToken cancellationToken);
     Task SetSubscriptionPlanAsync(Guid targetUserId, SubscriptionPlan plan, Guid actorUserId, CancellationToken cancellationToken);
+    Task ResetPasswordAsync(Guid targetUserId, string newPassword, Guid actorUserId, CancellationToken cancellationToken);
 }
 
 public sealed class AdminUsersService(HexaTrackDbContext db, IAdminAuditService audit, IUnitOfWork unitOfWork) : IAdminUsersService
@@ -242,6 +243,24 @@ public sealed class AdminUsersService(HexaTrackDbContext db, IAdminAuditService 
         user.IsLocked = locked;
         await db.SaveChangesAsync(cancellationToken);
         await audit.LogAsync(actorUserId, locked ? "user.lock" : "user.unlock", "User", targetUserId, null, cancellationToken);
+    }
+
+    public async Task ResetPasswordAsync(Guid targetUserId, string newPassword, Guid actorUserId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 8)
+        {
+            throw new InvalidOperationException("Password must be at least 8 characters.");
+        }
+
+        User? user = await db.Users.SingleOrDefaultAsync(x => x.Id == targetUserId, cancellationToken)
+            ?? throw new KeyNotFoundException("User not found.");
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        user.UpdatedAt = DateTimeOffset.UtcNow;
+        await db.SaveChangesAsync(cancellationToken);
+
+        string meta = JsonSerializer.Serialize(new { email = user.Email });
+        await audit.LogAsync(actorUserId, "user.password_reset", "User", targetUserId, meta, cancellationToken);
     }
 
     public async Task SetSubscriptionPlanAsync(Guid targetUserId, SubscriptionPlan plan, Guid actorUserId, CancellationToken cancellationToken)

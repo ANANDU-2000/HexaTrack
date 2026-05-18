@@ -618,3 +618,20 @@ export type PricingConfiguration = {
   maxTransactionsPerMonth: number;
 };
 
+export type OrganizationFeatureToggleDto = {
+  id: string;
+  organizationId: string;
+  featureKey: string;
+  isEnabled: boolean;
+  updatedAt: string;
+};
+
+export type UserFeatureToggleDto = {
+  id: string;
+  userId: string;
+  featureKey: string;
+  isEnabled: boolean;
+  updatedAt: string;
+};
+
+

@@ -125,7 +125,10 @@ export function StaffWorkspace({ view }: { view: StaffView }) {
             <span className="rounded-full border border-[#10B981]/20 bg-[#10B981]/5 px-2.5 py-0.5 text-[8px] font-black tracking-widest uppercase text-[#10B981] shrink-0">Staff</span>
           </div>
           <div className="flex items-center gap-2">
-            <button className="h-10 w-10 rounded-xl border border-white/[0.05] bg-[#0E152B] flex items-center justify-center text-[#C2C6D6] relative shrink-0">
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent('pwa-open-notifications'))}
+              className="h-10 w-10 rounded-xl border border-white/[0.05] bg-[#0E152B] flex items-center justify-center text-[#C2C6D6] relative shrink-0"
+            >
               <Bell size={16} />
               <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
             </button>

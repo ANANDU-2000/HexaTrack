@@ -273,6 +273,11 @@ public sealed class AuthService(
         {
             claims.Add(new Claim(HexaTrackClaims.OrganizationId, user.OrganizationId.Value.ToString()));
         }
+        if (user.BranchId.HasValue)
+        {
+            claims.Add(new Claim(HexaTrackClaims.BranchId, user.BranchId.Value.ToString()));
+        }
+        claims.Add(new Claim(HexaTrackClaims.UserMode, user.Mode.ToString()));
 
         var token = new JwtSecurityToken(
             issuer: options.Issuer,

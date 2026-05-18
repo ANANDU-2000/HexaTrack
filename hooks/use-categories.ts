@@ -14,5 +14,6 @@ export function useCategories(filters?: CategoryFilters) {
     queryKey: ['categories', filters?.branchId || 'current', filters?.type || 'all', activeWorkspaceId],
     queryFn: () => hexaTrackApi.categories.list(filters),
     enabled: !!activeWorkspaceId,
+    staleTime: 1000 * 60 * 2, // 2 min – transactions invalidate this cache
   });
 }

@@ -9,6 +9,7 @@ export function useAccounts() {
     queryKey: ['accounts', 'list', activeWorkspaceId],
     queryFn: () => hexaTrackApi.accounts.list(),
     enabled: !!activeWorkspaceId,
+    staleTime: 1000 * 60 * 2, // 2 min – transactions invalidate this cache
   });
 }
 
@@ -18,5 +19,6 @@ export function useBranchAccounts(branchId?: string) {
     queryKey: ['accounts', 'available', branchId || 'current', activeWorkspaceId],
     queryFn: () => hexaTrackApi.accounts.available(branchId),
     enabled: !!activeWorkspaceId,
+    staleTime: 1000 * 60 * 2,
   });
 }

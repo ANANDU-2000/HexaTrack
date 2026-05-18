@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { hexaTrackApi } from '@/lib/api';
 import { useAuthStore } from '@/store/auth-store';
 import type { AdminUserListItem, AdminCreateUserRequest, WorkspaceType, LightOrganization, LightBranch } from '@/lib/types';
-import { Users, Plus, Search, Shield, Lock, Unlock, Trash2, X, ChevronLeft, ChevronRight, MoreVertical, Crown, Copy, Check, Sparkles, Building, Landmark, UserCheck } from 'lucide-react';
+import { Users, Plus, Search, Shield, Lock, Unlock, Trash2, X, ChevronLeft, ChevronRight, MoreVertical, Crown, Copy, Check, Sparkles, Building, Landmark, UserCheck, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function UsersPage() {
@@ -22,7 +22,7 @@ export default function UsersPage() {
     if (!accessToken) return;
     setLoading(true);
     try {
-      const result = await hexaTrackApi.admin.users(search || undefined, undefined, undefined, undefined, undefined, page, pageSize);
+      const result = await hexaTrackApi.admin.users(search || undefined, page, pageSize);
       setUsers(result.items);
       setTotalCount(result.totalCount);
     } catch (err) {

@@ -23,7 +23,8 @@ import {
 import { ApiError, hexaTrackApi } from '@/lib/api';
 import type { ReportSummary } from '@/lib/types';
 import { money, percent } from '@/lib/format';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useFinanceStore } from '@/store/finance-store';
 
 type Period = 'week' | 'month' | 'year' | 'all';
 
@@ -90,16 +91,80 @@ export function ReportsScreen() {
     }));
   }, [activeReport.cashflow]);
 
+  const categories = useFinanceStore((s) => s.categories);
+  const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
+
+  const toggleExpand = (id: string) => {
+    setExpandedCategoryId(expandedCategoryId === id ? null : id);
+  };
+
+  const drillDownData = useMemo(() => {
+    if (!activeReport) return [];
+
+    const mainMap: Record<string, { id: string; name: string; color: string; amount: number; subs: Array<{ id: string; name: string; amount: number }> }> = {};
+
+    activeReport.spendingByCategory.forEach((spend) => {
+      const cat = categories.find((c) => c.id === spend.categoryId);
+      if (!cat) {
+        mainMap[spend.categoryId] = {
+          id: spend.categoryId,
+          name: spend.categoryName,
+          color: '#10B981',
+          amount: spend.amount,
+          subs: []
+        };
+        return;
+      }
+
+      if (cat.parentCategoryId) {
+        const parent = categories.find((c) => c.id === cat.parentCategoryId);
+        const parentId = parent?.id || cat.parentCategoryId;
+        const parentName = parent?.name || 'Other';
+        const parentColor = parent?.color || '#10B981';
+
+        if (!mainMap[parentId]) {
+          mainMap[parentId] = {
+            id: parentId,
+            name: parentName,
+            color: parentColor,
+            amount: 0,
+            subs: []
+          };
+        }
+        mainMap[parentId].amount += spend.amount;
+        mainMap[parentId].subs.push({
+          id: cat.id,
+          name: cat.name,
+          amount: spend.amount
+        });
+      } else {
+        if (!mainMap[cat.id]) {
+          mainMap[cat.id] = {
+            id: cat.id,
+            name: cat.name,
+            color: cat.color || '#10B981',
+            amount: 0,
+            subs: []
+          };
+        }
+        mainMap[cat.id].amount += spend.amount;
+      }
+    });
+
+    return Object.values(mainMap).sort((a, b) => b.amount - a.amount);
+  }, [activeReport.spendingByCategory, categories]);
+
   const pieData = useMemo(() => {
-    return activeReport.spendingByCategory.slice(0, 3).map(item => ({
-      name: item.categoryName,
-      value: item.amount
+    return drillDownData.slice(0, 4).map(item => ({
+      name: item.name,
+      value: item.amount,
+      color: item.color
     }));
-  }, [activeReport.spendingByCategory]);
+  }, [drillDownData]);
 
   const totalSpend = useMemo(() => 
-    activeReport.spendingByCategory.reduce((acc, curr) => acc + curr.amount, 0), 
-  [activeReport.spendingByCategory]);
+    drillDownData.reduce((acc, curr) => acc + curr.amount, 0), 
+  [drillDownData]);
 
   if (loading && !report) {
     return (
@@ -193,54 +258,126 @@ export function ReportsScreen() {
         </div>
       </div>
 
-      {/* 2. BREAKDOWN DONUT */}
-      <div className="bg-[#0E152B] rounded-2xl p-5 flex flex-col border border-outline-variant/20 shadow-sm">
-         <div className="flex flex-col mb-5">
+      {/* 2. BREAKDOWN DONUT & DRILLDOWN TREE */}
+      <div className="bg-[#0E152B] rounded-2xl p-5 flex flex-col border border-outline-variant/20 shadow-sm font-sans">
+         <div className="flex flex-col mb-4">
             <p className="font-label-caps text-[9px] uppercase tracking-wider text-on-surface-variant/60 font-bold mb-0.5">Allocation Breakdown</p>
             <h3 className="font-extrabold text-on-surface text-[13px] tracking-wide">Direct Expense Ratio</h3>
          </div>
          
-         <div className="flex items-center justify-between py-2">
-            <div className="relative w-32 h-32 flex items-center justify-center">
-               {pieData.length > 0 ? (
-                 <>
-                   <ResponsiveContainer width="100%" height="100%">
-                     <RePieChart>
-                       <Pie
-                         data={pieData}
-                         innerRadius={42}
-                         outerRadius={58}
-                         paddingAngle={4}
-                         dataKey="value"
-                         stroke="none"
-                         animationDuration={700}
-                       >
-                         {pieData.map((e, i) => (
-                            <Cell key={`slice-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} className="hover:opacity-90 transition-opacity cursor-pointer" />
-                         ))}
-                       </Pie>
-                     </RePieChart>
-                   </ResponsiveContainer>
-                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-                      <span className="text-[13px] font-extrabold text-on-surface tracking-tight leading-none">{percent((pieData[0]?.value / Math.max(1, totalSpend)) * 100)}</span>
-                      <span className="text-[7px] font-bold text-emerald tracking-wider uppercase mt-0.5 font-label-caps">Primary</span>
-                   </div>
-                 </>
-               ) : (
-                 <div className="text-center opacity-50 text-xs font-medium">No core ledger data</div>
-               )}
+         <div className="flex flex-col gap-4">
+            {/* Pie Chart and legend container */}
+            <div className="flex items-center justify-between py-2 border-b border-white/[0.04] pb-4">
+               <div className="relative w-32 h-32 flex items-center justify-center">
+                  {pieData.length > 0 ? (
+                    <>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RePieChart>
+                          <Pie
+                            data={pieData}
+                            innerRadius={42}
+                            outerRadius={58}
+                            paddingAngle={4}
+                            dataKey="value"
+                            stroke="none"
+                            animationDuration={700}
+                          >
+                            {pieData.map((e, i) => (
+                               <Cell key={`slice-${i}`} fill={e.color} className="hover:opacity-90 transition-opacity cursor-pointer" />
+                            ))}
+                          </Pie>
+                        </RePieChart>
+                      </ResponsiveContainer>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                         <span className="text-[13px] font-extrabold text-on-surface tracking-tight leading-none">
+                            {percent((pieData[0]?.value / Math.max(1, totalSpend)) * 100)}
+                         </span>
+                         <span className="text-[7px] font-bold text-emerald tracking-wider uppercase mt-0.5 font-label-caps">Primary</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center opacity-50 text-xs font-medium">No core ledger data</div>
+                  )}
+               </div>
+
+               <div className="flex-grow pl-6 flex flex-col gap-2">
+                  {pieData.slice(0, 3).map((item) => (
+                     <div key={item.name} className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-2">
+                           <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: item.color }} />
+                           <span className="text-[11px] font-bold text-on-surface-variant truncate flex-1">{item.name}</span>
+                        </div>
+                        <span className="text-[11px] font-mono text-on-surface font-bold pl-4 leading-none">{money(item.value)}</span>
+                     </div>
+                  ))}
+               </div>
             </div>
 
-            <div className="flex-grow pl-6 flex flex-col gap-3">
-               {pieData.map((item, i) => (
-                  <div key={item.name} className="flex flex-col gap-0.5">
-                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
-                        <span className="text-[11px] font-bold text-on-surface-variant truncate flex-1">{item.name}</span>
-                     </div>
-                     <span className="text-[11px] font-mono text-on-surface font-bold pl-4 leading-none">{money(item.value)}</span>
+            {/* Expandable Category Tree List */}
+            <div className="flex flex-col gap-2">
+              {drillDownData.map((group) => {
+                const isExpanded = expandedCategoryId === group.id;
+                const percentShare = (group.amount / Math.max(1, totalSpend)) * 100;
+                
+                return (
+                  <div key={group.id} className="rounded-xl bg-white/[0.01] border border-white/[0.04] p-3 transition-all hover:bg-white/[0.02]">
+                    {/* Parent row trigger */}
+                    <button
+                      onClick={() => toggleExpand(group.id)}
+                      className="w-full flex items-center justify-between text-left outline-none"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: group.color }} />
+                        <div>
+                          <h4 className="text-xs font-bold text-on-surface leading-snug">{group.name}</h4>
+                          <span className="text-[9px] font-bold font-label-caps text-on-surface-variant/40 uppercase tracking-widest">
+                            {group.subs.length} subcategories • {percentShare.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold text-on-surface">{money(group.amount)}</span>
+                        {group.subs.length > 0 && (
+                          <ChevronRight
+                            size={14}
+                            className={`text-on-surface-variant/40 transition-transform ${isExpanded ? 'rotate-90 text-primary' : ''}`}
+                          />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Expandable Subcategory List */}
+                    <AnimatePresence>
+                      {isExpanded && group.subs.length > 0 && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden mt-3 pl-3 border-l-2 border-white/5 space-y-2.5"
+                        >
+                          {group.subs.sort((a, b) => b.amount - a.amount).map((sub) => {
+                            const subPercent = (sub.amount / Math.max(1, group.amount)) * 100;
+                            return (
+                              <div key={sub.id} className="flex items-center justify-between py-0.5">
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="text-[11px] font-bold text-on-surface-variant/80">{sub.name}</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <div className="w-16 h-1 rounded-full bg-white/[0.04] overflow-hidden">
+                                      <div className="h-full bg-primary/60 rounded-full" style={{ width: `${subPercent}%` }} />
+                                    </div>
+                                    <span className="text-[8px] font-bold text-on-surface-variant/35">{subPercent.toFixed(0)}% of parent</span>
+                                  </div>
+                                </div>
+                                <span className="text-xs font-mono font-bold text-on-surface/90">{money(sub.amount)}</span>
+                              </div>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-               ))}
+                );
+              })}
             </div>
          </div>
       </div>

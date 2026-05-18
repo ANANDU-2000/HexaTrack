@@ -35,7 +35,10 @@ export function DashboardHeader({ onAddTransaction }: DashboardHeaderProps) {
         </button>
 
         {/* Notification Bell */}
-        <button className="w-10 h-10 rounded-xl border border-white/[0.05] bg-surface-container-lowest/50 backdrop-blur-sm flex items-center justify-center text-on-surface-variant hover:text-[#F5F7FA] hover:border-white/20 transition-all active:scale-95 shadow-sm relative">
+        <button 
+          onClick={() => window.dispatchEvent(new CustomEvent('pwa-open-notifications'))}
+          className="w-10 h-10 rounded-xl border border-white/[0.05] bg-surface-container-lowest/50 backdrop-blur-sm flex items-center justify-center text-on-surface-variant hover:text-[#F5F7FA] hover:border-white/20 transition-all active:scale-95 shadow-sm relative"
+        >
           <Bell size={18} />
           <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse" />
         </button>

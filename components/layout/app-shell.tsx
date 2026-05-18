@@ -9,11 +9,11 @@ import { useAuthStore } from '@/store/auth-store';
 export type ScreenKey = 'dashboard' | 'transaction' | 'history' | 'reports' | 'recurring' | 'wallets' | 'settings' | 'assistant';
 
 const primaryNav = [
-  { key: 'dashboard' as const, label: 'Home', icon: Home },
+  { key: 'dashboard' as const, label: 'Dashboard', icon: Home },
   { key: 'wallets' as const, label: 'Wallets', icon: Wallet },
-  { key: 'history' as const, label: 'History', icon: History },
-  { key: 'reports' as const, label: 'Reports', icon: BarChart3 },
-  { key: 'settings' as const, label: 'Settings', icon: Settings },
+  { key: 'history' as const, label: 'Transactions', icon: History },
+  { key: 'reports' as const, label: 'Analytics', icon: BarChart3 },
+  { key: 'settings' as const, label: 'Profile', icon: Settings },
 ];
 
 const secondaryNav = [{ key: 'recurring' as const, label: 'Recurring', icon: Clock3 }];
@@ -109,6 +109,20 @@ export function AppShell({ activeScreen, children, onAddTransaction, onNavigate,
         <main className="min-w-0 flex-1 px-8 py-8 overflow-y-auto relative z-0">
           {children}
         </main>
+
+        {/* Desktop Floating Action Button (FAB) */}
+        <div className="fixed bottom-8 right-8 z-50">
+          <div className="absolute rounded-full pointer-events-none w-16 h-16 bg-primary/20 blur-md -translate-x-1 -translate-y-1" style={{ top: -4, left: -4 }} />
+          <button
+            onClick={onAddTransaction}
+            className="relative flex items-center justify-center rounded-full bg-gradient-to-tr from-primary to-emerald shadow-[0_8px_32px_rgba(16,185,129,0.3)] border border-white/20 transition-all hover:scale-105 active:scale-95 duration-200"
+            style={{ width: 56, height: 56 }}
+            type="button"
+            aria-label="Quick Add Transaction"
+          >
+            <Plus size={24} className="text-white" strokeWidth={2.5} />
+          </button>
+        </div>
       </div>
 
       {/* ─── MOBILE LAYOUT (below lg): fixed shell with scroll area ─── */}

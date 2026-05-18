@@ -11,6 +11,7 @@ import {
 import { BrandMark } from '@/components/ui/brand';
 import { useAuthStore } from '@/store/auth-store';
 import { useFinanceStore } from '@/store/finance-store';
+import { useWorkspaceStore } from '@/store/workspace-store';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { KpiCards } from '@/components/dashboard/kpi-cards';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
@@ -24,8 +25,18 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user, logout, hydrated } = useAuthStore();
   const loadWorkspace = useFinanceStore((s) => s.loadWorkspace);
+  const financeError = useFinanceStore((s) => s.error);
+  const hydrateWorkspace = useWorkspaceStore((s) => s.hydrate);
+  const wsHydrated = useWorkspaceStore((s) => s.hydrated);
   const [activeTxSheet, setActiveTxSheet] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // Step 1: Hydrate workspace store from localStorage (synchronous)
+  useEffect(() => {
+    if (hydrated && user && !wsHydrated) {
+      hydrateWorkspace();
+    }
+  }, [hydrated, user, wsHydrated, hydrateWorkspace]);
 
   useEffect(() => {
     if (hydrated && !user) {
@@ -33,6 +44,7 @@ export default function DashboardPage() {
     }
   }, [hydrated, user, router]);
 
+  // Step 2: Load finance workspace (which now ensures workspace is ready internally)
   useEffect(() => {
     if (hydrated && user) {
        void loadWorkspace();

@@ -26,8 +26,8 @@ export function BottomNav({ activeScreen, onAddTransaction, onNavigate }: Bottom
         style={{ height: 78, paddingBottom: 'env(safe-area-inset-bottom)' }}
         aria-label="Mobile Bottom Navigation"
       >
-        <NavItem active={activeScreen === 'dashboard'} icon={Home} label="Home" onClick={() => onNavigate('dashboard')} />
-        <NavItem active={activeScreen === 'history'} icon={HistoryIcon} label="History" onClick={() => onNavigate('history')} />
+        <NavItem active={activeScreen === 'dashboard'} icon={Home} label="Dashboard" onClick={() => onNavigate('dashboard')} />
+        <NavItem active={activeScreen === 'history'} icon={HistoryIcon} label="Transactions" onClick={() => onNavigate('history')} />
 
         {/* ── CENTER FAB ── */}
         <div className="relative flex items-center justify-center" style={{ height: 78 }}>
@@ -69,8 +69,8 @@ export function BottomNav({ activeScreen, onAddTransaction, onNavigate }: Bottom
           </motion.button>
         </div>
 
-        <NavItem active={activeScreen === 'reports'} icon={BarChart3} label="Reports" onClick={() => onNavigate('reports')} />
-        <NavItem active={activeScreen === 'settings'} icon={Settings} label="Settings" onClick={() => onNavigate('settings')} />
+        <NavItem active={activeScreen === 'reports'} icon={BarChart3} label="Analytics" onClick={() => onNavigate('reports')} />
+        <NavItem active={activeScreen === 'settings'} icon={Settings} label="Profile" onClick={() => onNavigate('settings')} />
       </nav>
     </div>
   );

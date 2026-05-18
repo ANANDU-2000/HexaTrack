@@ -35,6 +35,7 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
     public DbSet<Integration> Integrations => Set<Integration>();
     public DbSet<OrganizationFeatureToggle> OrganizationFeatureToggles => Set<OrganizationFeatureToggle>();
     public DbSet<PricingConfiguration> PricingConfigurations => Set<PricingConfiguration>();
+    public DbSet<UserFeatureToggle> UserFeatureToggles => Set<UserFeatureToggle>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -146,6 +147,8 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
             entity.HasQueryFilter(x => x.DeletedAt == null);
             entity.HasIndex(x => new { x.UserId, x.Type });
             entity.HasIndex(x => new { x.WorkspaceId, x.Name }).IsUnique().HasFilter("\"IsArchived\" = false");
+            entity.HasIndex(x => x.OrganizationId).HasFilter("\"OrganizationId\" IS NOT NULL");
+            entity.HasIndex(x => x.BranchId).HasFilter("\"BranchId\" IS NOT NULL");
             entity.Property(x => x.Balance).HasPrecision(18, 2);
             entity.Property(x => x.Currency).HasMaxLength(3);
             entity.Property(x => x.Name).HasMaxLength(120);
@@ -153,6 +156,14 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
                 .WithMany()
                 .HasForeignKey(x => x.WorkspaceId)
                 .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.Organization)
+                .WithMany()
+                .HasForeignKey(x => x.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(x => x.Branch)
+                .WithMany()
+                .HasForeignKey(x => x.BranchId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Category>(entity =>
@@ -160,6 +171,8 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
             entity.HasQueryFilter(x => x.DeletedAt == null);
             entity.HasIndex(x => new { x.WorkspaceId, x.Type, x.ParentCategoryId });
             entity.HasIndex(x => new { x.WorkspaceId, x.UserId });
+            entity.HasIndex(x => x.OrganizationId).HasFilter("\"OrganizationId\" IS NOT NULL");
+            entity.HasIndex(x => x.BranchId).HasFilter("\"BranchId\" IS NOT NULL");
             entity.HasIndex(x => new { x.WorkspaceId, x.Name, x.ParentCategoryId }).IsUnique().HasFilter("\"IsArchived\" = false");
             entity.Property(x => x.Name).HasMaxLength(120);
             entity.Property(x => x.Color).HasMaxLength(32);
@@ -176,6 +189,14 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.Organization)
+                .WithMany()
+                .HasForeignKey(x => x.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(x => x.Branch)
+                .WithMany()
+                .HasForeignKey(x => x.BranchId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Tag>(entity =>
@@ -390,6 +411,16 @@ public sealed class HexaTrackDbContext(DbContextOptions<HexaTrackDbContext> opti
             entity.Property(x => x.MonthlyPrice).HasPrecision(18, 2);
             entity.Property(x => x.YearlyPrice).HasPrecision(18, 2);
             entity.HasIndex(x => new { x.PlanName, x.IsActive });
+        });
+
+        modelBuilder.Entity<UserFeatureToggle>(entity =>
+        {
+            entity.HasIndex(x => new { x.UserId, x.FeatureKey }).IsUnique();
+            entity.Property(x => x.FeatureKey).HasMaxLength(100);
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

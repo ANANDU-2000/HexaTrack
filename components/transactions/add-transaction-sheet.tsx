@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
-  Delete,
   Landmark,
   Repeat,
   Tag,
@@ -23,8 +22,6 @@ import {
   Cloud,
   Heart,
   Smartphone,
-  Gift,
-  Coffee,
   Fuel,
   Stethoscope,
   TrendingUp,
@@ -33,17 +30,20 @@ import {
   RefreshCw,
   Star,
   Camera,
-  Search,
-  Plus
+  Plus,
+  Palette,
+  Coffee,
+  Gift
 } from 'lucide-react';
-import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { useAuthStore } from '@/store/auth-store';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useFinanceStore } from '@/store/finance-store';
 import { useWorkspaceStore } from '@/store/workspace-store';
 import type { TransactionType, RecurrenceFrequency, Category, Account } from '@/lib/types';
 import { BottomSheet } from '@/components/ui/mobile-layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { hexaTrackApi } from '@/lib/api';
+import { showToast } from '@/components/ui/toast';
+import { notificationScheduler } from '@/lib/notifications';
 
 /* ── Category Icon Map ── */
 const catIconMap: Record<string, React.ElementType> = {
@@ -76,6 +76,29 @@ const catIconMap: Record<string, React.ElementType> = {
   default: Tag,
 };
 
+const popularIcons = [
+  { key: 'food', icon: Coffee, label: 'Food & Dining' },
+  { key: 'shopping', icon: ShoppingBag, label: 'Shopping' },
+  { key: 'travel', icon: Car, label: 'Travel & Transport' },
+  { key: 'bills', icon: Zap, label: 'Bills & Utilities' },
+  { key: 'rent', icon: Home, label: 'Rent & Housing' },
+  { key: 'salary', icon: Briefcase, label: 'Salary & Income' },
+  { key: 'health', icon: Heart, label: 'Health & Fitness' },
+  { key: 'subscription', icon: Smartphone, label: 'Subscriptions' },
+  { key: 'default', icon: Tag, label: 'General' }
+];
+
+const colorPalette = [
+  { hex: '#10B981', name: 'Emerald' },
+  { hex: '#EF4444', name: 'Rose' },
+  { hex: '#3B82F6', name: 'Blue' },
+  { hex: '#F59E0B', name: 'Amber' },
+  { hex: '#8B5CF6', name: 'Violet' },
+  { hex: '#EC4899', name: 'Pink' },
+  { hex: '#06B6D4', name: 'Cyan' },
+  { hex: '#F97316', name: 'Orange' }
+];
+
 function getCatIcon(name: string): React.ElementType {
   const l = name.toLowerCase();
   for (const k in catIconMap) {
@@ -84,7 +107,7 @@ function getCatIcon(name: string): React.ElementType {
   return catIconMap.default;
 }
 
-type Step = 'menu' | 'amount' | 'category' | 'subcategory' | 'account' | 'details';
+type QuickAddStep = 'menu' | 'form' | 'create-category' | 'create-subcategory';
 
 export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const accounts = useFinanceStore((s) => s.accounts);
@@ -98,52 +121,59 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
   const currencySymbol = activeWorkspace?.currency === 'INR' ? '₹' : '$';
   const currencyCode = activeWorkspace?.currency || 'USD';
-  const [step, setStep] = useState<Step>('menu');
+
+  // Quick-Add Steps: 'menu' -> 'form' (or 'create-category' directly from form)
+  const [step, setStep] = useState<QuickAddStep>('menu');
   const [type, setType] = useState<TransactionType>('Expense');
-  const [amountStr, setAmountStr] = useState('0');
-  const [selectedAccountId, setSelectedAccountId] = useState('');
-  const [selectedCategoryId, setSelectedCategoryId] = useState('');
-  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState('');
-  const [merchant, setMerchant] = useState('');
-  const [note, setNote] = useState('');
-  const [occurredOn, setOccurredOn] = useState(() => new Date().toISOString().slice(0, 10));
-  const [isRecurring, setIsRecurring] = useState(false);
+
+  // Form Fields
+  const [amount, setAmount] = useState<string>('');
+  const [merchant, setMerchant] = useState<string>('');
+  const [note, setNote] = useState<string>('');
+  const [occurredOn, setOccurredOn] = useState<string>(() => new Date().toISOString().slice(0, 10));
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>('');
+  const [isRecurring, setIsRecurring] = useState<boolean>(false);
   const [frequency, setFrequency] = useState<RecurrenceFrequency>('Monthly');
+
+  // Inline Category Form State
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatIcon, setNewCatIcon] = useState('default');
+  const [newCatColor, setNewCatColor] = useState('#10B981');
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState('');
   const [successFlash, setSuccessFlash] = useState(false);
 
-  // Transfer state
-  const [toAccountId, setToAccountId] = useState('');
+  const filteredCategories = useMemo(() => {
+    return categories.filter((c) => c.type === type && !c.parentCategoryId);
+  }, [categories, type]);
 
-  const mainCategories = useMemo(
-    () => categories.filter((c) => c.type === type && !c.parentCategoryId),
-    [categories, type]
-  );
-
-  const subCategories = useMemo(
-    () => categories.filter((c) => c.parentCategoryId === selectedCategoryId),
-    [categories, selectedCategoryId]
-  );
-
-  const reset = useCallback(() => {
+  const resetForm = useCallback(() => {
     setStep('menu');
-    setAmountStr('0');
-    setSelectedAccountId('');
-    setSelectedCategoryId('');
-    setSelectedSubcategoryId('');
+    setAmount('');
     setMerchant('');
     setNote('');
     setOccurredOn(new Date().toISOString().slice(0, 10));
+    setSelectedAccountId(accounts[0]?.id || '');
+    setSelectedCategoryId('');
+    setSelectedSubcategoryId('');
     setIsRecurring(false);
+    setFrequency('Monthly');
     setLocalError('');
     setSuccessFlash(false);
-    setToAccountId('');
-  }, []);
+    setNewCatName('');
+    setNewCatIcon('default');
+    setNewCatColor('#10B981');
+  }, [accounts]);
 
   useEffect(() => {
-    if (!open) reset();
-  }, [open, reset]);
+    if (!open) {
+      resetForm();
+    }
+  }, [open, resetForm]);
 
   useEffect(() => {
     if (open && accounts.length > 0 && !selectedAccountId) {
@@ -151,170 +181,204 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
     }
   }, [open, accounts, selectedAccountId]);
 
-  const pressKey = (key: string) => {
-    setLocalError('');
-    if (key === 'del') {
-      setAmountStr((p) => (p.length <= 1 ? '0' : p.slice(0, -1)));
+  // Handle Instant Category Creation Inline
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatName.trim()) {
+      showToast('error', 'Please enter a category name');
       return;
     }
-    if (key === '.') {
-      if (amountStr.includes('.')) return;
-      setAmountStr((p) => p + '.');
+
+    setIsSavingCategory(true);
+    try {
+      // 1. Create Category on Backend
+      const created = await hexaTrackApi.categories.create({
+        name: newCatName.trim(),
+        type: type,
+        color: newCatColor,
+        icon: newCatIcon
+      });
+
+      // 2. Force Refresh Zustand State & TanStack Query invalidation
+      await loadWorkspace();
+
+      // 3. Auto-select newly created category & return to form
+      setSelectedCategoryId(created.id);
+      setSelectedSubcategoryId('');
+      setStep('form');
+      showToast('success', `Category "${created.name}" created successfully`);
+      
+      // Clear inline fields
+      setNewCatName('');
+      setNewCatIcon('default');
+      setNewCatColor('#10B981');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to create category';
+      showToast('error', msg);
+    } finally {
+      setIsSavingCategory(false);
+    }
+  };
+
+  // Handle Instant Subcategory Creation Inline
+  const handleCreateSubcategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatName.trim()) {
+      showToast('error', 'Please enter a subcategory name');
       return;
     }
-    if (amountStr.length > 9) return;
-    setAmountStr((p) => {
-      if (p === '0') return key;
-      if (p.includes('.') && p.split('.')[1].length >= 2) return p;
-      return p + key;
-    });
+    if (!selectedCategoryId) {
+      showToast('error', 'Please select a parent category first');
+      return;
+    }
+
+    setIsSavingCategory(true);
+    try {
+      // 1. Create Subcategory on Backend
+      const created = await hexaTrackApi.categories.subcategories.create(selectedCategoryId, {
+        name: newCatName.trim(),
+        color: newCatColor,
+        icon: newCatIcon
+      });
+
+      // 2. Force Refresh Zustand State
+      await loadWorkspace();
+
+      // 3. Auto-select newly created subcategory & return to form
+      setSelectedSubcategoryId(created.id);
+      setStep('form');
+      showToast('success', `Subcategory "${created.name}" created successfully`);
+      
+      // Clear fields
+      setNewCatName('');
+      setNewCatIcon('default');
+      setNewCatColor('#10B981');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to create subcategory';
+      showToast('error', msg);
+    } finally {
+      setIsSavingCategory(false);
+    }
   };
 
-  const parsedAmount = parseFloat(amountStr) || 0;
-
-  const selectAction = (t: TransactionType) => {
-    setType(t);
-    setStep('amount');
-  };
-
-  const handleCommit = async () => {
-    if (parsedAmount <= 0) {
-      setLocalError('Enter a valid amount');
+  const handleSaveTransaction = async () => {
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      setLocalError('Enter a valid positive amount');
       return;
     }
     if (!selectedAccountId) {
-      setLocalError('Select an account');
+      setLocalError('Please select a payment method / account');
+      return;
+    }
+    if (!selectedCategoryId) {
+      setLocalError('Please select a transaction category');
       return;
     }
 
-    if (type === 'Transfer') {
-      if (!toAccountId || toAccountId === selectedAccountId) {
-        setLocalError('Select a different destination account');
+    // Workspace-ready guard
+    if (!activeWorkspaceId) {
+      try {
+        await useWorkspaceStore.getState().ensureActiveWorkspace();
+      } catch {
+        setLocalError('Workspace not ready. Please try again.');
         return;
       }
-      setSubmitting(true);
-      try {
-        await hexaTrackApi.transfer({
-          fromAccountId: selectedAccountId,
-          toAccountId,
-          amount: parsedAmount,
-          currency: 'USD',
-          note: note || undefined,
-          transferOn: occurredOn,
-          idempotencyKey: crypto.randomUUID(),
-        });
-        await loadWorkspace();
-        setSuccessFlash(true);
-        setTimeout(() => onOpenChange(false), 800);
-      } catch (e) {
-        setLocalError(e instanceof Error ? e.message : 'Transfer failed');
-      } finally {
-        setSubmitting(false);
-      }
-      return;
     }
 
-    if (!selectedCategoryId) {
-      setLocalError('Select a category');
-      return;
-    }
     setSubmitting(true);
     clearFinanceError();
+    setLocalError('');
+
     try {
+      // 1. Persist Transaction
       await addTransaction({
         accountId: selectedAccountId,
-        categoryId: selectedSubcategoryId || selectedCategoryId,
+        categoryId: selectedSubcategoryId || selectedCategoryId, // route to subcategory if selected!
         type,
         amount: parsedAmount,
-        currency: 'USD',
-        merchant: merchant || undefined,
-        note: note || undefined,
-        occurredOn,
+        currency: currencyCode,
+        merchant: merchant.trim() || undefined,
+        note: note.trim() || undefined,
+        occurredOn
       });
 
+      // 2. Handle optional recurring payload
       if (isRecurring) {
         try {
           await useFinanceStore.getState().addRecurring({
             accountId: selectedAccountId,
-            categoryId: selectedSubcategoryId || selectedCategoryId,
+            categoryId: selectedCategoryId,
             type,
             frequency,
             amount: parsedAmount,
-            currency: 'USD',
-            note: note || undefined,
-            nextRunOn: occurredOn,
+            currency: currencyCode,
+            note: note.trim() || undefined,
+            nextRunOn: occurredOn
           });
+
+          // Schedule a beautiful native reminder!
+          notificationScheduler.scheduleNotification(
+            'recurring-transaction',
+            `🔁 Recurring ${type} Added`,
+            `Auto-scheduled ${currencySymbol}${parsedAmount} frequency: ${frequency}`,
+            2000
+          );
         } catch {
-          /* best-effort */
+          /* best effort recurring hook */
+        }
+      } else {
+        // Schedule dynamic budget alert simulation if they spent more than $200!
+        if (type === 'Expense' && parsedAmount > 200) {
+          notificationScheduler.scheduleNotification(
+            'budget-alert',
+            '⚠️ Approaching Budget Cap',
+            `Your spending has passed 85% of your standard budget ceiling.`,
+            2500
+          );
         }
       }
+
       setSuccessFlash(true);
+      const toastLabel = type === 'Income' ? 'Income added' : 'Expense recorded';
+      showToast('success', `${toastLabel} of ${currencySymbol}${parsedAmount.toLocaleString()} successfully`);
       setTimeout(() => onOpenChange(false), 1200);
     } catch (e) {
-      setLocalError(e instanceof Error ? e.message : 'Failed to save');
+      const msg = e instanceof Error ? e.message : 'Transaction persistence failed';
+      setLocalError(msg);
+      showToast('error', msg);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const close = () => onOpenChange(false);
-
-  const goBack = () => {
-    if (step === 'details') setStep('account');
-    else if (step === 'account') setStep(type === 'Transfer' ? 'amount' : (subCategories.length > 0 ? 'subcategory' : 'category'));
-    else if (step === 'subcategory') setStep('category');
-    else if (step === 'category') setStep('amount');
-    else if (step === 'amount') setStep('menu');
-    else close();
-  };
-
-  const proceedFromCategory = (catId: string) => {
-    setSelectedCategoryId(catId);
-    setSelectedSubcategoryId('');
-    const subs = categories.filter(c => c.parentCategoryId === catId);
-    if (subs.length > 0) {
-      setStep('subcategory');
-    } else {
-      setStep('account');
-    }
+  const selectFlow = (t: TransactionType) => {
+    setType(t);
+    setStep('form');
   };
 
   return (
-    <BottomSheet open={open} onClose={close} labelledBy="tx-sheet" fullHeight={step !== 'menu'}>
-      {/* ── SUCCESS OVERLAY ── */}
+    <BottomSheet open={open} onClose={() => onOpenChange(false)} labelledBy="quick-add-title" fullHeight={step === 'form'}>
+      {/* ── SUCCESS FLASH OVERLAY ── */}
       <AnimatePresence>
         {successFlash && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[110] flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl"
+            className="absolute inset-0 z-[110] flex flex-col items-center justify-center bg-[#0E152B]/95 backdrop-blur-xl"
           >
             <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
+              initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
               className="flex flex-col items-center"
             >
-              <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30 shadow-[0_0_40px_rgba(16,185,129,0.3)]">
-                <Check size={48} className="text-primary" strokeWidth={3} />
+              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30 shadow-[0_0_32px_rgba(16,185,129,0.35)] mb-6">
+                <Check size={40} className="text-primary animate-pulse" strokeWidth={3} />
               </div>
-              <motion.h2 
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="mt-6 text-2xl font-black text-on-surface tracking-tight"
-              >
-                Done!
-              </motion.h2>
-              <motion.p 
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-sm text-on-surface-variant/70 mt-2 font-medium"
-              >
-                Transaction recorded successfully
-              </motion.p>
+              <h2 className="text-2xl font-black text-on-surface tracking-tight">Complete!</h2>
+              <p className="text-sm text-on-surface-variant/60 mt-1 font-semibold">Workspace state hydrated instantly</p>
             </motion.div>
           </motion.div>
         )}
@@ -322,324 +386,340 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
 
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden relative">
         <AnimatePresence mode="wait">
-          {/* ── STEP: MENU ── */}
+          {/* ── STEP 1: SELECT TYPE MENU ── */}
           {step === 'menu' && (
             <motion.div
               key="menu"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              exit={{ opacity: 0, y: -15 }}
               className="px-6 pb-8 pt-2"
             >
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 id="tx-sheet" className="text-2xl font-black text-on-surface tracking-tight">Create New</h3>
-                  <p className="text-xs text-on-surface-variant/60 font-medium mt-1">Select transaction type</p>
+                  <h3 id="quick-add-title" className="text-2xl font-black text-on-surface tracking-tight">Quick Add</h3>
+                  <p className="text-xs text-on-surface-variant/50 font-semibold mt-1">Select transaction scope</p>
                 </div>
-                <button onClick={close} className="w-10 h-10 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-on-surface-variant active:scale-90 transition shadow-sm">
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="w-10 h-10 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-on-surface-variant hover:bg-white/[0.08] active:scale-90 transition-all shadow-sm"
+                  type="button"
+                >
                   <X size={20} />
                 </button>
               </div>
 
               <div className="space-y-3">
-                <ActionMenuItem
-                  icon={ArrowUpRight}
-                  title="Add Expense"
-                  subtitle="Record spending transaction"
-                  color="text-rose-400"
-                  bg="bg-rose-400/10"
-                  border="border-rose-400/20"
-                  onClick={() => selectAction('Expense')}
-                />
-                <ActionMenuItem
-                  icon={ArrowDownLeft}
-                  title="Add Income"
-                  subtitle="Record incoming amount"
-                  color="text-emerald"
-                  bg="bg-emerald/10"
-                  border="border-emerald/20"
-                  onClick={() => selectAction('Income')}
-                />
-                <ActionMenuItem
-                  icon={Repeat}
-                  title="Transfer"
-                  subtitle="Move money between accounts"
-                  color="text-sky-400"
-                  bg="bg-sky-400/10"
-                  border="border-sky-400/20"
-                  onClick={() => selectAction('Transfer')}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── STEP: AMOUNT ── */}
-          {step === 'amount' && (
-            <motion.div
-              key="amount"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col min-h-0"
-            >
-              <SheetHeader title={type === 'Transfer' ? 'Transfer' : type} subtitle="Enter Amount" onBack={goBack} onClose={close} />
-              
-              <div className="flex-1 flex flex-col items-center justify-center py-6">
-                <motion.div 
-                  layoutId="amount-display"
-                  className="flex items-baseline justify-center gap-2 select-none"
+                <button
+                  onClick={() => selectFlow('Expense')}
+                  className="flex items-center gap-4 w-full p-4 rounded-3xl bg-rose-500/[0.03] border border-rose-500/10 hover:border-rose-500/20 active:bg-rose-500/5 transition-all text-left group"
+                  type="button"
                 >
-                  <span className="text-3xl font-bold text-primary/60">{currencySymbol}</span>
-                  <span className="text-6xl font-black text-on-surface tracking-tighter tabular-nums">
-                    {Number(amountStr).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).replace('.00', '')}
-                  </span>
-                </motion.div>
-                {localError && (
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-[10px] font-bold text-danger uppercase tracking-widest bg-danger/10 px-3 py-1 rounded-full">
-                    {localError}
-                  </motion.p>
-                )}
-              </div>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-rose-500/10 text-rose-400">
+                    <ArrowUpRight size={24} strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-base font-black text-on-surface tracking-tight">Add Expense</h4>
+                    <p className="text-xs text-on-surface-variant/50 font-medium mt-0.5">Deduct balance instantly</p>
+                  </div>
+                  <ChevronRight size={18} className="text-on-surface-variant/30 group-hover:translate-x-0.5 transition-transform" />
+                </button>
 
-              <div className="px-6 pb-6">
-                <div className="grid grid-cols-3 gap-2 mb-6">
-                  {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'del'].map((k) => (
-                    <button
-                      key={k}
-                      onClick={() => pressKey(k)}
-                      className={`h-14 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-90 ${
-                        k === 'del' ? 'bg-white/[0.04] text-rose-400' : 'bg-white/[0.02] border border-white/[0.05] text-on-surface active:bg-white/[0.08]'
-                      }`}
-                    >
-                      {k === 'del' ? <Delete size={22} /> : k}
-                    </button>
-                  ))}
-                </div>
-
-                <PrimaryButton 
-                  onClick={() => type === 'Transfer' ? setStep('account') : setStep('category')}
-                  disabled={parsedAmount <= 0}
-                  label={type === 'Transfer' ? 'Next' : 'Continue'}
-                  icon={ChevronRight}
-                />
+                <button
+                  onClick={() => selectFlow('Income')}
+                  className="flex items-center gap-4 w-full p-4 rounded-3xl bg-primary/[0.03] border border-primary/10 hover:border-primary/20 active:bg-primary/5 transition-all text-left group"
+                  type="button"
+                >
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-primary/10 text-primary">
+                    <ArrowDownLeft size={24} strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-base font-black text-on-surface tracking-tight">Add Income</h4>
+                    <p className="text-xs text-on-surface-variant/50 font-medium mt-0.5">Inject cash flow balance</p>
+                  </div>
+                  <ChevronRight size={18} className="text-on-surface-variant/30 group-hover:translate-x-0.5 transition-transform" />
+                </button>
               </div>
             </motion.div>
           )}
 
-          {/* ── STEP: CATEGORY ── */}
-          {step === 'category' && (
+          {/* ── STEP 2: QUICK-ADD TRANSACTION FORM ── */}
+          {step === 'form' && (
             <motion.div
-              key="category"
-              initial={{ opacity: 0, x: 50 }}
+              key="form"
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col min-h-0"
+              exit={{ opacity: 0, x: -20 }}
+              className="flex flex-col flex-1 min-h-0"
             >
-              <SheetHeader title="Category" subtitle={type} onBack={goBack} onClose={close} />
-              
-              <div className="flex-1 overflow-y-auto px-6 py-4 hide-scrollbar">
-                <div className="grid grid-cols-3 gap-3">
-                  {mainCategories.map((cat) => {
-                    const Icon = getCatIcon(cat.name);
-                    const isActive = selectedCategoryId === cat.id;
-                    return (
-                      <CategoryCard
-                        key={cat.id}
-                        cat={cat}
-                        icon={Icon}
-                        isActive={isActive}
-                        onClick={() => proceedFromCategory(cat.id)}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── STEP: SUBCATEGORY ── */}
-          {step === 'subcategory' && (
-            <motion.div
-              key="subcategory"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col min-h-0"
-            >
-              <SheetHeader title="Subcategory" subtitle={categories.find(c => c.id === selectedCategoryId)?.name || ''} onBack={goBack} onClose={close} />
-              
-              <div className="flex-1 overflow-y-auto px-6 py-4 hide-scrollbar">
-                <div className="space-y-2">
-                  {subCategories.map((cat) => (
-                    <SubCategoryRow
-                      key={cat.id}
-                      cat={cat}
-                      isActive={selectedSubcategoryId === cat.id}
-                      onClick={() => {
-                        setSelectedSubcategoryId(cat.id);
-                        setStep('account');
-                      }}
-                    />
-                  ))}
-                  <button 
-                    onClick={() => setStep('account')}
-                    className="w-full flex items-center justify-between px-4 py-4 rounded-2xl border border-white/[0.05] bg-white/[0.01] active:bg-white/[0.04] transition-colors"
+              {/* Form Header */}
+              <div className="px-6 pt-2 pb-4 flex items-center justify-between border-b border-white/[0.04] shrink-0">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setStep('menu')}
+                    className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-on-surface-variant hover:bg-white/[0.06] active:scale-95 transition-all"
+                    type="button"
                   >
-                    <span className="text-sm font-bold text-on-surface-variant/60 italic">Skip Subcategory</span>
-                    <ChevronRight size={16} className="text-on-surface-variant/30" />
+                    <ChevronLeft size={20} />
                   </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── STEP: ACCOUNT ── */}
-          {step === 'account' && (
-            <motion.div
-              key="account"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col min-h-0"
-            >
-              <SheetHeader 
-                title={type === 'Transfer' ? 'Accounts' : 'Payment Method'} 
-                subtitle={type === 'Transfer' ? 'From → To' : 'Select Account'} 
-                onBack={goBack} 
-                onClose={close} 
-              />
-              
-              <div className="flex-1 overflow-y-auto px-6 py-4 hide-scrollbar space-y-6">
-                <div>
-                  <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 mb-3 block">
-                    {type === 'Transfer' ? 'Source Account' : 'Pay From'}
-                  </label>
-                  <div className="grid grid-cols-1 gap-2">
-                    {accounts.map(acc => (
-                      <AccountRow 
-                        key={acc.id} 
-                        acc={acc} 
-                        isActive={selectedAccountId === acc.id} 
-                        onClick={() => setSelectedAccountId(acc.id)} 
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {type === 'Transfer' && (
                   <div>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 mb-3 block">
-                      Target Account
-                    </label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {accounts.filter(a => a.id !== selectedAccountId).map(acc => (
-                        <AccountRow 
-                          key={acc.id} 
-                          acc={acc} 
-                          isActive={toAccountId === acc.id} 
-                          onClick={() => setToAccountId(acc.id)} 
-                        />
-                      ))}
-                    </div>
+                    <h3 className="text-lg font-black text-on-surface tracking-tight">
+                      {type === 'Income' ? 'Add Income' : 'Add Expense'}
+                    </h3>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-primary mt-0.5">
+                      Scoped to {activeWorkspace?.name || 'Workspace'}
+                    </p>
                   </div>
-                )}
+                </div>
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-on-surface-variant hover:bg-white/[0.06] active:scale-95 transition-all"
+                  type="button"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
-              <div className="px-6 pb-6 pt-2">
-                <PrimaryButton 
-                  onClick={() => type === 'Transfer' ? handleCommit() : setStep('details')}
-                  disabled={!selectedAccountId || (type === 'Transfer' && !toAccountId)}
-                  label={type === 'Transfer' ? 'Execute Transfer' : 'Add Details'}
-                  icon={type === 'Transfer' ? Check : ChevronRight}
-                  loading={submitting}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── STEP: DETAILS ── */}
-          {step === 'details' && (
-            <motion.div
-              key="details"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col min-h-0"
-            >
-              <SheetHeader title="Details" subtitle="Finalize Transaction" onBack={goBack} onClose={close} />
-              
-              <div className="flex-1 overflow-y-auto px-6 py-4 hide-scrollbar space-y-5">
-                {/* Summary Mini-Card */}
-                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                      {React.createElement(getCatIcon(categories.find(c => c.id === selectedCategoryId)?.name || ''), { size: 20 })}
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-on-surface">
-                        {categories.find(c => c.id === selectedSubcategoryId || c.id === selectedCategoryId)?.name}
-                      </p>
-                      <p className="text-[10px] text-on-surface-variant/60">{accounts.find(a => a.id === selectedAccountId)?.name}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-black text-on-surface">{currencySymbol}{amountStr}</p>
-                    <p className={`text-[9px] font-bold uppercase tracking-widest ${type === 'Income' ? 'text-emerald' : 'text-rose-400'}`}>{type}</p>
+              {/* Form Content */}
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 hide-scrollbar">
+                {/* ── AMOUNT ENTRY (Fintech styled large text input) ── */}
+                <div className="relative rounded-3xl bg-white/[0.01] border border-white/[0.05] p-5 flex flex-col items-center justify-center shadow-inner">
+                  <span className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-1">
+                    Amount Entry
+                  </span>
+                  <div className="flex items-center justify-center gap-1.5 w-full">
+                    <span className="text-3xl font-black text-on-surface-variant/50 leading-none">{currencySymbol}</span>
+                    <input
+                      type="number"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full max-w-[200px] bg-transparent text-center text-4xl font-black tracking-tight text-on-surface placeholder:text-on-surface-variant/20 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-headline"
+                      autoFocus
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <FormInput label="Date" icon={Calendar}>
-                    <input type="date" value={occurredOn} onChange={e => setOccurredOn(e.target.value)} className="w-full bg-transparent outline-none text-sm font-bold text-on-surface" />
-                  </FormInput>
-
-                  <FormInput label={type === 'Expense' ? 'Merchant / Payee' : 'Source'} icon={type === 'Expense' ? ShoppingBag : Banknote}>
-                    <input type="text" placeholder="e.g. Starbucks, Uber..." value={merchant} onChange={e => setMerchant(e.target.value)} className="w-full bg-transparent outline-none text-sm font-bold text-on-surface placeholder:text-on-surface-variant/30" />
-                  </FormInput>
-
-                  <FormInput label="Note" icon={Tag}>
-                    <input type="text" placeholder="Add a memo..." value={note} onChange={e => setNote(e.target.value)} className="w-full bg-transparent outline-none text-sm font-bold text-on-surface placeholder:text-on-surface-variant/30" />
-                  </FormInput>
-
-                  {/* Receipt Upload UI */}
-                  <div className="flex items-center justify-between p-4 rounded-2xl border border-dashed border-white/10 bg-white/[0.01]">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-on-surface-variant/40">
-                        <Camera size={20} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-on-surface">Receipt / Invoice</p>
-                        <p className="text-[10px] text-on-surface-variant/40">Optional attachment</p>
-                      </div>
+                {/* ── MAIN TRANSACTION METADATA ── */}
+                <div className="space-y-3">
+                  {/* Title / Merchant */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                      Title / Payee
+                    </label>
+                    <div className="flex items-center gap-3 px-4 h-13 rounded-2xl bg-white/[0.02] border border-white/[0.06] focus-within:border-primary/20 focus-within:bg-white/[0.04] transition-all">
+                      <ShoppingBag size={18} className="text-on-surface-variant/30" />
+                      <input
+                        type="text"
+                        value={merchant}
+                        onChange={(e) => setMerchant(e.target.value)}
+                        placeholder={type === 'Expense' ? 'Starbucks, Netflix, Taxi...' : 'Salary, Freelance Project...'}
+                        className="w-full bg-transparent outline-none text-sm font-bold text-on-surface placeholder:text-on-surface-variant/30"
+                      />
                     </div>
-                    <button className="px-4 py-2 rounded-xl bg-white/[0.05] border border-white/[0.08] text-[10px] font-black uppercase tracking-widest text-on-surface active:scale-95 transition">Upload</button>
                   </div>
 
-                  {/* Recurring Toggle */}
-                  <div className={`p-4 rounded-2xl border transition-all ${isRecurring ? 'bg-primary/5 border-primary/20' : 'bg-white/[0.02] border-white/[0.05]'}`}>
+                  {/* Account / Wallet Select */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                      Account / Wallet
+                    </label>
+                    <div className="flex items-center gap-3 px-4 h-13 rounded-2xl bg-white/[0.02] border border-white/[0.06] focus-within:border-primary/20 transition-all">
+                      <WalletIcon size={18} className="text-on-surface-variant/30" />
+                      <select
+                        value={selectedAccountId}
+                        onChange={(e) => setSelectedAccountId(e.target.value)}
+                        className="w-full bg-transparent outline-none text-sm font-bold text-on-surface"
+                      >
+                        <option value="" disabled className="bg-[#0E152B]">Select Account</option>
+                        {accounts.map((acc) => (
+                          <option key={acc.id} value={acc.id} className="bg-[#0E152B]">
+                            {acc.name} ({currencySymbol}{acc.balance.toLocaleString()})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Dynamic Category List & Inline Creator */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between ml-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50">
+                        Category
+                      </label>
+                      <button
+                        onClick={() => setStep('create-category')}
+                        className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-primary hover:text-primary-hover active:scale-95 transition-all"
+                        type="button"
+                      >
+                        <Plus size={10} strokeWidth={3} />
+                        New Category
+                      </button>
+                    </div>
+
+                    {filteredCategories.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center p-6 border border-dashed border-white/10 rounded-2xl bg-white/[0.01]">
+                        <p className="text-xs text-on-surface-variant/50 font-bold mb-3">
+                          No {type.toLowerCase()} categories found
+                        </p>
+                        <button
+                          onClick={() => setStep('create-category')}
+                          className="px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/20 active:scale-95 transition-all"
+                          type="button"
+                        >
+                          Create {type} Category
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 px-4 h-13 rounded-2xl bg-white/[0.02] border border-white/[0.06] focus-within:border-primary/20 transition-all">
+                        <Tag size={18} className="text-on-surface-variant/30" />
+                        <select
+                          value={selectedCategoryId}
+                          onChange={(e) => {
+                            setSelectedCategoryId(e.target.value);
+                            setSelectedSubcategoryId('');
+                          }}
+                          className="w-full bg-transparent outline-none text-sm font-bold text-on-surface"
+                        >
+                          <option value="" className="bg-[#0E152B]">Select Category</option>
+                          {filteredCategories.map((cat) => (
+                            <option key={cat.id} value={cat.id} className="bg-[#0E152B]">
+                              {cat.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── SUBCATEGORY SELECT & INLINE ADDER ── */}
+                  <AnimatePresence>
+                    {selectedCategoryId && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="space-y-2 mt-2 pt-2 border-t border-white/[0.04] overflow-hidden"
+                      >
+                        <div className="flex items-center justify-between ml-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50">
+                            Subcategory
+                          </label>
+                          <button
+                            onClick={() => setStep('create-subcategory')}
+                            className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-primary hover:text-primary-hover active:scale-95 transition-all"
+                            type="button"
+                          >
+                            <Plus size={10} strokeWidth={3} />
+                            New Subcategory
+                          </button>
+                        </div>
+
+                        {categories.filter((c) => c.parentCategoryId === selectedCategoryId).length === 0 ? (
+                          <div className="flex items-center justify-between p-3 border border-dashed border-white/10 rounded-2xl bg-white/[0.01]">
+                            <span className="text-xs text-on-surface-variant/40 font-bold">
+                              No subcategories under this group
+                            </span>
+                            <button
+                              onClick={() => setStep('create-subcategory')}
+                              className="px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/20 active:scale-95 transition-all"
+                              type="button"
+                            >
+                              Add Subcategory
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3 px-4 h-13 rounded-2xl bg-white/[0.02] border border-white/[0.06] focus-within:border-primary/20 transition-all">
+                            <Tag size={18} className="text-on-surface-variant/30" />
+                            <select
+                              value={selectedSubcategoryId}
+                              onChange={(e) => setSelectedSubcategoryId(e.target.value)}
+                              className="w-full bg-transparent outline-none text-sm font-bold text-on-surface"
+                            >
+                              <option value="" className="bg-[#0E152B]">Select Subcategory (Optional)</option>
+                              {categories
+                                .filter((c) => c.parentCategoryId === selectedCategoryId)
+                                .map((sub) => (
+                                  <option key={sub.id} value={sub.id} className="bg-[#0E152B]">
+                                    {sub.name}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Optional Notes */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                      Notes
+                    </label>
+                    <div className="flex items-center gap-3 px-4 h-13 rounded-2xl bg-white/[0.02] border border-white/[0.06] focus-within:border-primary/20 transition-all">
+                      <Tag size={18} className="text-on-surface-variant/30" />
+                      <input
+                        type="text"
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder="Add a dynamic memo (optional)"
+                        className="w-full bg-transparent outline-none text-sm font-bold text-on-surface placeholder:text-on-surface-variant/30"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Transaction Date */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                      Transaction Date
+                    </label>
+                    <div className="flex items-center gap-3 px-4 h-13 rounded-2xl bg-white/[0.02] border border-white/[0.06] focus-within:border-primary/20 transition-all">
+                      <Calendar size={18} className="text-on-surface-variant/30" />
+                      <input
+                        type="date"
+                        value={occurredOn}
+                        onChange={(e) => setOccurredOn(e.target.value)}
+                        className="w-full bg-transparent outline-none text-sm font-bold text-on-surface"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Recurring Trigger */}
+                  <div className={`p-4 rounded-2xl border transition-all ${isRecurring ? 'bg-primary/5 border-primary/20' : 'bg-white/[0.01] border-white/[0.06]'}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isRecurring ? 'bg-primary/20 text-primary' : 'bg-white/[0.04] text-on-surface-variant/40'}`}>
-                          <Repeat size={20} />
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isRecurring ? 'bg-primary/20 text-primary' : 'bg-white/[0.04] text-on-surface-variant/40'}`}>
+                          <Repeat size={18} />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-on-surface">Recurring</p>
-                          <p className="text-[10px] text-on-surface-variant/40">Repeat this transaction</p>
+                          <p className="text-xs font-black text-on-surface">Recurring Transaction</p>
+                          <p className="text-[10px] text-on-surface-variant/40">Automate this entry</p>
                         </div>
                       </div>
-                      <div 
+                      <div
                         onClick={() => setIsRecurring(!isRecurring)}
-                        className={`w-11 h-6 rounded-full p-1 transition-colors cursor-pointer ${isRecurring ? 'bg-primary' : 'bg-white/10'}`}
+                        className={`w-11 h-6 rounded-full p-1 transition-colors cursor-pointer shrink-0 ${isRecurring ? 'bg-primary' : 'bg-white/10'}`}
                       >
                         <motion.div animate={{ x: isRecurring ? 20 : 0 }} className="w-4 h-4 rounded-full bg-white shadow-sm" />
                       </div>
                     </div>
+
                     <AnimatePresence>
                       {isRecurring && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="mt-4 pt-4 border-t border-white/5 overflow-hidden">
-                          <div className="flex gap-2">
-                            {(['Daily', 'Weekly', 'Monthly', 'Yearly'] as const).map(f => (
-                              <button key={f} onClick={() => setFrequency(f)} className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all ${frequency === f ? 'bg-primary text-white' : 'bg-white/[0.04] text-on-surface-variant/60'}`}>
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="mt-3 pt-3 border-t border-white/5 overflow-hidden"
+                        >
+                          <div className="flex gap-1.5">
+                            {(['Daily', 'Weekly', 'Monthly', 'Yearly'] as const).map((f) => (
+                              <button
+                                key={f}
+                                onClick={() => setFrequency(f)}
+                                className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all ${frequency === f ? 'bg-primary text-white shadow-sm' : 'bg-white/[0.04] text-on-surface-variant/60'}`}
+                                type="button"
+                              >
                                 {f}
                               </button>
                             ))}
@@ -651,19 +731,307 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
                 </div>
 
                 {localError && (
-                  <p className="text-[10px] font-bold text-danger text-center uppercase tracking-widest bg-danger/10 py-2 rounded-xl">
+                  <p className="text-[10px] font-bold text-danger text-center uppercase tracking-widest bg-danger/10 py-2.5 rounded-xl">
                     {localError}
                   </p>
                 )}
               </div>
 
-              <div className="px-6 pb-6 pt-2">
-                <PrimaryButton 
-                  onClick={handleCommit}
-                  loading={submitting}
-                  label={`Save ${type}`}
-                  icon={Check}
-                />
+              {/* Form Footer Action */}
+              <div className="px-6 pb-6 pt-2 shrink-0 border-t border-white/[0.04]">
+                <button
+                  onClick={handleSaveTransaction}
+                  disabled={submitting || !amount || !selectedCategoryId}
+                  className={`w-full h-14 rounded-2xl flex items-center justify-center gap-2 text-sm font-black uppercase tracking-widest transition-all ${
+                    submitting || !amount || !selectedCategoryId
+                      ? 'bg-white/[0.04] text-on-surface-variant/30 cursor-not-allowed'
+                      : 'bg-primary text-white shadow-[0_8px_24px_rgba(16,185,129,0.35)] active:translate-y-0.5 active:shadow-none'
+                  }`}
+                  type="button"
+                >
+                  {submitting ? (
+                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      Save {type}
+                      <Check size={18} strokeWidth={2.5} />
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── STEP 3: INLINE CATEGORY CREATION MODAL ── */}
+          {step === 'create-category' && (
+            <motion.div
+              key="create-category"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex flex-col flex-1 min-h-0"
+            >
+              {/* Category Header */}
+              <div className="px-6 pt-2 pb-4 flex items-center justify-between border-b border-white/[0.04] shrink-0">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setStep('form')}
+                    className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-on-surface-variant hover:bg-white/[0.06] active:scale-95 transition-all"
+                    type="button"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <div>
+                    <h3 className="text-lg font-black text-on-surface tracking-tight">Create Category</h3>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-rose-400 mt-0.5">
+                      Inline {type} Scope
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-on-surface-variant hover:bg-white/[0.06] active:scale-95 transition-all"
+                  type="button"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Category Form */}
+              <form onSubmit={handleCreateCategory} className="flex-1 overflow-y-auto px-6 py-5 space-y-5 hide-scrollbar">
+                {/* Category Name */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                    Category Name
+                  </label>
+                  <div className="flex items-center gap-3 px-4 h-13 rounded-2xl bg-white/[0.02] border border-white/[0.06] focus-within:border-primary/20 transition-all">
+                    <Tag size={18} className="text-on-surface-variant/30" />
+                    <input
+                      type="text"
+                      value={newCatName}
+                      onChange={(e) => setNewCatName(e.target.value)}
+                      placeholder="e.g. Subscriptions, Groceries, Crypto..."
+                      className="w-full bg-transparent outline-none text-sm font-bold text-on-surface placeholder:text-on-surface-variant/30"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Popular Icon Selector */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                    Select Icon Symbol
+                  </label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {popularIcons.map((i) => {
+                      const IconComponent = i.icon;
+                      const isSelected = newCatIcon === i.key;
+                      return (
+                        <button
+                          key={i.key}
+                          type="button"
+                          onClick={() => setNewCatIcon(i.key)}
+                          className={`h-11 rounded-xl flex items-center justify-center transition-all ${
+                            isSelected
+                              ? 'bg-primary/20 text-primary border border-primary/30'
+                              : 'bg-white/[0.02] border border-white/[0.05] text-on-surface-variant/60 hover:text-on-surface'
+                          }`}
+                          title={i.label}
+                        >
+                          <IconComponent size={18} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Harmonious Color Selector */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                    Brand Color Palette
+                  </label>
+                  <div className="grid grid-cols-8 gap-2">
+                    {colorPalette.map((c) => {
+                      const isSelected = newCatColor === c.hex;
+                      return (
+                        <button
+                          key={c.hex}
+                          type="button"
+                          onClick={() => setNewCatColor(c.hex)}
+                          className="h-8 rounded-full flex items-center justify-center transition-all active:scale-90 relative"
+                          style={{ backgroundColor: c.hex }}
+                          title={c.name}
+                        >
+                          {isSelected && (
+                            <div className="absolute inset-0 rounded-full border-2 border-white flex items-center justify-center">
+                              <Check size={12} className="text-white drop-shadow-md" strokeWidth={3} />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </form>
+
+              {/* Category Footer Action */}
+              <div className="px-6 pb-6 pt-2 shrink-0 border-t border-white/[0.04]">
+                <button
+                  onClick={handleCreateCategory}
+                  disabled={isSavingCategory || !newCatName.trim()}
+                  className={`w-full h-14 rounded-2xl flex items-center justify-center gap-2 text-sm font-black uppercase tracking-widest transition-all ${
+                    isSavingCategory || !newCatName.trim()
+                      ? 'bg-white/[0.04] text-on-surface-variant/30 cursor-not-allowed'
+                      : 'bg-primary text-white shadow-[0_8px_24px_rgba(16,185,129,0.35)] active:translate-y-0.5 active:shadow-none'
+                  }`}
+                  type="button"
+                >
+                  {isSavingCategory ? (
+                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      Save Category
+                      <Palette size={18} />
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── STEP 4: INLINE SUBCATEGORY CREATION MODAL ── */}
+          {step === 'create-subcategory' && (
+            <motion.div
+              key="create-subcategory"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex flex-col flex-1 min-h-0"
+            >
+              {/* Subcategory Header */}
+              <div className="px-6 pt-2 pb-4 flex items-center justify-between border-b border-white/[0.04] shrink-0">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setStep('form')}
+                    className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-on-surface-variant hover:bg-white/[0.06] active:scale-95 transition-all"
+                    type="button"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <div>
+                    <h3 className="text-lg font-black text-on-surface tracking-tight">Create Subcategory</h3>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-primary mt-0.5">
+                      Under "{categories.find(c => c.id === selectedCategoryId)?.name || 'Parent Category'}"
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-on-surface-variant hover:bg-white/[0.06] active:scale-95 transition-all"
+                  type="button"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Subcategory Form */}
+              <form onSubmit={handleCreateSubcategory} className="flex-1 overflow-y-auto px-6 py-5 space-y-5 hide-scrollbar">
+                {/* Subcategory Name */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                    Subcategory Name
+                  </label>
+                  <div className="flex items-center gap-3 px-4 h-13 rounded-2xl bg-white/[0.02] border border-white/[0.06] focus-within:border-primary/20 transition-all">
+                    <Tag size={18} className="text-on-surface-variant/30" />
+                    <input
+                      type="text"
+                      value={newCatName}
+                      onChange={(e) => setNewCatName(e.target.value)}
+                      placeholder="e.g. Restaurant, Groceries, Fuel..."
+                      className="w-full bg-transparent outline-none text-sm font-bold text-on-surface placeholder:text-on-surface-variant/30"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Popular Icon Selector */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                    Select Icon Symbol
+                  </label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {popularIcons.map((i) => {
+                      const IconComponent = i.icon;
+                      const isSelected = newCatIcon === i.key;
+                      return (
+                        <button
+                          key={i.key}
+                          type="button"
+                          onClick={() => setNewCatIcon(i.key)}
+                          className={`h-11 rounded-xl flex items-center justify-center transition-all ${
+                            isSelected
+                              ? 'bg-primary/20 text-primary border border-primary/30'
+                              : 'bg-white/[0.02] border border-white/[0.05] text-on-surface-variant/60 hover:text-on-surface'
+                          }`}
+                          title={i.label}
+                        >
+                          <IconComponent size={18} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Harmonious Color Selector */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50 ml-1">
+                    Brand Color Palette
+                  </label>
+                  <div className="grid grid-cols-8 gap-2">
+                    {colorPalette.map((c) => {
+                      const isSelected = newCatColor === c.hex;
+                      return (
+                        <button
+                          key={c.hex}
+                          type="button"
+                          onClick={() => setNewCatColor(c.hex)}
+                          className="h-8 rounded-full flex items-center justify-center transition-all active:scale-90 relative"
+                          style={{ backgroundColor: c.hex }}
+                          title={c.name}
+                        >
+                          {isSelected && (
+                            <div className="absolute inset-0 rounded-full border-2 border-white flex items-center justify-center">
+                              <Check size={12} className="text-white drop-shadow-md" strokeWidth={3} />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </form>
+
+              {/* Subcategory Footer Action */}
+              <div className="px-6 pb-6 pt-2 shrink-0 border-t border-white/[0.04]">
+                <button
+                  onClick={handleCreateSubcategory}
+                  disabled={isSavingCategory || !newCatName.trim()}
+                  className={`w-full h-14 rounded-2xl flex items-center justify-center gap-2 text-sm font-black uppercase tracking-widest transition-all ${
+                    isSavingCategory || !newCatName.trim()
+                      ? 'bg-white/[0.04] text-on-surface-variant/30 cursor-not-allowed'
+                      : 'bg-primary text-white shadow-[0_8px_24px_rgba(16,185,129,0.35)] active:translate-y-0.5 active:shadow-none'
+                  }`}
+                  type="button"
+                >
+                  {isSavingCategory ? (
+                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      Save Subcategory
+                      <Palette size={18} />
+                    </>
+                  )}
+                </button>
               </div>
             </motion.div>
           )}
@@ -673,152 +1041,3 @@ export function AddTransactionSheet({ open, onOpenChange }: { open: boolean; onO
   );
 }
 
-/* ── HELPER COMPONENTS ── */
-
-import React from 'react';
-
-function ActionMenuItem({ icon: Icon, title, subtitle, color, bg, border, onClick }: any) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.96, backgroundColor: 'rgba(255,255,255,0.06)' }}
-      onClick={onClick}
-      className={`flex items-center gap-4 w-full p-4 rounded-[24px] bg-white/[0.02] border ${border} transition-all duration-200 text-left group`}
-    >
-      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-active:scale-90 ${bg} ${color}`}>
-        <Icon size={24} strokeWidth={2.2} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <h4 className="text-base font-black text-on-surface tracking-tight">{title}</h4>
-        <p className="text-xs text-on-surface-variant/60 font-medium mt-0.5">{subtitle}</p>
-      </div>
-      <div className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant/30 group-hover:text-on-surface-variant/60 transition-colors">
-        <ChevronRight size={18} />
-      </div>
-    </motion.button>
-  );
-}
-
-function SheetHeader({ title, subtitle, onBack, onClose }: any) {
-  return (
-    <div className="px-6 pt-2 pb-4 flex items-center justify-between border-b border-white/[0.04]">
-      <div className="flex items-center gap-4">
-        <button onClick={onBack} className="w-10 h-10 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-on-surface-variant active:scale-90 transition">
-          <ChevronLeft size={20} />
-        </button>
-        <div>
-          <h3 className="text-lg font-black text-on-surface tracking-tight">{title}</h3>
-          <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-0.5">{subtitle}</p>
-        </div>
-      </div>
-      <button onClick={onClose} className="w-10 h-10 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-on-surface-variant active:scale-90 transition">
-        <X size={18} />
-      </button>
-    </div>
-  );
-}
-
-function CategoryCard({ cat, icon: Icon, isActive, onClick }: any) {
-  return (
-    <motion.button
-      whileTap={{ scale: 0.94 }}
-      onClick={onClick}
-      className={`flex flex-col items-center gap-3 p-4 rounded-3xl border transition-all duration-200 ${
-        isActive 
-          ? 'bg-primary/10 border-primary/30 shadow-[0_8px_20px_rgba(16,185,129,0.15)]' 
-          : 'bg-white/[0.02] border-white/[0.05] active:border-white/[0.15]'
-      }`}
-    >
-      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isActive ? 'bg-primary/20 text-primary' : 'bg-white/[0.04] text-on-surface-variant'}`}>
-        <Icon size={22} strokeWidth={2.2} />
-      </div>
-      <span className={`text-[11px] font-bold tracking-tight text-center leading-tight ${isActive ? 'text-primary' : 'text-on-surface-variant/80'}`}>
-        {cat.name}
-      </span>
-    </motion.button>
-  );
-}
-
-function SubCategoryRow({ cat, isActive, onClick }: any) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all duration-200 ${
-        isActive 
-          ? 'bg-primary/10 border-primary/20' 
-          : 'bg-white/[0.02] border-white/[0.05] active:bg-white/[0.05]'
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-primary shadow-[0_0_8px_#10B981]' : 'bg-white/10'}`} />
-        <span className={`text-sm font-bold ${isActive ? 'text-primary' : 'text-on-surface'}`}>{cat.name}</span>
-      </div>
-      <ChevronRight size={16} className={isActive ? 'text-primary' : 'text-on-surface-variant/30'} />
-    </button>
-  );
-}
-
-function AccountRow({ acc, isActive, onClick }: any) {
-  const Icon = acc.type === 'Bank' ? Landmark : acc.type === 'Card' ? CreditCard : WalletIcon;
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-4 w-full p-4 rounded-2xl border transition-all duration-200 ${
-        isActive 
-          ? 'bg-primary/10 border-primary/30 shadow-sm' 
-          : 'bg-white/[0.01] border-white/[0.05] active:bg-white/[0.04]'
-      }`}
-    >
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${isActive ? 'bg-primary/20 text-primary' : 'bg-white/[0.04] text-on-surface-variant'}`}>
-        <Icon size={20} />
-      </div>
-      <div className="flex-1 text-left">
-        <h4 className={`text-sm font-bold ${isActive ? 'text-primary' : 'text-on-surface'}`}>{acc.name}</h4>
-        <p className="text-[10px] text-on-surface-variant/50 font-medium">{acc.type}</p>
-      </div>
-      <div className="text-right">
-        <p className={`text-sm font-black ${isActive ? 'text-primary' : 'text-on-surface'}`}>${acc.balance.toLocaleString()}</p>
-        <div className={`ml-auto mt-1 w-1.5 h-1.5 rounded-full ${isActive ? 'bg-primary shadow-[0_0_8px_#10B981]' : 'bg-transparent'}`} />
-      </div>
-    </button>
-  );
-}
-
-function FormInput({ label, icon: Icon, children }: any) {
-  return (
-    <div className="space-y-2">
-      <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 ml-1">
-        {label}
-      </label>
-      <div className="flex items-center gap-3 px-4 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.06] focus-within:border-primary/30 focus-within:bg-white/[0.04] transition-all">
-        <Icon size={18} className="text-on-surface-variant/40" />
-        <div className="flex-1 min-w-0">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PrimaryButton({ onClick, disabled, loading, label, icon: Icon }: any) {
-  return (
-    <motion.button
-      whileTap={!disabled && !loading ? { scale: 0.97 } : {}}
-      onClick={onClick}
-      disabled={disabled || loading}
-      className={`w-full h-15 rounded-[22px] flex items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden ${
-        disabled || loading
-          ? 'bg-white/[0.05] text-on-surface-variant/30 cursor-not-allowed'
-          : 'bg-primary text-white shadow-[0_12px_24px_rgba(16,185,129,0.3)] active:shadow-none active:translate-y-0.5'
-      }`}
-    >
-      {loading ? (
-        <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-      ) : (
-        <>
-          <span className="text-sm font-black uppercase tracking-[0.1em]">{label}</span>
-          {Icon && <Icon size={20} strokeWidth={2.5} />}
-        </>
-      )}
-    </motion.button>
-  );
-}

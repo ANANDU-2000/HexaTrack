@@ -52,4 +52,8 @@ public sealed class AdminUsersController(ICurrentUser currentUser, IAdminUsersSe
     [HttpPut("{id:guid}/subscription")]
     public Task SetSubscription(Guid id, [FromBody] SetUserSubscriptionRequest body, CancellationToken cancellationToken)
         => users.SetSubscriptionPlanAsync(id, body.Plan, currentUser.UserId, cancellationToken);
+
+    [HttpPut("{id:guid}/reset-password")]
+    public Task ResetPassword(Guid id, [FromBody] ResetPasswordRequest body, CancellationToken cancellationToken)
+        => users.ResetPasswordAsync(id, body.Password, currentUser.UserId, cancellationToken);
 }

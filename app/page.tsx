@@ -10,7 +10,6 @@ import { AddTransactionSheet } from '@/components/transactions/add-transaction-s
 import { AppShell, type ScreenKey } from '@/components/layout/app-shell';
 import { DashboardScreen } from '@/components/screens/dashboard-screen';
 import { BrandMark } from '@/components/ui/brand';
-import { PwaProvider } from '@/components/pwa/pwa-provider';
 import { useAuthStore } from '@/store/auth-store';
 import { useFinanceStore } from '@/store/finance-store';
 import { useWorkspaceStore } from '@/store/workspace-store';
@@ -50,6 +49,19 @@ export default function Home() {
     hydrate();
     hydrateWorkspace();
   }, [hydrate, hydrateWorkspace]);
+
+  useEffect(() => {
+    if (mounted && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const action = params.get('action');
+      if (action === 'add-expense' || action === 'add-income') {
+        setIsAdding(true);
+        // Clean URL query parameters so page refresh doesn't trigger modal again
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [mounted]);
 
   const router = useRouter();
 
@@ -119,23 +131,19 @@ export default function Home() {
   if (!hydrated) {
 
     return (
-      <>
-        <PwaProvider />
-        <main className="grid min-h-screen place-items-center bg-background px-4">
-          <div className="surface rounded-3xl p-6 flex flex-col items-center">
-            <BrandMark tone="dark" />
-            <div className="mt-6 h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="mt-3 text-center text-sm text-on-surface-variant">Initializing Workspace...</p>
-          </div>
-        </main>
-      </>
+      <main className="grid min-h-screen place-items-center bg-background px-4">
+        <div className="surface rounded-3xl p-6 flex flex-col items-center">
+          <BrandMark tone="dark" />
+          <div className="mt-6 h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="mt-3 text-center text-sm text-on-surface-variant">Initializing Workspace...</p>
+        </div>
+      </main>
     );
   }
 
   if (!user) {
     return (
       <>
-        <PwaProvider />
         {unauthView === 'marketing' ? (
           <LandingPage 
             onGetStarted={() => setUnauthView('auth')} 
@@ -149,14 +157,11 @@ export default function Home() {
   }
 
   return (
-    <>
-      <PwaProvider />
-      <AppShell activeScreen={screen} onAddTransaction={() => setIsAdding(true)} onNavigate={setScreen} transactionCount={transactions.length}>
-        <StatusBanner error={error} loading={loading} onDismiss={clearError} />
-        <AnimatePresence animationKey={screen}>{content}</AnimatePresence>
-        <AddTransactionSheet open={isAdding} onOpenChange={setIsAdding} />
-      </AppShell>
-    </>
+    <AppShell activeScreen={screen} onAddTransaction={() => setIsAdding(true)} onNavigate={setScreen} transactionCount={transactions.length}>
+      <StatusBanner error={error} loading={loading} onDismiss={clearError} />
+      <AnimatePresence animationKey={screen}>{content}</AnimatePresence>
+      <AddTransactionSheet open={isAdding} onOpenChange={setIsAdding} />
+    </AppShell>
   );
 }
 

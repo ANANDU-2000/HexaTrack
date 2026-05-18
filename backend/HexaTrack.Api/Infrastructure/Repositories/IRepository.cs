@@ -1,4 +1,6 @@
 using System.Linq.Expressions;
+using HexaTrack.Api.Application.Security;
+using HexaTrack.Api.Domain;
 
 namespace HexaTrack.Api.Infrastructure.Repositories;
 
@@ -34,16 +36,97 @@ public interface IUserScopedRepository<TEntity> : IRepository<TEntity>
     IQueryable<TEntity> ForUser(Guid userId);
 }
 
-public sealed class UserScopedRepository<TEntity>(HexaTrackDbContext dbContext) : Repository<TEntity>(dbContext), IUserScopedRepository<TEntity>
+public sealed class UserScopedRepository<TEntity>(HexaTrackDbContext dbContext, ICurrentUser currentUser) : Repository<TEntity>(dbContext), IUserScopedRepository<TEntity>
     where TEntity : class
 {
     public IQueryable<TEntity> ForUser(Guid userId)
     {
         var parameter = Expression.Parameter(typeof(TEntity), "x");
-        var property = Expression.Property(parameter, "UserId");
-        var equals = Expression.Equal(property, Expression.Constant(userId));
-        var predicate = Expression.Lambda<Func<TEntity, bool>>(equals, parameter);
+        Expression? body = null;
 
+        var mode = currentUser.Mode;
+        var userOrgId = currentUser.OrganizationId;
+        var userBranchId = currentUser.BranchId;
+
+        var orgIdProp = typeof(TEntity).GetProperty("OrganizationId");
+        var branchIdProp = typeof(TEntity).GetProperty("BranchId");
+        var userIdProp = typeof(TEntity).GetProperty("UserId");
+
+        if (mode == UserMode.Individual)
+        {
+            if (userIdProp != null)
+            {
+                body = Expression.Equal(
+                    Expression.Property(parameter, userIdProp),
+                    Expression.Constant(currentUser.UserId)
+                );
+            }
+        }
+        else if (mode == UserMode.OrganizationOwner || mode == UserMode.OrganizationStaff)
+        {
+            if (orgIdProp != null && userOrgId.HasValue)
+            {
+                body = Expression.Equal(
+                    Expression.Property(parameter, orgIdProp),
+                    Expression.Constant(userOrgId.Value, typeof(Guid?))
+                );
+            }
+            else if (userIdProp != null)
+            {
+                body = Expression.Equal(
+                    Expression.Property(parameter, userIdProp),
+                    Expression.Constant(currentUser.UserId)
+                );
+            }
+        }
+        else if (mode == UserMode.BranchManager)
+        {
+            if (orgIdProp != null && userOrgId.HasValue)
+            {
+                var orgExpr = Expression.Equal(
+                    Expression.Property(parameter, orgIdProp),
+                    Expression.Constant(userOrgId.Value, typeof(Guid?))
+                );
+                body = orgExpr;
+
+                if (branchIdProp != null && userBranchId.HasValue)
+                {
+                    var branchExpr = Expression.Equal(
+                        Expression.Property(parameter, branchIdProp),
+                        Expression.Constant(userBranchId.Value, typeof(Guid?))
+                    );
+                    body = Expression.AndAlso(body, branchExpr);
+                }
+            }
+            else if (userIdProp != null)
+            {
+                body = Expression.Equal(
+                    Expression.Property(parameter, userIdProp),
+                    Expression.Constant(currentUser.UserId)
+                );
+            }
+        }
+        else if (mode == UserMode.SuperAdmin)
+        {
+            // SuperAdmin - fallback to workspace isolation (no-op here)
+        }
+
+        if (body == null)
+        {
+            if (userIdProp != null)
+            {
+                body = Expression.Equal(
+                    Expression.Property(parameter, userIdProp),
+                    Expression.Constant(userId)
+                );
+            }
+            else
+            {
+                return Query();
+            }
+        }
+
+        var predicate = Expression.Lambda<Func<TEntity, bool>>(body, parameter);
         return Query().Where(predicate);
     }
 }

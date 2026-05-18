@@ -22,7 +22,7 @@ public interface IAccountService
 public sealed class AccountService(HexaTrackDbContext db, IUserScopedRepository<Account> accounts, IUserScopedRepository<AccountTransfer> transfers, ICurrentUser currentUser, ICurrentWorkspace currentWorkspace, IUnitOfWork unitOfWork) : IAccountService
 {
     public async Task<IReadOnlyCollection<AccountDto>> ListAsync(CancellationToken cancellationToken)
-        => await db.Accounts.AsNoTracking()
+        => await accounts.ForUser(currentUser.UserId).AsNoTracking()
             .Where(x => x.WorkspaceId == currentWorkspace.WorkspaceId && !x.IsArchived)
             .OrderBy(x => x.Type).ThenBy(x => x.Name)
             .Select(x => new AccountDto(x.Id, x.Name, x.Type, x.Currency, x.Balance))
@@ -52,7 +52,7 @@ public sealed class AccountService(HexaTrackDbContext db, IUserScopedRepository<
             workspaceId = currentWorkspace.WorkspaceId;
         }
 
-        return await db.Accounts.AsNoTracking()
+        return await accounts.ForUser(currentUser.UserId).AsNoTracking()
             .Where(x => x.WorkspaceId == workspaceId && !x.IsArchived)
             .OrderBy(x => x.Type).ThenBy(x => x.Name)
             .Select(x => new AccountDto(x.Id, x.Name, x.Type, x.Currency, x.Balance))
@@ -66,6 +66,8 @@ public sealed class AccountService(HexaTrackDbContext db, IUserScopedRepository<
             {
                 WorkspaceId = currentWorkspace.WorkspaceId,
                 UserId = currentUser.UserId,
+                OrganizationId = currentUser.OrganizationId,
+                BranchId = currentUser.BranchId,
                 Name = request.Name.Trim(),
                 Type = request.Type,
                 Currency = request.Currency.Trim().ToUpperInvariant(),

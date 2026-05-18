@@ -64,6 +64,19 @@ export default function OwnerDashboard() {
      }
   }, [activeWorkspaceId, loadFinanceWorkspace]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const action = params.get('action');
+      if (action === 'add-expense' || action === 'add-income') {
+        setIsAddingTx(true);
+        // Clean URL to prevent repeated modal triggers
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, []);
+
   if (!hydrated || !user) {
     return (
       <div className="min-h-screen bg-[#0B1015] flex items-center justify-center text-[#8B9BB4]">

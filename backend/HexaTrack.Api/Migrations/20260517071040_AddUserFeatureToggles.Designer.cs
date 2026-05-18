@@ -3,6 +3,7 @@ using System;
 using HexaTrack.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HexaTrack.Api.Migrations
 {
     [DbContext(typeof(HexaTrackDbContext))]
-    partial class HexaTrackDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260517071040_AddUserFeatureToggles")]
+    partial class AddUserFeatureToggles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,9 +35,6 @@ namespace HexaTrack.Api.Migrations
                     b.Property<decimal>("Balance")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
-
-                    b.Property<Guid?>("BranchId")
-                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -55,9 +55,6 @@ namespace HexaTrack.Api.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
-                    b.Property<Guid?>("OrganizationId")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
@@ -68,12 +65,6 @@ namespace HexaTrack.Api.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BranchId")
-                        .HasFilter("\"BranchId\" IS NOT NULL");
-
-                    b.HasIndex("OrganizationId")
-                        .HasFilter("\"OrganizationId\" IS NOT NULL");
 
                     b.HasIndex("UserId", "Type");
 
@@ -379,9 +370,6 @@ namespace HexaTrack.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("BranchId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Color")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
@@ -401,9 +389,6 @@ namespace HexaTrack.Api.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
-                    b.Property<Guid?>("OrganizationId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("ParentCategoryId")
                         .HasColumnType("uuid");
 
@@ -417,12 +402,6 @@ namespace HexaTrack.Api.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BranchId")
-                        .HasFilter("\"BranchId\" IS NOT NULL");
-
-                    b.HasIndex("OrganizationId")
-                        .HasFilter("\"OrganizationId\" IS NOT NULL");
 
                     b.HasIndex("ParentCategoryId");
 
@@ -1339,16 +1318,6 @@ namespace HexaTrack.Api.Migrations
 
             modelBuilder.Entity("HexaTrack.Api.Domain.Entities.Account", b =>
                 {
-                    b.HasOne("HexaTrack.Api.Domain.Entities.Branch", "Branch")
-                        .WithMany()
-                        .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("HexaTrack.Api.Domain.Entities.Organization", "Organization")
-                        .WithMany()
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("HexaTrack.Api.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1360,10 +1329,6 @@ namespace HexaTrack.Api.Migrations
                         .HasForeignKey("WorkspaceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Branch");
-
-                    b.Navigation("Organization");
 
                     b.Navigation("User");
 
@@ -1438,16 +1403,6 @@ namespace HexaTrack.Api.Migrations
 
             modelBuilder.Entity("HexaTrack.Api.Domain.Entities.Category", b =>
                 {
-                    b.HasOne("HexaTrack.Api.Domain.Entities.Branch", "Branch")
-                        .WithMany()
-                        .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("HexaTrack.Api.Domain.Entities.Organization", "Organization")
-                        .WithMany()
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("HexaTrack.Api.Domain.Entities.Category", "ParentCategory")
                         .WithMany("Subcategories")
                         .HasForeignKey("ParentCategoryId")
@@ -1464,10 +1419,6 @@ namespace HexaTrack.Api.Migrations
                         .HasForeignKey("WorkspaceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Branch");
-
-                    b.Navigation("Organization");
 
                     b.Navigation("ParentCategory");
 

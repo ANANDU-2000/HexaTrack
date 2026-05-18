@@ -12,6 +12,8 @@ import type {
   Transaction,
   TransactionType,
 } from '@/lib/types';
+import { useWorkspaceStore } from '@/store/workspace-store';
+import { offlineQueue } from '@/lib/offline-queue';
 
 type FinanceState = {
   currency: string;
@@ -25,6 +27,8 @@ type FinanceState = {
   dashboard: DashboardSummary | null;
   loading: boolean;
   error: string | null;
+  /** Most recent success message (auto-clears). */
+  successMessage: string | null;
   setError: (message: string | null) => void;
   loadWorkspace: () => Promise<void>;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'tags'> & { tagNames?: string[] }) => Promise<void>;
@@ -40,6 +44,7 @@ type FinanceState = {
     endsOn?: string;
   }) => Promise<void>;
   clearError: () => void;
+  clearSuccess: () => void;
 };
 
 type PersistedFinanceWorkspace = Pick<
@@ -104,9 +109,35 @@ function cacheWorkspace(workspace: Omit<PersistedFinanceWorkspace, 'savedAt'>) {
   );
 }
 
+/**
+ * Ensures the workspace store has an active workspace ID.
+ * Resolves the critical hydration race: finance API calls were firing before
+ * the workspace store had resolved which workspace to use, causing the
+ * X-Workspace-Id header to be null and all finance requests to fail.
+ */
+async function ensureWorkspaceReady(): Promise<string> {
+  const ws = useWorkspaceStore.getState();
+  if (ws.activeWorkspaceId) return ws.activeWorkspaceId;
+
+  // Hydrate from localStorage first (synchronous)
+  if (!ws.hydrated) {
+    ws.hydrate();
+    const afterHydrate = useWorkspaceStore.getState().activeWorkspaceId;
+    if (afterHydrate) return afterHydrate;
+  }
+
+  // Fetch workspaces from server and pick one
+  await ws.ensureActiveWorkspace();
+  const final = useWorkspaceStore.getState().activeWorkspaceId;
+  if (!final) {
+    throw new Error('No workspace available. Please create or join a workspace first.');
+  }
+  return final;
+}
+
 const cachedWorkspace = readCachedWorkspace();
 
-export const useFinanceStore = create<FinanceState>((set) => ({
+export const useFinanceStore = create<FinanceState>((set, get) => ({
   currency: 'USD',
   accounts: cachedWorkspace?.accounts ?? [],
   categories: cachedWorkspace?.categories ?? [],
@@ -118,11 +149,16 @@ export const useFinanceStore = create<FinanceState>((set) => ({
   dashboard: cachedWorkspace?.dashboard ?? null,
   loading: false,
   error: null,
+  successMessage: null,
   clearError: () => set({ error: null }),
+  clearSuccess: () => set({ successMessage: null }),
   setError: (message) => set({ error: message }),
   loadWorkspace: async () => {
     set({ loading: true, error: null });
     try {
+      // ── Workspace-ready guard ──
+      await ensureWorkspaceReady();
+
       const { from, to } = monthToDateRange();
       const [nextAccounts, nextCategories, nextTags, nextRecurring, nextTransactions, dash] = await Promise.all([
         hexaTrackApi.accounts.list(),
@@ -172,8 +208,89 @@ export const useFinanceStore = create<FinanceState>((set) => ({
     }
   },
   addTransaction: async (transaction) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, successMessage: null });
+
+    const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+    if (isOffline) {
+      const queued = offlineQueue.enqueue({
+        accountId: transaction.accountId,
+        categoryId: transaction.categoryId,
+        type: transaction.type === 'Income' ? 'Income' : 'Expense',
+        amount: transaction.amount,
+        currency: transaction.currency,
+        merchant: transaction.merchant,
+        note: transaction.note,
+        occurredOn: transaction.occurredOn,
+        tagNames: transaction.tagNames,
+      });
+
+      const mockCreated: Transaction = {
+        id: queued.id,
+        accountId: transaction.accountId,
+        categoryId: transaction.categoryId,
+        type: transaction.type,
+        amount: transaction.amount,
+        currency: transaction.currency,
+        merchant: transaction.merchant || '',
+        note: transaction.note || '',
+        occurredOn: transaction.occurredOn,
+        tags: [],
+      };
+
+      const nextAccounts = get().accounts.map((acc) => {
+        if (acc.id === transaction.accountId) {
+          const delta = transaction.type === 'Income' ? transaction.amount : -transaction.amount;
+          return {
+            ...acc,
+            balance: acc.balance + delta,
+          };
+        }
+        return acc;
+      });
+
+      set((state) => {
+        const nextTransactions = [mockCreated, ...state.transactions];
+        const label = transaction.type === 'Income' ? 'Income' : 'Expense';
+        const report = { ...state.report };
+        if (transaction.type === 'Income') report.income += transaction.amount;
+        else report.expense += transaction.amount;
+        report.net = report.income - report.expense;
+
+        const nextDash = state.dashboard ? {
+          ...state.dashboard,
+          consolidatedBalance: nextAccounts.reduce((sum, a) => sum + a.balance, 0),
+          report
+        } : null;
+
+        cacheWorkspace({
+          accounts: nextAccounts,
+          categories: state.categories,
+          tags: state.tags,
+          recurring: state.recurring,
+          groupExpenses: state.groupExpenses,
+          transactions: nextTransactions,
+          report,
+          dashboard: nextDash,
+        });
+
+        return {
+          accounts: nextAccounts,
+          transactions: nextTransactions,
+          report,
+          dashboard: nextDash,
+          loading: false,
+          successMessage: `Saved offline! ${label} of ${transaction.currency} ${transaction.amount.toLocaleString()} queued for sync.`,
+        };
+      });
+
+      invalidateFinanceQueries();
+      return;
+    }
+
     try {
+      // ── Workspace-ready guard ──
+      await ensureWorkspaceReady();
+
       const tagIds =
         transaction.tagNames && transaction.tagNames.length
           ? await Promise.all(
@@ -196,6 +313,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
         tagIds,
       });
 
+      // Refresh dashboard + accounts in parallel for instant balance/chart updates
       const { from, to } = monthToDateRange();
       const [dash, nextAccounts] = await Promise.all([
         hexaTrackApi.dashboard.summary(from, to),
@@ -214,24 +332,119 @@ export const useFinanceStore = create<FinanceState>((set) => ({
           report: dash.report,
           dashboard: dash,
         });
+
+        const label = transaction.type === 'Income' ? 'Income' : 'Expense';
         return {
           accounts: nextAccounts,
           transactions: nextTransactions,
           report: dash.report,
           dashboard: dash,
           loading: false,
+          successMessage: `${label} of ${transaction.currency} ${transaction.amount.toLocaleString()} saved successfully`,
         };
       });
+
+      invalidateFinanceQueries();
     } catch (error) {
+      const isNetworkError =
+        error instanceof TypeError ||
+        (error instanceof Error &&
+          (error.message.includes('fetch') ||
+            error.message.includes('Network') ||
+            error.message.includes('Failed to fetch') ||
+            error.message.includes('load')));
+
+      if (isNetworkError) {
+        const queued = offlineQueue.enqueue({
+          accountId: transaction.accountId,
+          categoryId: transaction.categoryId,
+          type: transaction.type === 'Income' ? 'Income' : 'Expense',
+          amount: transaction.amount,
+          currency: transaction.currency,
+          merchant: transaction.merchant,
+          note: transaction.note,
+          occurredOn: transaction.occurredOn,
+          tagNames: transaction.tagNames,
+        });
+
+        const mockCreated: Transaction = {
+          id: queued.id,
+          accountId: transaction.accountId,
+          categoryId: transaction.categoryId,
+          type: transaction.type,
+          amount: transaction.amount,
+          currency: transaction.currency,
+          merchant: transaction.merchant || '',
+          note: transaction.note || '',
+          occurredOn: transaction.occurredOn,
+          tags: [],
+        };
+
+        const nextAccounts = get().accounts.map((acc) => {
+          if (acc.id === transaction.accountId) {
+            const delta = transaction.type === 'Income' ? transaction.amount : -transaction.amount;
+            return {
+              ...acc,
+              balance: acc.balance + delta,
+            };
+          }
+          return acc;
+        });
+
+        set((state) => {
+          const nextTransactions = [mockCreated, ...state.transactions];
+          const label = transaction.type === 'Income' ? 'Income' : 'Expense';
+          const report = { ...state.report };
+          if (transaction.type === 'Income') report.income += transaction.amount;
+          else report.expense += transaction.amount;
+          report.net = report.income - report.expense;
+
+          const nextDash = state.dashboard ? {
+            ...state.dashboard,
+            consolidatedBalance: nextAccounts.reduce((sum, a) => sum + a.balance, 0),
+            report
+          } : null;
+
+          cacheWorkspace({
+            accounts: nextAccounts,
+            categories: state.categories,
+            tags: state.tags,
+            recurring: state.recurring,
+            groupExpenses: state.groupExpenses,
+            transactions: nextTransactions,
+            report,
+            dashboard: nextDash,
+          });
+
+          return {
+            accounts: nextAccounts,
+            transactions: nextTransactions,
+            report,
+            dashboard: nextDash,
+            loading: false,
+            successMessage: `Saved offline! ${label} of ${transaction.currency} ${transaction.amount.toLocaleString()} queued for sync.`,
+          };
+        });
+
+        invalidateFinanceQueries();
+        return;
+      }
+
+      const message = error instanceof Error ? error.message : 'Unable to persist transaction.';
       set({
         loading: false,
-        error: error instanceof Error ? error.message : 'Unable to persist transaction.',
+        error: message,
+        successMessage: null,
       });
+      throw error;
     }
   },
   addRecurring: async (payload) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, successMessage: null });
     try {
+      // ── Workspace-ready guard ──
+      await ensureWorkspaceReady();
+
       const created = (await hexaTrackApi.recurring.create({
         accountId: payload.accountId,
         categoryId: payload.categoryId,
@@ -264,13 +477,39 @@ export const useFinanceStore = create<FinanceState>((set) => ({
           report: dash.report,
           dashboard: dash,
           loading: false,
+          successMessage: `Recurring ${payload.type.toLowerCase()} schedule created`,
         };
       });
+
+      invalidateFinanceQueries();
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Unable to create recurring schedule',
         loading: false,
+        successMessage: null,
       });
     }
   },
 }));
+
+/**
+ * Invalidates all finance-related TanStack Query caches so that components
+ * using useAccounts / useCategories / other hooks pick up fresh data immediately
+ * after a transaction, income, or expense is created.
+ */
+function invalidateFinanceQueries() {
+  try {
+    // Dynamic import to avoid circular deps at module init time.
+    // QueryClient is a singleton provided via QueryProvider.
+    // We access it through the global window to avoid coupling.
+    const { QueryClient } = require('@tanstack/react-query');
+    // Try to find the QueryClient from the React tree
+    // Since we can't access context from outside React, we use a workaround:
+    // Dispatch a custom event that the QueryProvider can listen for.
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hexatrack:invalidate-queries'));
+    }
+  } catch {
+    // Silent: if TanStack Query isn't available, that's fine.
+  }
+}

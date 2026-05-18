@@ -10,6 +10,11 @@ public interface IAdminFeatureFlagsService
 {
     Task<IReadOnlyList<FeatureFlagDto>> ListAsync(CancellationToken cancellationToken);
     Task UpsertAsync(string key, string value, Guid actorUserId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<OrganizationFeatureToggleDto>> GetOrgTogglesAsync(Guid organizationId, CancellationToken cancellationToken);
+    Task UpsertOrgToggleAsync(Guid organizationId, string key, bool isEnabled, Guid actorUserId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<UserFeatureToggleDto>> GetUserTogglesAsync(Guid userId, CancellationToken cancellationToken);
+    Task UpsertUserToggleAsync(Guid userId, string key, bool isEnabled, Guid actorUserId, CancellationToken cancellationToken);
+    Task<Dictionary<string, bool>> GetEffectiveFlagsAsync(Guid userId, Guid? organizationId, CancellationToken cancellationToken);
 }
 
 public sealed class AdminFeatureFlagsService(HexaTrackDbContext db, IAdminAuditService audit) : IAdminFeatureFlagsService
@@ -45,6 +50,120 @@ public sealed class AdminFeatureFlagsService(HexaTrackDbContext db, IAdminAuditS
         await db.SaveChangesAsync(cancellationToken);
         await audit.LogAsync(actorUserId, "featureflag.update", "GlobalFeatureFlag", null,
             JsonSerializer.Serialize(new { key }), cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<OrganizationFeatureToggleDto>> GetOrgTogglesAsync(Guid organizationId, CancellationToken cancellationToken)
+    {
+        return await db.OrganizationFeatureToggles.AsNoTracking()
+            .Where(x => x.OrganizationId == organizationId)
+            .OrderBy(x => x.FeatureKey)
+            .Select(x => new OrganizationFeatureToggleDto(x.Id, x.OrganizationId, x.FeatureKey, x.IsEnabled, x.UpdatedAt))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task UpsertOrgToggleAsync(Guid organizationId, string key, bool isEnabled, Guid actorUserId, CancellationToken cancellationToken)
+    {
+        key = key.Trim();
+        OrganizationFeatureToggle? row = await db.OrganizationFeatureToggles
+            .SingleOrDefaultAsync(x => x.OrganizationId == organizationId && x.FeatureKey == key, cancellationToken);
+        
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        if (row is null)
+        {
+            db.OrganizationFeatureToggles.Add(new OrganizationFeatureToggle
+            {
+                OrganizationId = organizationId,
+                FeatureKey = key,
+                IsEnabled = isEnabled,
+                UpdatedAt = now
+            });
+        }
+        else
+        {
+            row.IsEnabled = isEnabled;
+            row.UpdatedAt = now;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        await audit.LogAsync(actorUserId, "featureflag.org_update", "OrganizationFeatureToggle", organizationId,
+            JsonSerializer.Serialize(new { key, isEnabled }), cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<UserFeatureToggleDto>> GetUserTogglesAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        return await db.UserFeatureToggles.AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .OrderBy(x => x.FeatureKey)
+            .Select(x => new UserFeatureToggleDto(x.Id, x.UserId, x.FeatureKey, x.IsEnabled, x.UpdatedAt))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task UpdateUserTogglesFromPermissionsAsync(Guid userId, long permissionOverrides, CancellationToken cancellationToken)
+    {
+        // PermissionOverrides is handled in standard auth
+    }
+
+    public async Task UpsertUserToggleAsync(Guid userId, string key, bool isEnabled, Guid actorUserId, CancellationToken cancellationToken)
+    {
+        key = key.Trim();
+        UserFeatureToggle? row = await db.UserFeatureToggles
+            .SingleOrDefaultAsync(x => x.UserId == userId && x.FeatureKey == key, cancellationToken);
+        
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        if (row is null)
+        {
+            db.UserFeatureToggles.Add(new UserFeatureToggle
+            {
+                UserId = userId,
+                FeatureKey = key,
+                IsEnabled = isEnabled,
+                UpdatedAt = now
+            });
+        }
+        else
+        {
+            row.IsEnabled = isEnabled;
+            row.UpdatedAt = now;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        await audit.LogAsync(actorUserId, "featureflag.user_update", "UserFeatureToggle", userId,
+            JsonSerializer.Serialize(new { key, isEnabled }), cancellationToken);
+    }
+
+    public async Task<Dictionary<string, bool>> GetEffectiveFlagsAsync(Guid userId, Guid? organizationId, CancellationToken cancellationToken)
+    {
+        var effective = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+
+        // 1. Load global settings
+        var globals = await db.GlobalFeatureFlags.AsNoTracking().ToListAsync(cancellationToken);
+        foreach (var g in globals)
+        {
+            effective[g.Key] = string.Equals(g.Value, "true", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // 2. Load organization overrides if any
+        if (organizationId.HasValue)
+        {
+            var orgs = await db.OrganizationFeatureToggles.AsNoTracking()
+                .Where(x => x.OrganizationId == organizationId.Value)
+                .ToListAsync(cancellationToken);
+            foreach (var o in orgs)
+            {
+                effective[o.FeatureKey] = o.IsEnabled;
+            }
+        }
+
+        // 3. Load user overrides if any
+        var users = await db.UserFeatureToggles.AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .ToListAsync(cancellationToken);
+        foreach (var u in users)
+        {
+            effective[u.FeatureKey] = u.IsEnabled;
+        }
+
+        return effective;
     }
 }
 

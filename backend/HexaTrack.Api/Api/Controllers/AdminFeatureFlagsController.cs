@@ -20,4 +20,20 @@ public sealed class AdminFeatureFlagsController(ICurrentUser currentUser, IAdmin
     [HttpPut("{key}")]
     public Task Upsert(string key, [FromBody] UpsertFeatureFlagRequest body, CancellationToken cancellationToken)
         => flags.UpsertAsync(key, body.Value, currentUser.UserId, cancellationToken);
+
+    [HttpGet("organizations/{organizationId:guid}")]
+    public Task<IReadOnlyList<OrganizationFeatureToggleDto>> GetOrgToggles(Guid organizationId, CancellationToken cancellationToken)
+        => flags.GetOrgTogglesAsync(organizationId, cancellationToken);
+
+    [HttpPut("organizations/{organizationId:guid}/{key}")]
+    public Task UpsertOrgToggle(Guid organizationId, string key, [FromBody] UpsertToggleRequest body, CancellationToken cancellationToken)
+        => flags.UpsertOrgToggleAsync(organizationId, key, body.IsEnabled, currentUser.UserId, cancellationToken);
+
+    [HttpGet("users/{userId:guid}")]
+    public Task<IReadOnlyList<UserFeatureToggleDto>> GetUserToggles(Guid userId, CancellationToken cancellationToken)
+        => flags.GetUserTogglesAsync(userId, cancellationToken);
+
+    [HttpPut("users/{userId:guid}/{key}")]
+    public Task UpsertUserToggle(Guid userId, string key, [FromBody] UpsertToggleRequest body, CancellationToken cancellationToken)
+        => flags.UpsertUserToggleAsync(userId, key, body.IsEnabled, currentUser.UserId, cancellationToken);
 }

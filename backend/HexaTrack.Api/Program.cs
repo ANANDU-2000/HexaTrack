@@ -89,7 +89,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddDbContext<HexaTrackDbContext>(options =>
+builder.Services.AddDbContextPool<HexaTrackDbContext>(options =>
 {
     options.UseNpgsql(postgresConnection, npgsql => npgsql.EnableRetryOnFailure());
     options.ConfigureWarnings(warnings =>
@@ -362,7 +362,38 @@ app.UseAuthentication();
 app.UseMiddleware<WorkspaceContextMiddleware>();
 app.UseAuthorization();
 app.UseRateLimiter();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTimeOffset.UtcNow }));
+app.MapGet("/health", async (HexaTrackDbContext db) =>
+{
+    try
+    {
+        bool canConnect = await db.Database.CanConnectAsync();
+        if (!canConnect)
+        {
+            return Results.Json(new { status = "unhealthy", database = "disconnected", timestamp = DateTimeOffset.UtcNow }, statusCode: 503);
+        }
+        return Results.Ok(new { status = "healthy", database = "connected", timestamp = DateTimeOffset.UtcNow });
+    }
+    catch (Exception ex)
+    {
+        return Results.Json(new { status = "unhealthy", error = ex.Message, timestamp = DateTimeOffset.UtcNow }, statusCode: 503);
+    }
+});
+app.MapGet("/api/health", async (HexaTrackDbContext db) =>
+{
+    try
+    {
+        bool canConnect = await db.Database.CanConnectAsync();
+        if (!canConnect)
+        {
+            return Results.Json(new { status = "unhealthy", database = "disconnected", timestamp = DateTimeOffset.UtcNow }, statusCode: 503);
+        }
+        return Results.Ok(new { status = "healthy", database = "connected", timestamp = DateTimeOffset.UtcNow });
+    }
+    catch (Exception ex)
+    {
+        return Results.Json(new { status = "unhealthy", error = ex.Message, timestamp = DateTimeOffset.UtcNow }, statusCode: 503);
+    }
+});
 app.MapControllers();
 
 IRecurringJobManager recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
