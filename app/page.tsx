@@ -27,7 +27,6 @@ type UnauthView = 'marketing' | 'auth';
 
 export default function Home() {
   const [screen, setScreen] = useState<ScreenKey>('dashboard');
-  const [isAdding, setIsAdding] = useState(false);
   const [unauthView, setUnauthView] = useState<UnauthView>('marketing');
   const [mounted, setMounted] = useState(false);
   
@@ -54,9 +53,24 @@ export default function Home() {
     if (mounted && typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const action = params.get('action');
-      if (action === 'add-expense' || action === 'add-income') {
-        setIsAdding(true);
-        // Clean URL query parameters so page refresh doesn't trigger modal again
+      if (action === 'add-expense') {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Expense' } }));
+        }, 800);
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      } else if (action === 'add-income') {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Income' } }));
+        }, 800);
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      } else if (action === 'view-reports') {
+        setScreen('reports');
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      } else if (action === 'view-recurring') {
+        setScreen('recurring');
         const newUrl = window.location.pathname;
         window.history.replaceState({}, '', newUrl);
       }
@@ -106,9 +120,9 @@ export default function Home() {
   const content = useMemo(() => {
     switch (screen) {
       case 'dashboard':
-        return <DashboardScreen onAddTransaction={() => setIsAdding(true)} onNavigate={setScreen} />;
+        return <DashboardScreen onAddTransaction={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Expense' } }))} onNavigate={setScreen} />;
       case 'transaction':
-        return <DashboardScreen onAddTransaction={() => setIsAdding(true)} onNavigate={setScreen} compact />;
+        return <DashboardScreen onAddTransaction={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Expense' } }))} onNavigate={setScreen} compact />;
       case 'history':
         return <HistoryScreen />;
       case 'reports':

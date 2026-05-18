@@ -68,9 +68,16 @@ export default function OwnerDashboard() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const action = params.get('action');
-      if (action === 'add-expense' || action === 'add-income') {
-        setIsAddingTx(true);
-        // Clean URL to prevent repeated modal triggers
+      if (action === 'add-expense') {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Expense' } }));
+        }, 800);
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      } else if (action === 'add-income') {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Income' } }));
+        }, 800);
         const newUrl = window.location.pathname;
         window.history.replaceState({}, '', newUrl);
       }
@@ -99,7 +106,7 @@ export default function OwnerDashboard() {
         case 'integrations': return <IntegrationsHub />;
         
         /* Shared Branch Contextual Finance Screens */
-        case 'finance-dashboard': return <DashboardScreen onAddTransaction={() => setIsAddingTx(true)} />;
+        case 'finance-dashboard': return <DashboardScreen onAddTransaction={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Expense' } }))} />;
         case 'transactions': return <HistoryScreen />;
         case 'reports': return <ReportsScreen />;
         case 'recurring': return <RecurringScreen />;
@@ -114,7 +121,6 @@ export default function OwnerDashboard() {
   return (
     <>
       {/* Dynamic Shared Components */}
-      <AddTransactionSheet open={isAddingTx} onOpenChange={setIsAddingTx} />
 
       {/* ─── DESKTOP LAYOUT (xl+) ─── */}
       <div className="hidden xl:flex min-h-screen bg-[#0B1015] text-white font-sans selection:bg-[#4F8CFF]/30">
@@ -186,13 +192,13 @@ export default function OwnerDashboard() {
                  </div>
               </div>
               <div className="flex items-center gap-2.5">
-                 <button 
-                   onClick={() => setIsAddingTx(true)}
-                   disabled={!activeWorkspaceId}
-                   className="h-10 px-4 bg-[#4F8CFF] text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-[#4F8CFF]/20 hover:brightness-105 transition-all active:scale-95 disabled:opacity-50"
-                 >
-                    <Plus size={16} /> Record Feed
-                 </button>
+                  <button 
+                    onClick={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Expense' } }))}
+                    disabled={!activeWorkspaceId}
+                    className="h-10 px-4 bg-[#4F8CFF] text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-[#4F8CFF]/20 hover:brightness-105 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                     <Plus size={16} /> Record Feed
+                  </button>
                  <button className="h-10 w-10 rounded-xl border border-white/[0.06] bg-[#0E152B] flex items-center justify-center text-[#C2C6D6] hover:text-white hover:border-white/20 transition-colors relative">
                     <Bell size={16} />
                     <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -316,7 +322,7 @@ export default function OwnerDashboard() {
               <motion.button
                 whileTap={{ scale: 0.90 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                onClick={() => setIsAddingTx(true)}
+                onClick={() => window.dispatchEvent(new CustomEvent('hexatrack:open-quick-add', { detail: { type: 'Expense' } }))}
                 disabled={!activeWorkspaceId}
                 className="relative z-10 flex items-center justify-center rounded-full overflow-hidden disabled:opacity-50"
                 style={{

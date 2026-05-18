@@ -23,6 +23,7 @@ import { BrandMark } from '@/components/ui/brand';
 import { notificationScheduler, type NotificationIntent, type NotificationChannel } from '@/lib/notifications';
 import { offlineQueue } from '@/lib/offline-queue';
 import { useFinanceStore } from '@/store/finance-store';
+import { useAuthStore } from '@/store/auth-store';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type BeforeInstallPromptEvent = Event & {
@@ -81,6 +82,10 @@ export function PwaProvider() {
 
   // Push Permission Prompt states
   const [showPushModal, setShowPushModal] = useState(false);
+
+  // Smart Install triggers
+  const [smartInstallEligible, setSmartInstallEligible] = useState(false);
+  const user = useAuthStore((state) => state.user);
 
   // Notification Drawer states
   const [notifications, setNotifications] = useState<NotificationIntent[]>([]);
@@ -179,6 +184,23 @@ export function PwaProvider() {
     window.addEventListener('appinstalled', markInstalled);
     window.addEventListener('pwa-open-notifications', openDrawerListener);
 
+    // Smart Install Popup triggers:
+    // A) 30 Seconds usage timer
+    const smartInstallTimer = window.setTimeout(() => {
+      setSmartInstallEligible(true);
+    }, 30000);
+
+    // B) 2+ Page interactions click tracking
+    let clicks = 0;
+    const trackInteractions = () => {
+      clicks += 1;
+      if (clicks >= 2) {
+        setSmartInstallEligible(true);
+        window.removeEventListener('click', trackInteractions);
+      }
+    };
+    window.addEventListener('click', trackInteractions);
+
     // Dynamic Trigger for push notifications modal after splash finishes
     const checkPushPermission = setTimeout(() => {
       if (
@@ -194,6 +216,8 @@ export function PwaProvider() {
     return () => {
       window.clearTimeout(splashTimer);
       clearTimeout(checkPushPermission);
+      window.clearTimeout(smartInstallTimer);
+      window.removeEventListener('click', trackInteractions);
       window.visualViewport?.removeEventListener('resize', syncViewportHeight);
       window.visualViewport?.removeEventListener('scroll', syncViewportHeight);
       window.removeEventListener('resize', syncViewportHeight);
@@ -204,6 +228,13 @@ export function PwaProvider() {
       window.removeEventListener('pwa-open-notifications', openDrawerListener);
     };
   }, []);
+
+  // C) User login state trigger
+  useEffect(() => {
+    if (user) {
+      setSmartInstallEligible(true);
+    }
+  }, [user]);
 
   const install = async () => {
     if (!installPrompt) return;
@@ -316,7 +347,7 @@ export function PwaProvider() {
       )}
 
       {/* ─── 3. PREMIUM PWA APP INSTALL BANNER ─── */}
-      {installPrompt && !dismissed && !standalone && (
+      {installPrompt && !dismissed && !standalone && smartInstallEligible && (
         <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-[89] px-4 md:bottom-6">
           <div className="mx-auto max-w-md rounded-2xl border border-white/[0.06] bg-[#0E152B]/95 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
             <div className="flex items-start gap-3">
