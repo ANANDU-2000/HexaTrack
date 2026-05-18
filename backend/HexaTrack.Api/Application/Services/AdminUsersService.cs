@@ -379,22 +379,31 @@ public sealed class AdminUsersService(HexaTrackDbContext db, IAdminAuditService 
             new() { WorkspaceId = workspaceId, UserId = userId, Name = "Credit Card", Type = AccountType.Credit, Currency = currency, Balance = 0 }
         ];
 
-        Category[] starterCategories =
-        [
-            new() { WorkspaceId = workspaceId, UserId = userId, Name = "Salary", Type = TransactionType.Income, Color = "#10b981", Icon = "Briefcase" },
-            new() { WorkspaceId = workspaceId, UserId = userId, Name = "Interest", Type = TransactionType.Income, Color = "#14b8a6", Icon = "TrendingUp" },
-            new() { WorkspaceId = workspaceId, UserId = userId, Name = "Food", Type = TransactionType.Expense, Color = "#f97316", Icon = "Utensils" },
-            new() { WorkspaceId = workspaceId, UserId = userId, Name = "Transport", Type = TransactionType.Expense, Color = "#2563eb", Icon = "Bus" },
-            new() { WorkspaceId = workspaceId, UserId = userId, Name = "Home", Type = TransactionType.Expense, Color = "#14b8a6", Icon = "Home" },
-            new() { WorkspaceId = workspaceId, UserId = userId, Name = "Subscriptions", Type = TransactionType.Expense, Color = "#8b5cf6", Icon = "RefreshCw" },
-            new() { WorkspaceId = workspaceId, UserId = userId, Name = "Health", Type = TransactionType.Expense, Color = "#ef4444", Icon = "HeartPulse" },
-            new() { WorkspaceId = workspaceId, UserId = userId, Name = "Shopping", Type = TransactionType.Expense, Color = "#ec4899", Icon = "ShoppingBag" },
-            new() { WorkspaceId = workspaceId, UserId = userId, Name = "Travel", Type = TransactionType.Expense, Color = "#0ea5e9", Icon = "Plane" },
-            new() { WorkspaceId = workspaceId, UserId = userId, Name = "Utilities", Type = TransactionType.Expense, Color = "#64748b", Icon = "Zap" }
-        ];
+        var salary = new Category { WorkspaceId = workspaceId, UserId = userId, Name = "Salary", Type = TransactionType.Income, Color = "#10b981", Icon = "Briefcase" };
+        var freelance = new Category { WorkspaceId = workspaceId, UserId = userId, Name = "Freelance", Type = TransactionType.Income, Color = "#06b6d4", Icon = "Laptop" };
+        var business = new Category { WorkspaceId = workspaceId, UserId = userId, Name = "Business", Type = TransactionType.Income, Color = "#3b82f6", Icon = "Store" };
+        var investments = new Category { WorkspaceId = workspaceId, UserId = userId, Name = "Investments", Type = TransactionType.Income, Color = "#f59e0b", Icon = "TrendingUp" };
+        var bonus = new Category { WorkspaceId = workspaceId, UserId = userId, Name = "Bonus", Type = TransactionType.Income, Color = "#a855f7", Icon = "Gift" };
+
+        var food = new Category { WorkspaceId = workspaceId, UserId = userId, Name = "Food", Type = TransactionType.Expense, Color = "#f97316", Icon = "Utensils" };
+        var transport = new Category { WorkspaceId = workspaceId, UserId = userId, Name = "Transport", Type = TransactionType.Expense, Color = "#2563eb", Icon = "Bus" };
+        var bills = new Category { WorkspaceId = workspaceId, UserId = userId, Name = "Bills", Type = TransactionType.Expense, Color = "#ef4444", Icon = "Zap" };
+        var shopping = new Category { WorkspaceId = workspaceId, UserId = userId, Name = "Shopping", Type = TransactionType.Expense, Color = "#ec4899", Icon = "ShoppingBag" };
+        var entertainment = new Category { WorkspaceId = workspaceId, UserId = userId, Name = "Entertainment", Type = TransactionType.Expense, Color = "#8b5cf6", Icon = "Film" };
+
+        dbContext.Categories.AddRange([salary, freelance, business, investments, bonus, food, transport, bills, shopping, entertainment]);
+
+        var restaurant = new Category { WorkspaceId = workspaceId, UserId = userId, ParentCategoryId = food.Id, Name = "Restaurant", Type = TransactionType.Expense, Color = "#f97316", Icon = "Utensils" };
+        var cafe = new Category { WorkspaceId = workspaceId, UserId = userId, ParentCategoryId = food.Id, Name = "Cafe", Type = TransactionType.Expense, Color = "#f97316", Icon = "Coffee" };
+        var groceries = new Category { WorkspaceId = workspaceId, UserId = userId, ParentCategoryId = food.Id, Name = "Groceries", Type = TransactionType.Expense, Color = "#f97316", Icon = "ShoppingCart" };
+
+        var fuel = new Category { WorkspaceId = workspaceId, UserId = userId, ParentCategoryId = transport.Id, Name = "Fuel", Type = TransactionType.Expense, Color = "#2563eb", Icon = "Fuel" };
+        var taxi = new Category { WorkspaceId = workspaceId, UserId = userId, ParentCategoryId = transport.Id, Name = "Taxi", Type = TransactionType.Expense, Color = "#2563eb", Icon = "Car" };
+        var bus = new Category { WorkspaceId = workspaceId, UserId = userId, ParentCategoryId = transport.Id, Name = "Bus", Type = TransactionType.Expense, Color = "#2563eb", Icon = "Bus" };
+
+        dbContext.Categories.AddRange([restaurant, cafe, groceries, fuel, taxi, bus]);
 
         dbContext.Accounts.AddRange(starterAccounts);
-        dbContext.Categories.AddRange(starterCategories);
     }
 
     private async Task RemoveUserRelatedDataAsync(Guid userId, CancellationToken cancellationToken)
